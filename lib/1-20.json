@@ -1,0 +1,223 @@
+{
+  "1": {
+    "title": "1. 私は〜です。 (I'm ~.)",
+    "sentences": [
+      { "en": "I'm Miyuki.", "jp": "私は美雪です。" },
+      { "en": "I'm fourteen years old.", "jp": "私は14歳です。" },
+      { "en": "My sister is a high school student.", "jp": "私の姉は高校生です。" },
+      { "en": "He's from China.", "jp": "彼は中国の出身です。" },
+      { "en": "We're tired.", "jp": "私たちは疲れています。" },
+      { "en": "This book is interesting.", "jp": "この本はおもしろいです。" },
+      { "en": "This is Kenji.", "jp": "こちらは健二です。" },
+      { "en": "My favorite subject is music.", "jp": "私のいちばん好きな教科は音楽です。" }
+    ]
+  },
+  "2": {
+    "title": "2. 私は〜にいます。 (I'm in ~.)",
+    "sentences": [
+      { "en": "I'm in New York now.", "jp": "私は今、ニューヨークにいます。" },
+      { "en": "They're in the kitchen.", "jp": "彼らは台所にいます。" },
+      { "en": "My bag is on the desk.", "jp": "私のかばんは机の上にあります。" },
+      { "en": "Your cats are under the table.", "jp": "あなたのねこたちはテーブルの下にいます。" },
+      { "en": "Miyuki is by the window.", "jp": "美雪は窓のそばにいます。" },
+      { "en": "My mother is at home now.", "jp": "母は今、家にいます。" },
+      { "en": "My house is near the station.", "jp": "私の家は駅の近くにあります。" },
+      { "en": "She's here.", "jp": "彼女はここにいます。" }
+    ]
+  },
+  "3": {
+    "title": "3. 〜ではありません。 (I'm not ~.)",
+    "sentences": [
+      { "en": "I'm not a high school student.", "jp": "私は高校生ではありません。" },
+      { "en": "He's not here now.", "jp": "彼は今、ここにいません。" },
+      { "en": "Her parents aren't in Japan.", "jp": "彼女の両親は日本にいません。" },
+      { "en": "This isn't my notebook.", "jp": "これは私のノートではありません。" },
+      { "en": "These aren't cherry trees.", "jp": "これらは桜の木ではありません。" }
+    ]
+  },
+  "4": {
+    "title": "4. 〜ですか。 (Are you ~?)",
+    "sentences": [
+      { "en": "Are you from Canada? - Yes, I am.", "jp": "あなたはカナダ出身ですか。ーはい、そうです。" },
+      { "en": "Is your mother at home now? - No, she isn't.", "jp": "お母さんは今、家にいますか。ーいいえ、いません。" },
+      { "en": "Is that Mt. Fuji? - No, it isn't.", "jp": "あれが富士山ですか。ーいいえ、ちがいます。" },
+      { "en": "Are they high school students? - Yes, they are.", "jp": "彼らは高校生ですか。ーはい、そうです。" },
+      { "en": "Are these your comic books? - No, they aren't.", "jp": "これらはあなたのまんがですか。ーいいえ、ちがいます。" }
+    ]
+  },
+  "5": {
+    "title": "5. 〜します。 (I play ...)",
+    "sentences": [
+      { "en": "My father plays the guitar.", "jp": "私の父はギターを弾きます。" },
+      { "en": "I like cats.", "jp": "私はねこが好きです。" },
+      { "en": "Maki watches TV every day.", "jp": "真紀は毎日テレビを見ます。" },
+      { "en": "Mr. Suzuki teaches math.", "jp": "鈴木先生は数学を教えています。" },
+      { "en": "We live in Tokyo.", "jp": "私たちは東京に住んでいます。" },
+      { "en": "They speak English.", "jp": "彼らは英語を話します。" }
+    ]
+  },
+  "6": {
+    "title": "6. 〜しません。 (I don't play ...)",
+    "sentences": [
+      { "en": "I don't have a smartphone.", "jp": "私はスマホを持っていません。" },
+      { "en": "I don't have any brothers.", "jp": "私には兄弟がいません。" },
+      { "en": "Yosuke doesn't play baseball.", "jp": "洋介は野球をしません。" },
+      { "en": "My mother doesn't like cats.", "jp": "私の母はねこが好きではありません。" },
+      { "en": "Mr. Smith doesn't speak Japanese in class.", "jp": "スミス先生は授業では日本語を話しません。" },
+      { "en": "My grandparents don't live in Tokyo.", "jp": "私の祖父母は東京には住んでいません。" }
+    ]
+  },
+  "7": {
+    "title": "7. 〜しますか。 (Do you ~?)",
+    "sentences": [
+      { "en": "Do you play tennis?", "jp": "あなたはテニスをしますか。" },
+      { "en": "Do you watch TV every day? - Yes, I do.", "jp": "あなたは毎日テレビを見ますか。ーはい、見ます。" },
+      { "en": "Do you have any brothers? - No, I don't.", "jp": "あなたには兄弟がいますか。ーいいえ、いません。" },
+      { "en": "Does Kenji like soccer? - No, he doesn't.", "jp": "健二はサッカーが好きですか。ーいいえ、好きではありません。" },
+      { "en": "Does Lisa speak Japanese? - Yes, she does.", "jp": "リサは日本語を話しますか。ーはい、話します。" },
+      { "en": "Does this bus go to the station? - Yes, it does.", "jp": "このバスは駅に行きますか。ーはい、行きます。" },
+      { "en": "Do your parents play any sports? - No, they don't.", "jp": "あなたの両親は何かスポーツをしますか。ーいいえ、しません。" }
+    ]
+  },
+  "8": {
+    "title": "8. 〜できます。 (I can ~.)",
+    "sentences": [
+      { "en": "I can play the violin.", "jp": "私はバイオリンが弾けます。" },
+      { "en": "I can speak Chinese.", "jp": "私は中国語を話せます。" },
+      { "en": "Saori can ski very well.", "jp": "佐織はとてもじょうずにスキーができます。" },
+      { "en": "You can call me anytime.", "jp": "いつでも私に電話していいですよ。" },
+      { "en": "I can't swim.", "jp": "私は泳げません。" },
+      { "en": "I can't hear you.", "jp": "あなたの声が聞こえません。" },
+      { "en": "My mother can't drive.", "jp": "母は車を運転できません。" }
+    ]
+  },
+  "9": {
+    "title": "9. 〜できますか。 (Can you ~?)",
+    "sentences": [
+      { "en": "Can you hear me?", "jp": "私の声が聞こえますか。" },
+      { "en": "Can you swim? - Yes, I can.", "jp": "あなたは泳げますか。ーはい、泳げます。" },
+      { "en": "Can Yosuke play the guitar? - No, he can't.", "jp": "洋介はギターを弾けますか。ーいいえ、弾けません。" },
+      { "en": "Can your father cook? - Yes, he can.", "jp": "あなたのお父さんは料理ができますか。ーはい、できます。" },
+      { "en": "Can you see the bird over there? - No, I can't.", "jp": "あそこにいる鳥が見えますか。ーいいえ、見えません。" },
+      { "en": "Can they read Japanese? - Yes, they can.", "jp": "彼らは日本語が読めますか。ーはい、読めます。" }
+    ]
+  },
+  "10": {
+    "title": "10. 〜しなさい。 (Wash ...)",
+    "sentences": [
+      { "en": "Wash your hands.", "jp": "手を洗いなさい。" },
+      { "en": "Wake up, Daiki.", "jp": "起きなさい、大樹。" },
+      { "en": "Use my pencil.", "jp": "私のえんぴつを使って。" },
+      { "en": "Open the windows, please.", "jp": "窓を開けてください。" },
+      { "en": "Turn right at the first corner.", "jp": "1つめの角を右に曲がってください。" },
+      { "en": "Be careful, Saori.", "jp": "気をつけて、佐織。" },
+      { "en": "Mom, please come here and help me.", "jp": "お母さん、ここへ来て私を手伝ってください。" }
+    ]
+  },
+  "11": {
+    "title": "11. 〜してはいけません。 (Don't ~.)",
+    "sentences": [
+      { "en": "Don't open the box.", "jp": "その箱を開けてはいけません。" },
+      { "en": "Don't worry.", "jp": "心配しないで。" },
+      { "en": "Don't walk so fast.", "jp": "そんなに速く歩かないで。" },
+      { "en": "Don't take pictures here.", "jp": "ここで写真を撮ってはいけません。" },
+      { "en": "Please don't touch these pictures.", "jp": "これらの絵に手を触れないでください。" },
+      { "en": "Don't be late, Miyuki.", "jp": "遅れないでね、美雪。" }
+    ]
+  },
+  "12": {
+    "title": "12. 〜しましょう。 (Let's ~.)",
+    "sentences": [
+      { "en": "Let's go home.", "jp": "家に帰りましょう。" },
+      { "en": "Let's play tennis.", "jp": "テニスをしましょう。" },
+      { "en": "Let's go shopping after school.", "jp": "放課後に買い物に行きましょう。" },
+      { "en": "Let's ask Mr. Yano.", "jp": "矢野先生に聞いて[たずねて]みましょう。" },
+      { "en": "Let's sit under that tree.", "jp": "あの木の下に座りましょう。" },
+      { "en": "Let's eat out tonight.", "jp": "今夜は外食しましょう。" }
+    ]
+  },
+  "13": {
+    "title": "13. 〜は何ですか。 (What's ~?)",
+    "sentences": [
+      { "en": "What's this? - It's a Japanese fan.", "jp": "これは何ですか。ー日本の扇子です。" },
+      { "en": "What's that? - It's an art museum.", "jp": "あれは何ですか。ー美術館です。" },
+      { "en": "What's your favorite sport? - Tennis.", "jp": "あなたのいちばん好きなスポーツは何ですか。ーテニスです。" },
+      { "en": "What are these? - They're paper cranes.", "jp": "これらは何ですか。ー折り鶴です。" }
+    ]
+  },
+  "14": {
+    "title": "14. 何を〜しますか。 (What do you ~?)",
+    "sentences": [
+      { "en": "What do you want for dessert? - I want some fruit.", "jp": "あなたはデザートに何がほしいですか。ー果物がほしいです。" },
+      { "en": "What do you usually have for breakfast? - I usually have rice.", "jp": "あなたは朝食にふつう何を食べますか。ーふつうごはん(米)を食べます。" },
+      { "en": "What does your mother do on Saturdays? - She usually reads books.", "jp": "あなたのお母さんは土曜日には何をしますか。ーふつう読書をします。" },
+      { "en": "What sport does Maki like? - She likes tennis.", "jp": "真紀は何のスポーツが好きですか。ー彼女はテニスが好きです。" },
+      { "en": "What kind of movies do you like? - I like action movies.", "jp": "あなたはどんな種類の映画が好きですか。ーアクション映画です。" }
+    ]
+  },
+  "15": {
+    "title": "15. 何時〜？ (What time ~?)",
+    "sentences": [
+      { "en": "What time is it?", "jp": "何時ですか。" },
+      { "en": "What time is it? - It's ten forty.", "jp": "何時ですか。ー10時40分です。" },
+      { "en": "What time do you get up every morning? - I get up at six.", "jp": "あなたは毎朝何時に起きますか。ー6時に起きます。" },
+      { "en": "What time does your mother usually come home? - She comes home around five.", "jp": "あなたのお母さんはたいてい何時に帰宅しますか。ー5時ごろです。" },
+      { "en": "What time do you usually go to bed? - I usually go to bed at ten.", "jp": "あなたはたいてい何時に寝ますか。ーたいてい10時に寝ます。" }
+    ]
+  },
+  "16": {
+    "title": "16. だれ〜？ (Who ~?)",
+    "sentences": [
+      { "en": "Who is that tall boy?", "jp": "あの背の高い男の子はだれですか。" },
+      { "en": "Who's that? - That's Lisa.", "jp": "あれはだれですか。ーリサです。" },
+      { "en": "Who's your English teacher? - Ms. Shimada.", "jp": "あなたの英語の先生はだれですか。ー島田先生です。" },
+      { "en": "Who's Naoki? - He's my cousin.", "jp": "直樹とはだれですか。ー彼は私のいとこです。" },
+      { "en": "Who are the people in this picture? - They're my classmates.", "jp": "この写真に写っている人たちはだれですか。ー私のクラスメイトです。" },
+      { "en": "Who lives in that house? - Mr. Ito does.", "jp": "だれがあの家に住んでいるのですか。ー伊藤さんです。" }
+    ]
+  },
+  "17": {
+    "title": "17. どこ〜？ (Where ~?)",
+    "sentences": [
+      { "en": "Where's Miyuki? - She's in the kitchen.", "jp": "美雪はどこにいますか。ー台所にいます。" },
+      { "en": "Where is the bathroom? - It's on the second floor.", "jp": "お手洗いはどこですか。ー2階にあります。" },
+      { "en": "Where are my glasses? - They're on the table.", "jp": "私のめがねはどこですか。ーテーブルの上にあります。" },
+      { "en": "Where do you live? - I live in Saitama.", "jp": "あなたはどこに住んでいますか。ー埼玉に住んでいます。" },
+      { "en": "Where do you play badminton? - In the school gym.", "jp": "あなたはどこでバドミントンをしますか。ー学校の体育館です。" },
+      { "en": "Where can I buy a ticket? - Over there.", "jp": "(私は)どこで切符を買えますか。ーあそこです。" }
+    ]
+  },
+  "18": {
+    "title": "18. いつ〜？ (When ~?)",
+    "sentences": [
+      { "en": "When is your birthday?", "jp": "あなたの誕生日はいつですか。" },
+      { "en": "When is the school festival? - It's May 1.", "jp": "文化祭はいつですか。ー5月1日です。" },
+      { "en": "When do you watch TV? - Usually after dinner.", "jp": "あなたはいつテレビを見ますか。ーたいてい夕食後です。" },
+      { "en": "When do you have dance lessons? - On Saturdays.", "jp": "あなたのダンスのレッスンはいつですか。ー毎週土曜日です。" },
+      { "en": "When does he practice the piano? - He practices after school every day.", "jp": "彼はいつピアノを練習するのですか。ー毎日放課後に練習します。" },
+      { "en": "When can I see you next time? - I come here on Mondays and Fridays.", "jp": "次はいつあなたに会えますか。ー私は毎週月曜日と金曜日にここに来ます。" }
+    ]
+  },
+  "19": {
+    "title": "19. 〜はどうですか。 (How is ~?)",
+    "sentences": [
+      { "en": "How's the weather in Tokyo?", "jp": "東京の天気はどうですか。" },
+      { "en": "How are you? - I'm fine.", "jp": "元気ですか。ー元気です。" },
+      { "en": "How's your grandfather? - He's very good.", "jp": "あなたのおじいさんはどうですか[元気ですか]。ーとても元気です。" },
+      { "en": "How's the weather in New York? - It's cloudy.", "jp": "ニューヨークの天気はどうですか。ーくもっています。" },
+      { "en": "How's your new school? - Great! I really like the teachers here.", "jp": "新しい学校はどうですか。ーすばらしいです！ここの先生たちが大好きです。" },
+      { "en": "I like this color. How about you?", "jp": "私はこの色が好きです。あなたはどうですか。" }
+    ]
+  },
+  "20": {
+    "title": "20. どうやって〜？ (How do ~?)",
+    "sentences": [
+      { "en": "How do you come to school?", "jp": "あなたはどうやって学校に来ますか。" },
+      { "en": "How do you usually go to the library? - I go there by bike.", "jp": "あなたはふだんどうやって図書館へ行きますか。ー自転車で行きます。" },
+      { "en": "How does your father get to work? - He takes the bus.", "jp": "あなたのお父さんはどうやって通勤していますか。ーバスに乗って行きます。" },
+      { "en": "How do you spend your free time? - I usually watch TV at home.", "jp": "あなたはひまなときはどのように過ごしていますか。ーたいてい家でテレビを見ます。" },
+      { "en": "How do you like the new teacher? - He's nice and I like him.", "jp": "新しい先生をどう思いますか。ー彼はやさしいので好きです。" },
+      { "en": "How can I get there? - You can walk there.", "jp": "(私は)そこへはどのようにして行けますか。ーそこへは歩いて行けます。" }
+    ]
+  }
+}
