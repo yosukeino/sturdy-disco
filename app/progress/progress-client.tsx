@@ -64,7 +64,7 @@ function generateUnitTests(): { start: number; end: number; label: string }[] {
   const tests: { start: number; end: number; label: string }[] = [];
   for (let i = 1; i <= TOTAL_SECTIONS; i += 2) {
     const end = Math.min(i + 1, TOTAL_SECTIONS);
-    tests.push({ start: i, end, label: `S${i}-S${end}` });
+    tests.push({ start: i, end, label: i === end ? `S${i}` : `S${i}-S${end}` });
   }
   return tests;
 }
@@ -73,7 +73,7 @@ function generateSummaryTests(): { start: number; end: number; label: string }[]
   const tests: { start: number; end: number; label: string }[] = [];
   for (let i = 1; i <= TOTAL_SECTIONS; i += 6) {
     const end = Math.min(i + 5, TOTAL_SECTIONS);
-    tests.push({ start: i, end, label: `S${i}-S${end}` });
+    tests.push({ start: i, end, label: i === end ? `S${i}` : `S${i}-S${end}` });
   }
   return tests;
 }

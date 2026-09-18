@@ -1,0 +1,553 @@
+{
+  "21": {
+    "title": "21. いくつ〜？など (How many ~?)",
+    "sentences": [
+      {
+        "en": "How many comic books do you have?",
+        "jp": "あなたは何冊のマンガ本を持っていますか。"
+      },
+      {
+        "en": "How many cousins do you have? - I have three.",
+        "jp": "あなたにはいとこが何人いますか。ー3人います。"
+      },
+      {
+        "en": "How many classes do you have today? - We only have four classes today.",
+        "jp": "今日は授業がいくつありますか。ー今日はたった4つしかありません。"
+      },
+      {
+        "en": "How many languages can she speak? - She can speak four languages.",
+        "jp": "彼女は何か国語を話せるのですか。ー4か国語を話せます。"
+      },
+      {
+        "en": "How much is this sweater? - It's six thousand yen.",
+        "jp": "このセーターはいくらですか。ー6,000円です。"
+      }
+    ]
+  },
+  "22": {
+    "title": "22. どのくらい〜？ (長さ) (How long ~?)",
+    "sentences": [
+      {
+        "en": "How long is the Shinano River?",
+        "jp": "信濃川はどのくらいの長さですか。"
+      },
+      {
+        "en": "How long is this bridge? - It's about two hundred meters.",
+        "jp": "この橋はどのくらいの長さですか。ー約200メートルです。"
+      },
+      {
+        "en": "How long is this movie? - It's two hours.",
+        "jp": "この映画はどのくらいの長さですか。ー2時間です。"
+      },
+      {
+        "en": "How long do you usually sleep at night? - About eight hours.",
+        "jp": "夜はたいていどのくらい眠っていますか。ー約8時間です。"
+      },
+      {
+        "en": "How long does it take to get there? - It takes forty minutes.",
+        "jp": "そこへ行くのにどのくらいかかりますか。ー40分かかります。"
+      }
+    ]
+  },
+  "23": {
+    "title": "23. どのくらい〜？ (古さ・年齢など) (How old ~?)",
+    "sentences": [
+      {
+        "en": "How old is your mother?",
+        "jp": "あなたのお母さんは何歳ですか。"
+      },
+      {
+        "en": "How old is your sister? - She's seventeen.",
+        "jp": "あなたのお姉さんはいくつですか。ー17歳です。"
+      },
+      {
+        "en": "How old is this building? - It's about eighty years old.",
+        "jp": "この建物はどのくらい古いのですか。ー建てられてから約80年です。"
+      },
+      {
+        "en": "How often do you practice tennis? - Five days a week.",
+        "jp": "あなたはどのくらいの頻度でテニスを練習しますか。ー週に5日します。"
+      },
+      {
+        "en": "How far is it from here to Tokyo? - It's thirty minutes by train.",
+        "jp": "ここから東京までどのくらい遠いのですか。ー電車で30分ほどです。"
+      },
+      {
+        "en": "How tall is Kenji? - He's 171 centimeters.",
+        "jp": "健二の身長はどのくらいですか。ー171センチです。"
+      },
+      {
+        "en": "How high is Mt. Everest? - It's 8,848 meters.",
+        "jp": "エベレスト山の高さはどのくらいですか。ー8,848メートルです。"
+      }
+    ]
+  },
+  "24": {
+    "title": "24. だれの〜？ (Whose ~?)",
+    "sentences": [
+      {
+        "en": "Whose bag is this?",
+        "jp": "これはだれのかばんですか。"
+      },
+      {
+        "en": "Whose T-shirt is that? - It's mine.",
+        "jp": "あれはだれのTシャツですか。ー私のです。"
+      },
+      {
+        "en": "Whose bikes are these? - They're ours.",
+        "jp": "これらはだれの自転車ですか。ー私たちのです。"
+      },
+      {
+        "en": "Whose dictionary is this? - It's Miyuki's.",
+        "jp": "これはだれの辞書ですか。ー美雪のです。"
+      },
+      {
+        "en": "Whose shoes are these? - They're my father's.",
+        "jp": "これらはだれのくつですか。ー私の父のものです。"
+      }
+    ]
+  },
+  "25": {
+    "title": "25. どれ〜？ (Which ~?)",
+    "sentences": [
+      {
+        "en": "Which is your phone?",
+        "jp": "どちらがあなたの電話ですか。"
+      },
+      {
+        "en": "Which is your bike? - This one.",
+        "jp": "どちらがあなたの自転車ですか。ーこれです。"
+      },
+      {
+        "en": "Which picture do you like? - I like that one.",
+        "jp": "あなたはどの絵が好きですか。ーあの絵が好きです。"
+      },
+      {
+        "en": "Which do you want, coffee or orange juice? - I want orange juice.",
+        "jp": "コーヒーとオレンジジュース、どちらがほしいですか。ーオレンジジュースがほしいです。"
+      },
+      {
+        "en": "Which bus goes to the hospital? - This one does.",
+        "jp": "どのバスが病院に行きますか。ーこのバスが行きます。"
+      }
+    ]
+  },
+  "26": {
+    "title": "26. なぜ〜？ (Why ~?)",
+    "sentences": [
+      {
+        "en": "Why are you so angry?",
+        "jp": "あなたはなぜそんなに怒っているのですか。"
+      },
+      {
+        "en": "Why are you so busy? - Because I have a lot of homework.",
+        "jp": "あなたはなぜそんなに忙しいのですか。ー宿題がたくさんあるからです。"
+      },
+      {
+        "en": "Why do you like Daiki? - Because he's funny.",
+        "jp": "あなたはなぜ大樹が好きなのですか。ー彼はおもしろいからです。"
+      },
+      {
+        "en": "I can't go to the practice today. - Why is that?",
+        "jp": "私は今日は練習に行けません。ーそれはどうして？"
+      },
+      {
+        "en": "Why are you late? - Because the bus is late.",
+        "jp": "あなたはなぜ遅刻しているのですか。ーバスが遅れているからです。"
+      }
+    ]
+  },
+  "27": {
+    "title": "27. 〜しています (I'm ~ing ....)",
+    "sentences": [
+      {
+        "en": "I'm watching TV.",
+        "jp": "私はテレビを見ています。"
+      },
+      {
+        "en": "He's playing basketball.",
+        "jp": "彼はバスケットボールをしています。"
+      },
+      {
+        "en": "We're cooking in the kitchen.",
+        "jp": "私たちは台所で料理をしているところです。"
+      },
+      {
+        "en": "I'm writing a letter to my grandma.",
+        "jp": "私はおばあちゃんに手紙を書いているところです。"
+      },
+      {
+        "en": "They're swimming in the pool.",
+        "jp": "彼らはプールで泳いでいます。"
+      },
+      {
+        "en": "Saori is not studying.",
+        "jp": "佐織は勉強をしているのではありません。"
+      }
+    ]
+  },
+  "28": {
+    "title": "28. 〜しているのですか (Are you ~ing...?)",
+    "sentences": [
+      {
+        "en": "Are you sleeping?",
+        "jp": "あなたは眠っているのですか。"
+      },
+      {
+        "en": "Are you making dinner? - Yes, I am.",
+        "jp": "あなたは夕食を作っているのですか。ーはい、そうです。"
+      },
+      {
+        "en": "Is she studying English? - No, she isn't.",
+        "jp": "彼女は英語を勉強しているのですか。ーいいえ、ちがいます。"
+      },
+      {
+        "en": "Is Kenji watching TV in his room? - Yes, he is.",
+        "jp": "健二は部屋でテレビを見ているのですか。ーはい、そうです。"
+      },
+      {
+        "en": "Are the children playing in the park? - Yes, they are.",
+        "jp": "子どもたちは公園で遊んでいるのですか。ーはい、そうです。"
+      },
+      {
+        "en": "Is it raining outside? - Yes, it is.",
+        "jp": "外では雨が降っていますか。ーはい、降っています。"
+      }
+    ]
+  },
+  "29": {
+    "title": "29. 何を〜しているのですか (What are you ~ing ...?)",
+    "sentences": [
+      {
+        "en": "What are you doing?",
+        "jp": "あなたは何をしているのですか。"
+      },
+      {
+        "en": "What are you doing? - I'm writing a letter.",
+        "jp": "あなたは何をしているのですか。ー手紙を書いています。"
+      },
+      {
+        "en": "What is Kenji doing in the park? - He's running.",
+        "jp": "健二は公園で何をしているのですか。ー走っています。"
+      },
+      {
+        "en": "What are you making? - I'm making miso soup.",
+        "jp": "あなたは何を作っているのですか。ーみそ汁です。"
+      },
+      {
+        "en": "What are you reading? - I'm reading a comic book.",
+        "jp": "あなたは何を読んでいるのですか。ーマンガ本です。"
+      },
+      {
+        "en": "What is that woman eating? - She's eating natto.",
+        "jp": "あの女の人は何を食べているのですか。ー納豆です。"
+      }
+    ]
+  },
+  "30": {
+    "title": "30. 〜しました。 (I 過去形……)",
+    "sentences": [
+      {
+        "en": "I played basketball yesterday.",
+        "jp": "私は昨日、バスケットボールをしました。"
+      },
+      {
+        "en": "I called Maki last night.",
+        "jp": "私は昨夜、真紀に電話しました。"
+      },
+      {
+        "en": "Kenji visited his uncle yesterday.",
+        "jp": "健二は昨日、おじさんを訪ねました。"
+      },
+      {
+        "en": "He lived in Osaka three years ago.",
+        "jp": "彼は3年前、大阪に住んでいました。"
+      },
+      {
+        "en": "I went shopping with my mother last Sunday.",
+        "jp": "私はこの前の日曜日に、母と買い物に行きました。"
+      },
+      {
+        "en": "Miyuki went home and studied.",
+        "jp": "美雪は家に帰って勉強しました。"
+      }
+    ]
+  },
+  "31": {
+    "title": "31. 〜しませんでした。 (I didn't 動詞……)",
+    "sentences": [
+      {
+        "en": "I didn't watch TV last night.",
+        "jp": "昨夜、私はテレビを見ませんでした。"
+      },
+      {
+        "en": "I didn't have breakfast this morning.",
+        "jp": "今朝、私は朝食を食べませんでした。"
+      },
+      {
+        "en": "Miyuki didn't come to tennis practice yesterday.",
+        "jp": "美雪は昨日、テニスの練習に来ませんでした。"
+      },
+      {
+        "en": "We didn't know her name.",
+        "jp": "私たちは彼女の名前を知りませんでした。"
+      },
+      {
+        "en": "I didn't do my homework last night.",
+        "jp": "私は昨夜、宿題をしませんでした。"
+      },
+      {
+        "en": "Daiki didn't say anything then.",
+        "jp": "大樹はそのとき何も言いませんでした。"
+      }
+    ]
+  },
+  "32": {
+    "title": "32. 〜しましたか。 (Did you 動詞……?)",
+    "sentences": [
+      {
+        "en": "Did you study for the exam last night?",
+        "jp": "昨夜、テストの勉強をしましたか。"
+      },
+      {
+        "en": "Did you call Maki yesterday? - Yes, I did.",
+        "jp": "あなたは昨日、真紀に電話しましたか。ーはい、しました。"
+      },
+      {
+        "en": "Did you watch TV yesterday? - No, I didn't.",
+        "jp": "あなたは昨日、テレビを見ましたか。ーいいえ、見ませんでした。"
+      },
+      {
+        "en": "Did he come to soccer practice? - No, he didn't.",
+        "jp": "彼はサッカーの練習に来ましたか。ーいいえ、来ませんでした。"
+      },
+      {
+        "en": "Did you win the game? - Yes, we did.",
+        "jp": "あなたたちは試合に勝ちましたか。ーはい、勝ちました。"
+      },
+      {
+        "en": "Did your computer work? - No, it didn't.",
+        "jp": "あなたのコンピューターは動きましたか。ーいいえ、動きませんでした。"
+      },
+      {
+        "en": "What time did you go to bed last night? - I went to bed at eleven.",
+        "jp": "あなたは昨夜、何時に寝ましたか。ー11時です。"
+      }
+    ]
+  },
+  "33": {
+    "title": "33. 〜でした。 (I was ~.)",
+    "sentences": [
+      {
+        "en": "I was very tired then.",
+        "jp": "私はそのときとても疲れていました。"
+      },
+      {
+        "en": "I was busy yesterday.",
+        "jp": "私は昨日、忙しかったです。"
+      },
+      {
+        "en": "We were in Hawaii last week.",
+        "jp": "私たちは先週ハワイにいました。"
+      },
+      {
+        "en": "The exam was very difficult.",
+        "jp": "テストはとても難しかったです。"
+      },
+      {
+        "en": "Yosuke wasn't in the library.",
+        "jp": "洋介は図書室にはいませんでした。"
+      },
+      {
+        "en": "We weren't hungry then.",
+        "jp": "私たちは、そのときはおなかがすいていませんでした。"
+      }
+    ]
+  },
+  "34": {
+    "title": "34. 〜でしたか。 (Were you ~?)",
+    "sentences": [
+      {
+        "en": "Were you at home last night?",
+        "jp": "あなたは昨夜、家にいましたか。"
+      },
+      {
+        "en": "Were you busy last weekend? - Yes, I was.",
+        "jp": "あなたはこの前の週末は忙しかったのですか。ーはい、忙しかったです。"
+      },
+      {
+        "en": "Was he angry then? - No, he wasn't.",
+        "jp": "彼はそのとき怒っていましたか。ーいいえ、怒っていませんでした。"
+      },
+      {
+        "en": "Was the book interesting? - No, it wasn't.",
+        "jp": "その本はおもしろかったですか。ーいいえ、おもしろくなかったです。"
+      },
+      {
+        "en": "Was she in the classroom this morning? - Yes, she was.",
+        "jp": "彼女は今朝、教室にいましたか。ーはい、いました。"
+      },
+      {
+        "en": "Was your grandmother a nurse? - Yes, she was.",
+        "jp": "あなたのおばあさんは看護師でしたか。ーはい、そうでした。"
+      },
+      {
+        "en": "Where were you this morning? - I was at home.",
+        "jp": "あなたは今朝、どこにいたのですか。ー家にいました。"
+      }
+    ]
+  },
+  "35": {
+    "title": "35. 〜していました。 (I was ~ing ....)",
+    "sentences": [
+      {
+        "en": "I was talking with Maki then.",
+        "jp": "私はそのとき真紀と話していました。"
+      },
+      {
+        "en": "I was taking a bath then.",
+        "jp": "私はそのとき入浴中でした。"
+      },
+      {
+        "en": "We were watching TV in our room.",
+        "jp": "私たちは部屋でテレビを見ていました。"
+      },
+      {
+        "en": "It wasn't raining this morning.",
+        "jp": "今朝は雨は降っていませんでした。"
+      },
+      {
+        "en": "Were you studying then? - No, I wasn't.",
+        "jp": "あなたはそのとき勉強をしていたのですか。ーいいえ、ちがいます。"
+      },
+      {
+        "en": "Was she reading a book? - Yes, she was.",
+        "jp": "彼女は本を読んでいましたか。ーはい、読んでいました。"
+      }
+    ]
+  },
+  "36": {
+    "title": "36. 〜したい (want to 動詞)",
+    "sentences": [
+      {
+        "en": "I want to go to Hawaii.",
+        "jp": "私はハワイに行きたいです。"
+      },
+      {
+        "en": "I want to visit many countries.",
+        "jp": "私はたくさんの国を訪れたいです。"
+      },
+      {
+        "en": "He wants to meet the rock singer someday.",
+        "jp": "彼はいつかそのロック歌手に会いたいと思っています。"
+      },
+      {
+        "en": "They wanted to play soccer in their P.E. class.",
+        "jp": "彼らは体育の授業でサッカーをしたがりました。"
+      },
+      {
+        "en": "Do you want to see her? - Yes, I do.",
+        "jp": "あなたは彼女に会いたいですか。ーはい、会いたいです。"
+      },
+      {
+        "en": "What do you want to be in the future? - I want to be a teacher.",
+        "jp": "あなたは将来何になりたいですか。ー教師になりたいです。"
+      }
+    ]
+  },
+  "37": {
+    "title": "37. 〜すること (to 動詞)",
+    "sentences": [
+      {
+        "en": "I like to talk with my friends.",
+        "jp": "私は友だちと話すのが好きです。"
+      },
+      {
+        "en": "My aunt likes to travel abroad.",
+        "jp": "おばは海外旅行をするのが好きです。"
+      },
+      {
+        "en": "It suddenly started to rain.",
+        "jp": "突然雨が降りだしました。"
+      },
+      {
+        "en": "I began to use this computer last year.",
+        "jp": "私は去年このコンピューターを使い始めました。"
+      },
+      {
+        "en": "Yosuke tried to speak to her in English.",
+        "jp": "洋介は彼女に英語で話しかけようとしました。"
+      },
+      {
+        "en": "Sometimes you need to be patient.",
+        "jp": "ときにはしんぼう強くなることが必要です。"
+      },
+      {
+        "en": "Miyuki decided to go to the party.",
+        "jp": "美雪はパーティーに行こうと決めました。"
+      }
+    ]
+  },
+  "38": {
+    "title": "38. 〜すること (~ing)",
+    "sentences": [
+      {
+        "en": "Reading comic books is fun.",
+        "jp": "マンガ本を読むのは楽しいです。"
+      },
+      {
+        "en": "I like watching TV at home.",
+        "jp": "私は家でテレビを見るのが好きです。"
+      },
+      {
+        "en": "Please stop smoking.",
+        "jp": "たばこを吸うのをやめてください。"
+      },
+      {
+        "en": "We enjoyed playing the new video game.",
+        "jp": "私たちは新しいテレビゲームをして楽しかったです。"
+      },
+      {
+        "en": "I'm looking forward to seeing you.",
+        "jp": "あなたにお会いできるのを楽しみに待っています。"
+      },
+      {
+        "en": "Thank you for inviting me.",
+        "jp": "私を招待してくれてありがとう。"
+      }
+    ]
+  },
+  "39": {
+    "title": "39. 机の上にある本 (the book on the desk)",
+    "sentences": [
+      {
+        "en": "The book on the desk is mine.",
+        "jp": "机の上にある本は私のです。"
+      },
+      {
+        "en": "My uncle in Hokkaido is a doctor.",
+        "jp": "北海道にいる私のおじは医師です。"
+      },
+      {
+        "en": "The bag under the chair is mine.",
+        "jp": "いすの下にあるかばんは私のです。"
+      },
+      {
+        "en": "The things in this box are my father's.",
+        "jp": "この箱の中にある物は、私の父のものです。"
+      },
+      {
+        "en": "This is a present from a friend in Canada.",
+        "jp": "これはカナダにいる友だちからのプレゼントです。"
+      },
+      {
+        "en": "These are pictures of Mr. Smith's family in the U.S.",
+        "jp": "これらは、スミスさんのアメリカにいるご家族の写真です。"
+      },
+      {
+        "en": "Do you know that girl with long hair?",
+        "jp": "あの髪の長い女の子を知っていますか。"
+      }
+    ]
+  }
+}

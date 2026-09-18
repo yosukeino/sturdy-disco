@@ -1,4 +1,4 @@
-import jsonData from './1-20.json';
+import jsonData from './grammar-data.json';
 
 export interface GrammarSentence {
   en: string;

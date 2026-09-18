@@ -93,7 +93,7 @@ function generateUnitPresets(): PresetOption[] {
       start: i,
       end,
       badge: `Stage ${stageNum}`,
-      title: `S${i} - S${end}`,
+      title: i === end ? `S${i}` : `S${i} - S${end}`,
       subtitle,
       category: 'unit',
     });
@@ -113,8 +113,8 @@ function generateSummaryPresets(): PresetOption[] {
       start: i,
       end,
       badge: `Boss ${bossNum}`,
-      title: `S${i} - S${end} まとめ`,
-      subtitle: `${getShortTitle(i)} 〜 ${getShortTitle(end)}`,
+      title: i === end ? `S${i} まとめ` : `S${i} - S${end} まとめ`,
+      subtitle: i === end ? getShortTitle(i) : `${getShortTitle(i)} 〜 ${getShortTitle(end)}`,
       category: 'summary',
     });
     bossNum++;
@@ -122,30 +122,22 @@ function generateSummaryPresets(): PresetOption[] {
   return list;
 }
 
-// 全範囲テスト
+// 全範囲テスト（20セクションごとに自動分割＋全範囲テスト）
 function generateAllPresets(): PresetOption[] {
   const list: PresetOption[] = [];
-  if (TOTAL_SECTIONS >= 20) {
+  let groupNum = 1;
+  for (let i = 1; i <= TOTAL_SECTIONS; i += 20) {
+    const end = Math.min(i + 19, TOTAL_SECTIONS);
     list.push({
-      id: 'all-1-20',
-      start: 1,
-      end: Math.min(20, TOTAL_SECTIONS),
-      badge: '総合',
-      title: `S1 - S${Math.min(20, TOTAL_SECTIONS)}`,
-      subtitle: '前半の総まとめテスト',
+      id: `all-${i}-${end}`,
+      start: i,
+      end,
+      badge: `総合 ${groupNum}`,
+      title: `S${i} - S${end}`,
+      subtitle: `${i}〜${end}セクションの総合テスト`,
       category: 'all',
     });
-  }
-  if (TOTAL_SECTIONS > 20) {
-    list.push({
-      id: 'all-21-40',
-      start: 21,
-      end: Math.min(40, TOTAL_SECTIONS),
-      badge: '総合',
-      title: `S21 - S${Math.min(40, TOTAL_SECTIONS)}`,
-      subtitle: '中盤の総まとめテスト',
-      category: 'all',
-    });
+    groupNum++;
   }
   list.push({
     id: 'all-total',

@@ -36,7 +36,7 @@ export function Nav({ active }: { active: 'worksheet' | 'progress' }) {
 export function VersionBadge() {
   return (
     <Badge variant="secondary" className="font-mono text-[11px] font-semibold bg-slate-100 text-slate-700">
-      v9.0
+      v9.1 (39 sections)
     </Badge>
   );
 }
