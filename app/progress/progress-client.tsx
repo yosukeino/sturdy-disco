@@ -47,7 +47,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
-import { Nav, VersionBadge } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
 
 interface Student {
   id: string;
@@ -416,64 +416,73 @@ export default function ProgressPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/20 to-slate-100 text-slate-900">
       {/* Header */}
-      <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-sm sticky top-0 z-40">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-2.5 sm:px-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">📊</span>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-sm font-bold sm:text-base text-slate-900 leading-tight">
-                  テスト進捗管理
-                </h1>
-                {isTeacherMode ? (
-                  <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] font-bold gap-1 py-0.5 px-2">
-                    <ShieldCheck className="h-3 w-3" />
-                    先生モード
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="bg-slate-100 text-slate-500 border-slate-300 text-[10px] font-medium py-0.5 px-2">
-                    閲覧中
-                  </Badge>
-                )}
+      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-40">
+        <div className="mx-auto max-w-7xl px-3 py-2 sm:px-4 sm:py-2.5">
+          {/* 上段: タイトル＆先生モードボタン＆PCナビ */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xl shrink-0">📊</span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-sm font-bold sm:text-base text-slate-900 leading-tight whitespace-nowrap">
+                    テスト進捗管理
+                  </h1>
+                  {isTeacherMode ? (
+                    <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] font-bold gap-1 py-0.5 px-1.5 whitespace-nowrap shrink-0">
+                      <ShieldCheck className="h-3 w-3" />
+                      <span className="hidden sm:inline">先生モード</span>
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-slate-100 text-slate-500 border-slate-300 text-[10px] font-medium py-0.5 px-1.5 whitespace-nowrap shrink-0">
+                      閲覧中
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-500 hidden sm:block">
+                  Student Progress Tracking
+                </p>
               </div>
-              <p className="text-[10px] text-slate-500 hidden sm:block">
-                Student Progress Tracking
-              </p>
+              <VersionBadge />
             </div>
-            <VersionBadge />
+
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* 先生モード切替ボタン */}
+              {isTeacherMode ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLockTeacherMode}
+                  className="h-8 gap-1.5 text-xs text-slate-600 hover:bg-slate-100 border-slate-300 font-bold whitespace-nowrap"
+                  title="編集を終了して閲覧モードに戻す"
+                >
+                  <Lock className="h-3.5 w-3.5 text-slate-500" />
+                  <span className="hidden sm:inline">閲覧モードに戻す</span>
+                  <span className="sm:hidden">ロック</span>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setPinError(null);
+                    setPinInput('');
+                    setPinModalOpen(true);
+                  }}
+                  className="h-8 gap-1.5 text-xs font-bold border-amber-300 bg-amber-50/90 text-amber-800 hover:bg-amber-100 shadow-xs whitespace-nowrap"
+                >
+                  <KeyRound className="h-3.5 w-3.5 text-amber-600" />
+                  <span className="hidden sm:inline">先生モードに切り替える</span>
+                  <span className="sm:hidden">先生モード</span>
+                </Button>
+              )}
+
+              <Nav active="progress" />
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* 先生モード切替ボタン（シンプルに配置） */}
-            {isTeacherMode ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLockTeacherMode}
-                className="h-8 gap-1.5 text-xs text-slate-600 hover:bg-slate-100 border-slate-300 font-bold"
-                title="編集を終了して閲覧モードに戻す"
-              >
-                <Lock className="h-3.5 w-3.5 text-slate-500" />
-                <span className="hidden sm:inline">閲覧モードに戻す</span>
-                <span className="sm:hidden">ロック</span>
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setPinError(null);
-                  setPinInput('');
-                  setPinModalOpen(true);
-                }}
-                className="h-8 gap-1.5 text-xs font-bold border-amber-300 bg-amber-50/90 text-amber-800 hover:bg-amber-100 shadow-xs"
-              >
-                <KeyRound className="h-3.5 w-3.5 text-amber-600" />
-                <span>先生モードに切り替える</span>
-              </Button>
-            )}
-
-            <Nav active="progress" />
+          {/* 下段（スマホ専用）: タブ切り替えバー */}
+          <div className="mt-2 sm:hidden">
+            <MobileNavTabs active="progress" />
           </div>
         </div>
       </header>

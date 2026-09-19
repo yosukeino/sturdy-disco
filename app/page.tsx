@@ -19,7 +19,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
-import { Nav, VersionBadge } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
 
 type QuizMode = 'jp2en' | 'en2jp';
 type PresetCategory = 'unit' | 'summary' | 'all' | 'custom';
@@ -582,22 +582,30 @@ export default function Home() {
   // ==========================================
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/30 to-slate-100 text-slate-900">
-      <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-sm sticky top-0 z-40">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-3 py-2.5 sm:px-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🎮</span>
-            <div>
-              <h1 className="text-sm font-bold sm:text-base text-slate-900 leading-tight">
-                中学英語例文テストメーカー
-              </h1>
-              <p className="text-[10px] text-slate-500 hidden sm:block">
-                English Worksheet Generator
-              </p>
+      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-40">
+        <div className="mx-auto max-w-4xl px-3 py-2 sm:px-4 sm:py-2.5">
+          {/* 上段: タイトル＆バッジ＆PCナビ */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xl shrink-0">🎮</span>
+              <div className="min-w-0">
+                <h1 className="text-sm font-bold sm:text-base text-slate-900 leading-tight whitespace-nowrap">
+                  中学英語例文テスト<span className="hidden sm:inline">メーカー</span>
+                </h1>
+                <p className="text-[10px] text-slate-500 hidden sm:block">
+                  English Worksheet Generator
+                </p>
+              </div>
+              <VersionBadge />
             </div>
-            <VersionBadge />
+            <div className="flex items-center gap-2 shrink-0">
+              <Nav active="worksheet" />
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Nav active="worksheet" />
+
+          {/* 下段（スマホ専用）: タブ切り替えバー */}
+          <div className="mt-2 sm:hidden">
+            <MobileNavTabs active="worksheet" />
           </div>
         </div>
       </header>

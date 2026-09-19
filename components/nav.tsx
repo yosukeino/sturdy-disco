@@ -6,13 +6,13 @@ import { FileText, ClipboardList } from 'lucide-react';
 
 export function Nav({ active }: { active: 'worksheet' | 'progress' }) {
   return (
-    <nav className="flex items-center gap-1">
+    <nav className="hidden sm:flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/50">
       <Link
         href="/"
-        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm font-bold transition-colors ${
+        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
           active === 'worksheet'
-            ? 'bg-blue-600 text-white shadow-sm'
-            : 'text-slate-600 hover:bg-slate-100'
+            ? 'bg-blue-600 text-white shadow-xs font-black'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
         }`}
       >
         <FileText className="h-4 w-4" />
@@ -20,10 +20,39 @@ export function Nav({ active }: { active: 'worksheet' | 'progress' }) {
       </Link>
       <Link
         href="/progress"
-        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm font-bold transition-colors ${
+        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
           active === 'progress'
-            ? 'bg-blue-600 text-white shadow-sm'
-            : 'text-slate-600 hover:bg-slate-100'
+            ? 'bg-blue-600 text-white shadow-xs font-black'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+        }`}
+      >
+        <ClipboardList className="h-4 w-4" />
+        <span>進捗管理</span>
+      </Link>
+    </nav>
+  );
+}
+
+export function MobileNavTabs({ active }: { active: 'worksheet' | 'progress' }) {
+  return (
+    <nav className="sm:hidden grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-bold shadow-inner border border-slate-200/60">
+      <Link
+        href="/"
+        className={`flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all whitespace-nowrap ${
+          active === 'worksheet'
+            ? 'bg-white text-blue-700 shadow-xs font-black'
+            : 'text-slate-600 hover:text-slate-900'
+        }`}
+      >
+        <FileText className="h-4 w-4" />
+        <span>テスト作成</span>
+      </Link>
+      <Link
+        href="/progress"
+        className={`flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all whitespace-nowrap ${
+          active === 'progress'
+            ? 'bg-white text-blue-700 shadow-xs font-black'
+            : 'text-slate-600 hover:text-slate-900'
         }`}
       >
         <ClipboardList className="h-4 w-4" />
@@ -35,8 +64,8 @@ export function Nav({ active }: { active: 'worksheet' | 'progress' }) {
 
 export function VersionBadge() {
   return (
-    <Badge variant="secondary" className="font-mono text-[11px] font-semibold bg-slate-100 text-slate-700">
-      v9.3
+    <Badge variant="secondary" className="font-mono text-[11px] font-semibold bg-slate-100 text-slate-700 whitespace-nowrap shrink-0">
+      v9.4
     </Badge>
   );
 }
