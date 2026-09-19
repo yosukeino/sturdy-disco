@@ -172,6 +172,7 @@ export default function Home() {
   const [quiz, setQuiz] = useState<QuizItem[] | null>(null);
   const [patternEmojis, setPatternEmojis] = useState<string[]>([]);
   const [revealedAnswers, setRevealedAnswers] = useState<Set<number>>(new Set());
+  const [printAnswers, setPrintAnswers] = useState<boolean>(false); // 答えも印刷するか（デフォルトOFF）
 
   // プリセット選択ハンドラー
   const selectPreset = useCallback((preset: PresetOption) => {
@@ -344,6 +345,21 @@ export default function Home() {
                 <Shuffle className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">再生成</span>
               </Button>
+
+              {/* 答えページも印刷するかどうかのチェックボックス（デフォルトOFF） */}
+              <label
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2 sm:px-2.5 h-8 text-xs text-slate-700 cursor-pointer select-none transition-colors"
+                title="チェックを入れると模範解答ページも一緒に印刷されます"
+              >
+                <Checkbox
+                  checked={printAnswers}
+                  onCheckedChange={(checked) => setPrintAnswers(!!checked)}
+                  className="h-3.5 w-3.5"
+                />
+                <span className="font-bold hidden sm:inline">答えも印刷</span>
+                <span className="font-bold sm:hidden">解答印刷</span>
+              </label>
+
               <Button
                 onClick={handlePrint}
                 size="sm"
@@ -520,39 +536,41 @@ export default function Home() {
               </ol>
             </div>
 
-            <div className="worksheet-answer-page page-break-before mt-8">
-              <div className="mb-4 border-b-2 border-slate-800 pb-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900">
-                      【模範解答】中学英語例文テスト
-                    </h2>
-                    <p className="text-xs text-slate-600">
-                      出題範囲: {currentRangeLabel} — {modeLabel}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-medium text-slate-600">
-                      マーク: <span className="text-base">{patternEmojis.join('')}</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                {quiz.map((item) => (
-                  <div key={item.id} className="flex items-start gap-3 text-xs leading-normal border-b border-slate-100 pb-1.5">
-                    <span className="min-w-[1.75rem] font-bold text-slate-800">
-                      {item.id}.
-                    </span>
-                    <div className="flex-1">
-                      <p className="text-slate-500">{item.question}</p>
-                      <p className="text-slate-900 font-bold mt-0.5">{item.answer}</p>
+            {printAnswers && (
+              <div className="worksheet-answer-page page-break-before mt-8">
+                <div className="mb-4 border-b-2 border-slate-800 pb-2">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900">
+                        【模範解答】中学英語例文テスト
+                      </h2>
+                      <p className="text-xs text-slate-600">
+                        出題範囲: {currentRangeLabel} — {modeLabel}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium text-slate-600">
+                        マーク: <span className="text-base">{patternEmojis.join('')}</span>
+                      </p>
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {quiz.map((item) => (
+                    <div key={item.id} className="flex items-start gap-3 text-xs leading-normal border-b border-slate-100 pb-1.5">
+                      <span className="min-w-[1.75rem] font-bold text-slate-800">
+                        {item.id}.
+                      </span>
+                      <div className="flex-1">
+                        <p className="text-slate-500">{item.question}</p>
+                        <p className="text-slate-900 font-bold mt-0.5">{item.answer}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </main>
       </div>
