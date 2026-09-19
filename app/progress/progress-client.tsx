@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -39,7 +39,15 @@ import {
   Unlock,
   KeyRound,
   ShieldCheck,
+  Swords,
+  Trophy,
+  Sparkles,
+  LayoutGrid,
+  TableProperties,
+  ArrowRight,
+  Flame,
 } from 'lucide-react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
 import { Nav, VersionBadge } from '@/components/nav';
@@ -58,6 +66,21 @@ interface TestProgress {
   range_end: number;
   passed: boolean;
   recorded_date: string;
+}
+
+interface RpgStats {
+  level: number;
+  title: string;
+  rankEmoji: string;
+  badgeBg: string;
+  passedUnitCount: number;
+  totalUnitCount: number;
+  passedSummaryCount: number;
+  totalSummaryCount: number;
+  passedTotal: number;
+  totalTests: number;
+  progressPercent: number;
+  nextQuest: string | null;
 }
 
 function generateUnitTests(): { start: number; end: number; label: string }[] {
@@ -85,6 +108,90 @@ const allTests = [...unitTests, ...summaryTests];
 // 先生用PINコード（環境変数またはデフォルト 7777）
 const TEACHER_PIN = process.env.NEXT_PUBLIC_TEACHER_PIN || '7777';
 
+// RPGステータス算出関数
+function computeRpgStats(studentId: string, progress: TestProgress[]): RpgStats {
+  const studentProg = progress.filter((p) => p.student_id === studentId && p.passed);
+  const passedTotal = studentProg.length;
+  const totalTests = allTests.length;
+  const progressPercent = totalTests > 0 ? Math.round((passedTotal / totalTests) * 100) : 0;
+
+  const passedUnitCount = studentProg.filter((p) => p.test_type === 'unit').length;
+  const totalUnitCount = unitTests.length;
+  const passedSummaryCount = studentProg.filter((p) => p.test_type === 'summary').length;
+  const totalSummaryCount = summaryTests.length;
+
+  // レベルは合格数 + 1（全制覇は Lv.MAX）
+  const level = passedTotal >= totalTests ? 99 : passedTotal + 1;
+
+  let title = '冒険の旅立ち';
+  let rankEmoji = '🌱';
+  let badgeBg = 'bg-slate-100 text-slate-700 border-slate-300';
+
+  if (passedTotal >= totalTests) {
+    title = 'グランドマスター';
+    rankEmoji = '🌟';
+    badgeBg = 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black border-amber-300 shadow-sm';
+  } else if (passedTotal >= Math.ceil(totalTests * 0.75)) {
+    title = '伝説の勇者';
+    rankEmoji = '👑';
+    badgeBg = 'bg-amber-100 text-amber-900 border-amber-400 font-bold';
+  } else if (passedTotal >= Math.ceil(totalTests * 0.5)) {
+    title = 'スペルマスター';
+    rankEmoji = '🔮';
+    badgeBg = 'bg-purple-100 text-purple-900 border-purple-300 font-bold';
+  } else if (passedTotal >= Math.ceil(totalTests * 0.25)) {
+    title = '英語ナイト';
+    rankEmoji = '⚔️';
+    badgeBg = 'bg-blue-100 text-blue-900 border-blue-300 font-bold';
+  } else if (passedTotal >= 3) {
+    title = '文法ガーディアン';
+    rankEmoji = '🛡️';
+    badgeBg = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
+  } else if (passedTotal >= 1) {
+    title = '見習いウォリアー';
+    rankEmoji = '🗡️';
+    badgeBg = 'bg-cyan-100 text-cyan-900 border-cyan-300 font-bold';
+  }
+
+  // 次に挑戦すべきおすすめクエスト（未合格の最初のUnitテスト）
+  let nextQuest: string | null = null;
+  for (const u of unitTests) {
+    const isPassed = studentProg.some(
+      (p) => p.test_type === 'unit' && p.range_start === u.start && p.range_end === u.end
+    );
+    if (!isPassed) {
+      nextQuest = u.label;
+      break;
+    }
+  }
+  if (!nextQuest) {
+    for (const s of summaryTests) {
+      const isPassed = studentProg.some(
+        (p) => p.test_type === 'summary' && p.range_start === s.start && p.range_end === s.end
+      );
+      if (!isPassed) {
+        nextQuest = `${s.label} まとめ`;
+        break;
+      }
+    }
+  }
+
+  return {
+    level,
+    title,
+    rankEmoji,
+    badgeBg,
+    passedUnitCount,
+    totalUnitCount,
+    passedSummaryCount,
+    totalSummaryCount,
+    passedTotal,
+    totalTests,
+    progressPercent,
+    nextQuest,
+  };
+}
+
 export default function ProgressPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [progress, setProgress] = useState<TestProgress[]>([]);
@@ -92,6 +199,9 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // 表示モード: 'rpg' (冒険者カード) | 'table' (マス目一覧シート)
+  const [viewMode, setViewMode] = useState<'rpg' | 'table'>('rpg');
 
   // 先生モード（編集権限）の状態
   const [isTeacherMode, setIsTeacherMode] = useState<boolean>(false);
@@ -105,16 +215,16 @@ export default function ProgressPage() {
       const saved = localStorage.getItem('teacher_mode_unlocked');
       if (saved === 'true') {
         setIsTeacherMode(true);
+        setViewMode('table'); // 先生は編集しやすいようテーブルを初期表示
       }
-    } catch {
-      // localStorageが利用できない環境への対策
-    }
+    } catch {}
   }, []);
 
   // 先生モードのアンロック
   const handleUnlockTeacherMode = () => {
     if (pinInput.trim() === TEACHER_PIN) {
       setIsTeacherMode(true);
+      setViewMode('table'); // 編集しやすいようテーブルに切替
       setPinModalOpen(false);
       setPinInput('');
       setPinError(null);
@@ -129,6 +239,7 @@ export default function ProgressPage() {
   // 先生モードのロック（閲覧専用に戻す）
   const handleLockTeacherMode = () => {
     setIsTeacherMode(false);
+    setViewMode('rpg'); // 閲覧モード時はRPGカードを初期表示
     try {
       localStorage.removeItem('teacher_mode_unlocked');
     } catch {}
@@ -199,7 +310,6 @@ export default function ProgressPage() {
 
   const toggleProgress = useCallback(
     async (studentId: string, testType: 'unit' | 'summary', start: number, end: number) => {
-      // 閲覧モードの場合はPIN認証モーダルを開く
       if (!isTeacherMode) {
         setPinModalOpen(true);
         return;
@@ -268,8 +378,16 @@ export default function ProgressPage() {
     return progress.filter((p) => p.student_id === studentId && p.passed).length;
   };
 
+  // 全生徒のステータス情報マップ
+  const studentStatsList = useMemo(() => {
+    return students.map((s) => ({
+      student: s,
+      stats: computeRpgStats(s.id, progress),
+    }));
+  }, [students, progress]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/30 to-slate-100 text-slate-900">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/25 to-slate-100 text-slate-900">
       {/* Header */}
       <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-sm sticky top-0 z-40">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-2.5 sm:px-4">
@@ -321,10 +439,10 @@ export default function ProgressPage() {
                   setPinInput('');
                   setPinModalOpen(true);
                 }}
-                className="h-8 gap-1.5 text-xs font-bold border-amber-300 bg-amber-50/80 text-amber-800 hover:bg-amber-100 shadow-sm"
+                className="h-8 gap-1.5 text-xs font-bold border-amber-300 bg-amber-50/90 text-amber-800 hover:bg-amber-100 shadow-xs"
               >
                 <KeyRound className="h-3.5 w-3.5 text-amber-600" />
-                <span>先生モード切替</span>
+                <span>先生モードに切り替える</span>
               </Button>
             )}
 
@@ -333,17 +451,17 @@ export default function ProgressPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8">
+      <div className="mx-auto max-w-7xl px-3 py-5 sm:px-4 sm:py-7">
         {error && (
           <div className="mb-4 rounded-xl bg-red-50 p-4 text-sm text-red-700 border border-red-200 shadow-sm">
             {error}
           </div>
         )}
 
-        {/* 先生モード時: 生徒追加フォーム */}
-        {isTeacherMode ? (
-          <Card className="mb-6 border-emerald-200 bg-emerald-50/30 shadow-sm">
-            <CardHeader className="pb-3">
+        {/* 先生モード時のみ: 生徒追加フォーム */}
+        {isTeacherMode && (
+          <Card className="mb-5 border-emerald-200 bg-emerald-50/40 shadow-sm">
+            <CardHeader className="pb-2.5">
               <CardTitle className="flex items-center gap-2 text-sm text-emerald-950 font-bold">
                 <UserPlus className="h-4 w-4 text-emerald-600" />
                 生徒を追加する (先生専用)
@@ -371,35 +489,41 @@ export default function ProgressPage() {
               </div>
             </CardContent>
           </Card>
-        ) : (
-          /* 閲覧モード時: 親切なインフォメーションカード */
-          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-sm text-xs sm:text-sm text-slate-600">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-                <Lock className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="font-bold text-slate-800">
-                  現在は【閲覧専用モード】です
-                </p>
-                <p className="text-[11px] sm:text-xs text-slate-500">
-                  合格チェックの入力や生徒の追加は、先生専用の暗証番号でロック解除すると行えます。
-                </p>
-              </div>
+        )}
+
+        {/* 表示切替タブバー（RPG冒険者カード vs 詳細テーブル） */}
+        {!loading && students.length > 0 && (
+          <div className="mb-5 flex items-center justify-between gap-2 border-b border-slate-200 pb-3">
+            <div className="flex items-center gap-1 rounded-xl bg-slate-200/80 p-1 text-xs font-bold text-slate-600">
+              <button
+                type="button"
+                onClick={() => setViewMode('rpg')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
+                  viewMode === 'rpg'
+                    ? 'bg-white text-blue-600 shadow-xs'
+                    : 'hover:text-slate-900'
+                }`}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>冒険者ステータス (RPG)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
+                  viewMode === 'table'
+                    ? 'bg-white text-blue-600 shadow-xs'
+                    : 'hover:text-slate-900'
+                }`}
+              >
+                <TableProperties className="h-3.5 w-3.5" />
+                <span>全マス詳細シート</span>
+              </button>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setPinError(null);
-                setPinInput('');
-                setPinModalOpen(true);
-              }}
-              className="h-8 gap-1.5 text-xs font-bold border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 w-full sm:w-auto"
-            >
-              <KeyRound className="h-3.5 w-3.5" />
-              先生モードに切り替える
-            </Button>
+
+            <div className="text-xs font-bold text-slate-500 hidden sm:block">
+              登録生徒: <span className="text-slate-900">{students.length}名</span>
+            </div>
           </div>
         )}
 
@@ -421,8 +545,122 @@ export default function ProgressPage() {
                 : '先生モードに切り替えて生徒を追加してください。'}
             </p>
           </div>
+        ) : viewMode === 'rpg' ? (
+          /* ======================================================== */
+          /* RPG風 冒険者ステータスカード一覧（ひと目で進捗がわかる！） */
+          /* ======================================================== */
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {studentStatsList.map(({ student, stats }) => (
+                <div
+                  key={student.id}
+                  className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition-all hover:border-blue-300 hover:shadow-md"
+                >
+                  {/* 上部: 生徒名 & 称号バッジ */}
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div>
+                        <h3 className="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+                          {student.name}
+                        </h3>
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${stats.badgeBg}`}>
+                            <span>{stats.rankEmoji}</span>
+                            <span>{stats.level === 99 ? 'Lv.MAX' : `Lv.${stats.level}`}</span>
+                            <span>{stats.title}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 合格数バッジ */}
+                      <div className="text-right shrink-0">
+                        <span className="text-2xl font-black text-slate-900 leading-none">
+                          {stats.passedTotal}
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-bold block">
+                          / {stats.totalTests} 合格
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* EXPバー（進捗プログレスゲージ） */}
+                    <div className="space-y-1 my-3">
+                      <div className="flex justify-between text-[11px] font-bold text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <Flame className="h-3.5 w-3.5 text-amber-500" />
+                          EXP (達成率)
+                        </span>
+                        <span className="text-blue-600 font-black">
+                          {stats.progressPercent}%
+                        </span>
+                      </div>
+                      <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 transition-all duration-500"
+                          style={{ width: `${Math.max(stats.progressPercent, stats.passedTotal > 0 ? 5 : 0)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* バッジ・クリア状況内訳 */}
+                    <div className="grid grid-cols-2 gap-2 my-2.5 text-xs">
+                      <div className="rounded-lg bg-emerald-50/70 border border-emerald-100 p-2 text-center">
+                        <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-emerald-800">
+                          <Check className="h-3 w-3 stroke-[3]" />
+                          <span>Unit (2節)</span>
+                        </div>
+                        <p className="mt-0.5 font-extrabold text-emerald-950">
+                          {stats.passedUnitCount} <span className="text-[10px] font-normal text-emerald-600">/ {stats.totalUnitCount}</span>
+                        </p>
+                      </div>
+
+                      <div className="rounded-lg bg-amber-50/70 border border-amber-100 p-2 text-center">
+                        <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-amber-800">
+                          <Trophy className="h-3 w-3" />
+                          <span>まとめ (6節)</span>
+                        </div>
+                        <p className="mt-0.5 font-extrabold text-amber-950">
+                          {stats.passedSummaryCount} <span className="text-[10px] font-normal text-amber-600">/ {stats.totalSummaryCount}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 下部: 次の挑戦ステージ（Next Quest） */}
+                  <div className="mt-2 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                    {stats.nextQuest ? (
+                      <div className="flex items-center gap-1.5 text-slate-600">
+                        <span className="text-[10px] font-black uppercase tracking-wide bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">
+                          NEXT
+                        </span>
+                        <span className="font-bold text-slate-800 truncate">
+                          {stats.nextQuest}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-bold text-emerald-600 flex items-center gap-1">
+                        🌟 全テスト制覇！完全クリア！
+                      </span>
+                    )}
+
+                    {/* 詳細を見る / 編集リンク */}
+                    <button
+                      onClick={() => setViewMode('table')}
+                      className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-0.5 shrink-0"
+                    >
+                      <span>マス目で見る</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : (
-          <Card className="shadow-sm border-slate-200 overflow-hidden">
+          /* ======================================================== */
+          /* 詳細テーブル（全マス目シート表示）                        */
+          /* ======================================================== */
+          <Card className="shadow-xs border-slate-200 overflow-hidden">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <Table>
@@ -430,6 +668,9 @@ export default function ProgressPage() {
                     <TableRow className="bg-slate-50">
                       <TableHead className="sticky left-0 z-10 min-w-[140px] bg-slate-50 font-bold text-slate-800">
                         生徒名
+                      </TableHead>
+                      <TableHead className="min-w-[100px] text-center text-xs px-2">
+                        <div className="font-bold text-slate-800">ステータス</div>
                       </TableHead>
                       {unitTests.map((test) => (
                         <TableHead
@@ -457,117 +698,126 @@ export default function ProgressPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {students.map((student) => (
-                      <TableRow key={student.id} className="hover:bg-slate-50/80">
-                        <TableCell className="sticky left-0 z-10 bg-white font-bold text-slate-900 shadow-[1px_0_0_0_#e2e8f0]">
-                          {student.name}
-                        </TableCell>
-                        {unitTests.map((test) => {
-                          const prog = getProgress(
-                            student.id,
-                            'unit',
-                            test.start,
-                            test.end
-                          );
-                          const passed = prog?.passed ?? false;
-                          return (
-                            <TableCell key={`u-${test.start}`} className="text-center p-1.5">
-                              <button
-                                onClick={() =>
-                                  toggleProgress(
-                                    student.id,
-                                    'unit',
-                                    test.start,
-                                    test.end
-                                  )
-                                }
-                                className={`mx-auto flex h-7 w-7 items-center justify-center rounded-md border transition-all ${
-                                  passed
-                                    ? 'border-emerald-500 bg-emerald-500 text-white shadow-xs'
-                                    : isTeacherMode
-                                    ? 'border-slate-300 bg-white text-slate-300 hover:border-blue-400 hover:bg-blue-50/50'
-                                    : 'border-slate-200 bg-slate-50 text-slate-300 opacity-60'
-                                } ${!isTeacherMode ? 'cursor-pointer' : 'cursor-pointer active:scale-90'}`}
-                                title={
-                                  !isTeacherMode
-                                    ? 'クリックして先生モードで編集'
-                                    : passed
-                                    ? 'クリックで未合格に戻す'
-                                    : 'クリックで合格にする'
-                                }
-                              >
-                                {passed ? (
-                                  <Check className="h-4 w-4 stroke-[3]" />
-                                ) : (
-                                  <X className="h-3.5 w-3.5 opacity-30" />
-                                )}
-                              </button>
-                            </TableCell>
-                          );
-                        })}
-                        {summaryTests.map((test) => {
-                          const prog = getProgress(
-                            student.id,
-                            'summary',
-                            test.start,
-                            test.end
-                          );
-                          const passed = prog?.passed ?? false;
-                          return (
-                            <TableCell key={`s-${test.start}`} className="text-center p-1.5 bg-amber-50/20">
-                              <button
-                                onClick={() =>
-                                  toggleProgress(
-                                    student.id,
-                                    'summary',
-                                    test.start,
-                                    test.end
-                                  )
-                                }
-                                className={`mx-auto flex h-7 w-7 items-center justify-center rounded-md border transition-all ${
-                                  passed
-                                    ? 'border-amber-500 bg-amber-500 text-white shadow-xs'
-                                    : isTeacherMode
-                                    ? 'border-slate-300 bg-white text-slate-300 hover:border-amber-400 hover:bg-amber-50/50'
-                                    : 'border-slate-200 bg-slate-50 text-slate-300 opacity-60'
-                                } ${!isTeacherMode ? 'cursor-pointer' : 'cursor-pointer active:scale-90'}`}
-                                title={
-                                  !isTeacherMode
-                                    ? 'クリックして先生モードで編集'
-                                    : passed
-                                    ? 'クリックで未合格に戻す'
-                                    : 'クリックで合格にする'
-                                }
-                              >
-                                {passed ? (
-                                  <Check className="h-4 w-4 stroke-[3]" />
-                                ) : (
-                                  <X className="h-3.5 w-3.5 opacity-30" />
-                                )}
-                              </button>
-                            </TableCell>
-                          );
-                        })}
-                        <TableCell className="text-center font-bold text-slate-800 text-sm">
-                          <span className={passedCount(student.id) > 0 ? 'text-blue-600 font-extrabold' : ''}>
-                            {passedCount(student.id)}
-                          </span>
-                        </TableCell>
-                        {isTeacherMode && (
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50"
-                              onClick={() => setDeleteTarget(student)}
-                              title="生徒を削除"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {students.map((student) => {
+                      const stats = computeRpgStats(student.id, progress);
+                      return (
+                        <TableRow key={student.id} className="hover:bg-slate-50/80">
+                          <TableCell className="sticky left-0 z-10 bg-white font-bold text-slate-900 shadow-[1px_0_0_0_#e2e8f0]">
+                            {student.name}
                           </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
+                          <TableCell className="text-center py-2 px-1">
+                            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] ${stats.badgeBg}`}>
+                              <span>{stats.rankEmoji}</span>
+                              <span>{stats.level === 99 ? 'MAX' : `Lv.${stats.level}`}</span>
+                            </span>
+                          </TableCell>
+                          {unitTests.map((test) => {
+                            const prog = getProgress(
+                              student.id,
+                              'unit',
+                              test.start,
+                              test.end
+                            );
+                            const passed = prog?.passed ?? false;
+                            return (
+                              <TableCell key={`u-${test.start}`} className="text-center p-1.5">
+                                <button
+                                  onClick={() =>
+                                    toggleProgress(
+                                      student.id,
+                                      'unit',
+                                      test.start,
+                                      test.end
+                                    )
+                                  }
+                                  className={`mx-auto flex h-7 w-7 items-center justify-center rounded-md border transition-all ${
+                                    passed
+                                      ? 'border-emerald-500 bg-emerald-500 text-white shadow-xs'
+                                      : isTeacherMode
+                                      ? 'border-slate-300 bg-white text-slate-300 hover:border-blue-400 hover:bg-blue-50/50'
+                                      : 'border-slate-200 bg-slate-50 text-slate-300 opacity-60'
+                                  } ${!isTeacherMode ? 'cursor-pointer' : 'cursor-pointer active:scale-90'}`}
+                                  title={
+                                    !isTeacherMode
+                                      ? 'クリックして先生モードで編集'
+                                      : passed
+                                      ? 'クリックで未合格に戻す'
+                                      : 'クリックで合格にする'
+                                  }
+                                >
+                                  {passed ? (
+                                    <Check className="h-4 w-4 stroke-[3]" />
+                                  ) : (
+                                    <X className="h-3.5 w-3.5 opacity-30" />
+                                  )}
+                                </button>
+                              </TableCell>
+                            );
+                          })}
+                          {summaryTests.map((test) => {
+                            const prog = getProgress(
+                              student.id,
+                              'summary',
+                              test.start,
+                              test.end
+                            );
+                            const passed = prog?.passed ?? false;
+                            return (
+                              <TableCell key={`s-${test.start}`} className="text-center p-1.5 bg-amber-50/20">
+                                <button
+                                  onClick={() =>
+                                    toggleProgress(
+                                      student.id,
+                                      'summary',
+                                      test.start,
+                                      test.end
+                                    )
+                                  }
+                                  className={`mx-auto flex h-7 w-7 items-center justify-center rounded-md border transition-all ${
+                                    passed
+                                      ? 'border-amber-500 bg-amber-500 text-white shadow-xs'
+                                      : isTeacherMode
+                                      ? 'border-slate-300 bg-white text-slate-300 hover:border-amber-400 hover:bg-amber-50/50'
+                                      : 'border-slate-200 bg-slate-50 text-slate-300 opacity-60'
+                                  } ${!isTeacherMode ? 'cursor-pointer' : 'cursor-pointer active:scale-90'}`}
+                                  title={
+                                    !isTeacherMode
+                                      ? 'クリックして先生モードで編集'
+                                      : passed
+                                      ? 'クリックで未合格に戻す'
+                                      : 'クリックで合格にする'
+                                  }
+                                >
+                                  {passed ? (
+                                    <Check className="h-4 w-4 stroke-[3]" />
+                                  ) : (
+                                    <X className="h-3.5 w-3.5 opacity-30" />
+                                  )}
+                                </button>
+                              </TableCell>
+                            );
+                          })}
+                          <TableCell className="text-center font-bold text-slate-800 text-sm">
+                            <span className={passedCount(student.id) > 0 ? 'text-blue-600 font-extrabold' : ''}>
+                              {passedCount(student.id)}
+                            </span>
+                          </TableCell>
+                          {isTeacherMode && (
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                onClick={() => setDeleteTarget(student)}
+                                title="生徒を削除"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
