@@ -39,15 +39,12 @@ import {
   Unlock,
   KeyRound,
   ShieldCheck,
-  Swords,
   Trophy,
   Sparkles,
-  LayoutGrid,
   TableProperties,
   ArrowRight,
-  Flame,
+  TrendingUp,
 } from 'lucide-react';
-import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
 import { Nav, VersionBadge } from '@/components/nav';
@@ -68,11 +65,13 @@ interface TestProgress {
   recorded_date: string;
 }
 
-interface RpgStats {
+interface LeagueStats {
   level: number;
-  title: string;
+  rankName: string;
+  rankNameEn: string;
   rankEmoji: string;
-  badgeBg: string;
+  badgeStyle: string;
+  barGradient: string;
   passedUnitCount: number;
   totalUnitCount: number;
   passedSummaryCount: number;
@@ -108,8 +107,8 @@ const allTests = [...unitTests, ...summaryTests];
 // 先生用PINコード（環境変数またはデフォルト 7777）
 const TEACHER_PIN = process.env.NEXT_PUBLIC_TEACHER_PIN || '7777';
 
-// RPGステータス算出関数
-function computeRpgStats(studentId: string, progress: TestProgress[]): RpgStats {
+// ジュエリー＆リーグ（Duolingo風）ステータス算出関数
+function computeLeagueStats(studentId: string, progress: TestProgress[]): LeagueStats {
   const studentProg = progress.filter((p) => p.student_id === studentId && p.passed);
   const passedTotal = studentProg.length;
   const totalTests = allTests.length;
@@ -120,40 +119,53 @@ function computeRpgStats(studentId: string, progress: TestProgress[]): RpgStats 
   const passedSummaryCount = studentProg.filter((p) => p.test_type === 'summary').length;
   const totalSummaryCount = summaryTests.length;
 
-  // レベルは合格数 + 1（全制覇は Lv.MAX）
   const level = passedTotal >= totalTests ? 99 : passedTotal + 1;
 
-  let title = '冒険の旅立ち';
+  let rankName = 'ビギナー';
+  let rankNameEn = 'Beginner';
   let rankEmoji = '🌱';
-  let badgeBg = 'bg-slate-100 text-slate-700 border-slate-300';
+  let badgeStyle = 'bg-slate-100 text-slate-700 border-slate-300 font-bold';
+  let barGradient = 'from-slate-400 to-slate-500';
 
   if (passedTotal >= totalTests) {
-    title = 'グランドマスター';
-    rankEmoji = '🌟';
-    badgeBg = 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black border-amber-300 shadow-sm';
-  } else if (passedTotal >= Math.ceil(totalTests * 0.75)) {
-    title = '伝説の勇者';
+    rankName = 'マスター';
+    rankNameEn = 'Master';
+    rankEmoji = '🌈';
+    badgeStyle = 'bg-gradient-to-r from-amber-400 via-pink-400 to-indigo-500 text-white font-black border-amber-300 shadow-sm';
+    barGradient = 'from-amber-400 via-pink-500 to-indigo-500';
+  } else if (passedTotal >= Math.ceil(totalTests * 0.85)) {
+    rankName = 'ダイヤモンド';
+    rankNameEn = 'Diamond';
     rankEmoji = '👑';
-    badgeBg = 'bg-amber-100 text-amber-900 border-amber-400 font-bold';
-  } else if (passedTotal >= Math.ceil(totalTests * 0.5)) {
-    title = 'スペルマスター';
-    rankEmoji = '🔮';
-    badgeBg = 'bg-purple-100 text-purple-900 border-purple-300 font-bold';
+    badgeStyle = 'bg-indigo-100 text-indigo-900 border-indigo-400 font-bold';
+    barGradient = 'from-blue-500 via-indigo-500 to-purple-500';
+  } else if (passedTotal >= Math.ceil(totalTests * 0.65)) {
+    rankName = 'プラチナ';
+    rankNameEn = 'Platinum';
+    rankEmoji = '💎';
+    badgeStyle = 'bg-cyan-100 text-cyan-900 border-cyan-400 font-bold';
+    barGradient = 'from-teal-400 via-cyan-500 to-blue-500';
+  } else if (passedTotal >= Math.ceil(totalTests * 0.45)) {
+    rankName = 'ゴールド';
+    rankNameEn = 'Gold';
+    rankEmoji = '🥇';
+    badgeStyle = 'bg-amber-100 text-amber-950 border-amber-400 font-bold';
+    barGradient = 'from-amber-400 via-yellow-500 to-amber-600';
   } else if (passedTotal >= Math.ceil(totalTests * 0.25)) {
-    title = '英語ナイト';
-    rankEmoji = '⚔️';
-    badgeBg = 'bg-blue-100 text-blue-900 border-blue-300 font-bold';
-  } else if (passedTotal >= 3) {
-    title = '文法ガーディアン';
-    rankEmoji = '🛡️';
-    badgeBg = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
-  } else if (passedTotal >= 1) {
-    title = '見習いウォリアー';
-    rankEmoji = '🗡️';
-    badgeBg = 'bg-cyan-100 text-cyan-900 border-cyan-300 font-bold';
+    rankName = 'シルバー';
+    rankNameEn = 'Silver';
+    rankEmoji = '🥈';
+    badgeStyle = 'bg-slate-200 text-slate-800 border-slate-400 font-bold';
+    barGradient = 'from-slate-400 via-slate-500 to-zinc-600';
+  } else if (passedTotal >= 2) {
+    rankName = 'ブロンズ';
+    rankNameEn = 'Bronze';
+    rankEmoji = '🥉';
+    badgeStyle = 'bg-amber-50 text-amber-900 border-amber-300 font-bold';
+    barGradient = 'from-orange-400 to-amber-600';
   }
 
-  // 次に挑戦すべきおすすめクエスト（未合格の最初のUnitテスト）
+  // 次に挑戦すべきおすすめクエスト
   let nextQuest: string | null = null;
   for (const u of unitTests) {
     const isPassed = studentProg.some(
@@ -178,9 +190,11 @@ function computeRpgStats(studentId: string, progress: TestProgress[]): RpgStats 
 
   return {
     level,
-    title,
+    rankName,
+    rankNameEn,
     rankEmoji,
-    badgeBg,
+    badgeStyle,
+    barGradient,
     passedUnitCount,
     totalUnitCount,
     passedSummaryCount,
@@ -200,8 +214,11 @@ export default function ProgressPage() {
   const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 表示モード: 'rpg' (冒険者カード) | 'table' (マス目一覧シート)
+  // 表示モード: 'rpg' (ステータスカード) | 'table' (全マスシート)
   const [viewMode, setViewMode] = useState<'rpg' | 'table'>('rpg');
+
+  // ボヨヨンバーアニメーション発火ステート
+  const [barsAnimated, setBarsAnimated] = useState<boolean>(false);
 
   // 先生モード（編集権限）の状態
   const [isTeacherMode, setIsTeacherMode] = useState<boolean>(false);
@@ -220,11 +237,22 @@ export default function ProgressPage() {
     } catch {}
   }, []);
 
+  // ページ表示時やタブ切替時にボヨヨンアニメーションを発火
+  useEffect(() => {
+    if (!loading && viewMode === 'rpg') {
+      setBarsAnimated(false);
+      const timer = setTimeout(() => {
+        setBarsAnimated(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, viewMode]);
+
   // 先生モードのアンロック
   const handleUnlockTeacherMode = () => {
     if (pinInput.trim() === TEACHER_PIN) {
       setIsTeacherMode(true);
-      setViewMode('table'); // 編集しやすいようテーブルに切替
+      setViewMode('table');
       setPinModalOpen(false);
       setPinInput('');
       setPinError(null);
@@ -239,7 +267,7 @@ export default function ProgressPage() {
   // 先生モードのロック（閲覧専用に戻す）
   const handleLockTeacherMode = () => {
     setIsTeacherMode(false);
-    setViewMode('rpg'); // 閲覧モード時はRPGカードを初期表示
+    setViewMode('rpg');
     try {
       localStorage.removeItem('teacher_mode_unlocked');
     } catch {}
@@ -378,16 +406,15 @@ export default function ProgressPage() {
     return progress.filter((p) => p.student_id === studentId && p.passed).length;
   };
 
-  // 全生徒のステータス情報マップ
   const studentStatsList = useMemo(() => {
     return students.map((s) => ({
       student: s,
-      stats: computeRpgStats(s.id, progress),
+      stats: computeLeagueStats(s.id, progress),
     }));
   }, [students, progress]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/25 to-slate-100 text-slate-900">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/20 to-slate-100 text-slate-900">
       {/* Header */}
       <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-sm sticky top-0 z-40">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-2.5 sm:px-4">
@@ -401,11 +428,11 @@ export default function ProgressPage() {
                 {isTeacherMode ? (
                   <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] font-bold gap-1 py-0.5 px-2">
                     <ShieldCheck className="h-3 w-3" />
-                    先生モード (編集中)
+                    先生モード
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="bg-slate-100 text-slate-500 border-slate-300 text-[10px] font-medium py-0.5 px-2">
-                    閲覧専用
+                    閲覧中
                   </Badge>
                 )}
               </div>
@@ -417,7 +444,7 @@ export default function ProgressPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* 先生モード切替ボタン */}
+            {/* 先生モード切替ボタン（シンプルに配置） */}
             {isTeacherMode ? (
               <Button
                 variant="outline"
@@ -491,7 +518,7 @@ export default function ProgressPage() {
           </Card>
         )}
 
-        {/* 表示切替タブバー（RPG冒険者カード vs 詳細テーブル） */}
+        {/* 表示切替タブバー（ジュエリー＆リーグ vs 詳細テーブル） */}
         {!loading && students.length > 0 && (
           <div className="mb-5 flex items-center justify-between gap-2 border-b border-slate-200 pb-3">
             <div className="flex items-center gap-1 rounded-xl bg-slate-200/80 p-1 text-xs font-bold text-slate-600">
@@ -505,7 +532,7 @@ export default function ProgressPage() {
                 }`}
               >
                 <Sparkles className="h-3.5 w-3.5" />
-                <span>冒険者ステータス (RPG)</span>
+                <span>ステータスカード</span>
               </button>
               <button
                 type="button"
@@ -547,7 +574,7 @@ export default function ProgressPage() {
           </div>
         ) : viewMode === 'rpg' ? (
           /* ======================================================== */
-          /* RPG風 冒険者ステータスカード一覧（ひと目で進捗がわかる！） */
+          /* ジュエリー＆リーグ風 ステータスカード一覧                   */
           /* ======================================================== */
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -556,7 +583,7 @@ export default function ProgressPage() {
                   key={student.id}
                   className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition-all hover:border-blue-300 hover:shadow-md"
                 >
-                  {/* 上部: 生徒名 & 称号バッジ */}
+                  {/* 上部: 生徒名 & ジュエリーリーグバッジ */}
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
@@ -564,10 +591,10 @@ export default function ProgressPage() {
                           {student.name}
                         </h3>
                         <div className="mt-1 flex items-center gap-1.5">
-                          <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${stats.badgeBg}`}>
+                          <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs ${stats.badgeStyle}`}>
                             <span>{stats.rankEmoji}</span>
-                            <span>{stats.level === 99 ? 'Lv.MAX' : `Lv.${stats.level}`}</span>
-                            <span>{stats.title}</span>
+                            <span>{stats.rankName}</span>
+                            <span className="text-[10px] font-normal opacity-80">({stats.rankNameEn})</span>
                           </span>
                         </div>
                       </div>
@@ -583,28 +610,33 @@ export default function ProgressPage() {
                       </div>
                     </div>
 
-                    {/* EXPバー（進捗プログレスゲージ） */}
-                    <div className="space-y-1 my-3">
+                    {/* EXPバー（ボヨヨンと0から弾むバウンスアニメーションゲージ） */}
+                    <div className="space-y-1.5 my-3.5">
                       <div className="flex justify-between text-[11px] font-bold text-slate-500">
                         <span className="flex items-center gap-1">
-                          <Flame className="h-3.5 w-3.5 text-amber-500" />
-                          EXP (達成率)
+                          <TrendingUp className="h-3.5 w-3.5 text-blue-500" />
+                          達成率
                         </span>
-                        <span className="text-blue-600 font-black">
+                        <span className="text-blue-600 font-black text-xs">
                           {stats.progressPercent}%
                         </span>
                       </div>
-                      <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
+                      <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200 shadow-inner">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 transition-all duration-500"
-                          style={{ width: `${Math.max(stats.progressPercent, stats.passedTotal > 0 ? 5 : 0)}%` }}
+                          className={`h-full rounded-full bg-gradient-to-r ${stats.barGradient} shadow-xs`}
+                          style={{
+                            width: barsAnimated
+                              ? `${Math.max(stats.progressPercent, stats.passedTotal > 0 ? 6 : 0)}%`
+                              : '0%',
+                            transition: 'width 0.65s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                          }}
                         />
                       </div>
                     </div>
 
                     {/* バッジ・クリア状況内訳 */}
                     <div className="grid grid-cols-2 gap-2 my-2.5 text-xs">
-                      <div className="rounded-lg bg-emerald-50/70 border border-emerald-100 p-2 text-center">
+                      <div className="rounded-xl bg-emerald-50/70 border border-emerald-100 p-2 text-center">
                         <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-emerald-800">
                           <Check className="h-3 w-3 stroke-[3]" />
                           <span>Unit (2節)</span>
@@ -614,7 +646,7 @@ export default function ProgressPage() {
                         </p>
                       </div>
 
-                      <div className="rounded-lg bg-amber-50/70 border border-amber-100 p-2 text-center">
+                      <div className="rounded-xl bg-amber-50/70 border border-amber-100 p-2 text-center">
                         <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-amber-800">
                           <Trophy className="h-3 w-3" />
                           <span>まとめ (6節)</span>
@@ -626,7 +658,7 @@ export default function ProgressPage() {
                     </div>
                   </div>
 
-                  {/* 下部: 次の挑戦ステージ（Next Quest） */}
+                  {/* 下部: 次の挑戦ステージ（NEXT目標） */}
                   <div className="mt-2 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
                     {stats.nextQuest ? (
                       <div className="flex items-center gap-1.5 text-slate-600">
@@ -643,7 +675,7 @@ export default function ProgressPage() {
                       </span>
                     )}
 
-                    {/* 詳細を見る / 編集リンク */}
+                    {/* 詳細を見るリンク */}
                     <button
                       onClick={() => setViewMode('table')}
                       className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-0.5 shrink-0"
@@ -670,7 +702,7 @@ export default function ProgressPage() {
                         生徒名
                       </TableHead>
                       <TableHead className="min-w-[100px] text-center text-xs px-2">
-                        <div className="font-bold text-slate-800">ステータス</div>
+                        <div className="font-bold text-slate-800">リーグランク</div>
                       </TableHead>
                       {unitTests.map((test) => (
                         <TableHead
@@ -699,16 +731,16 @@ export default function ProgressPage() {
                   </TableHeader>
                   <TableBody>
                     {students.map((student) => {
-                      const stats = computeRpgStats(student.id, progress);
+                      const stats = computeLeagueStats(student.id, progress);
                       return (
                         <TableRow key={student.id} className="hover:bg-slate-50/80">
                           <TableCell className="sticky left-0 z-10 bg-white font-bold text-slate-900 shadow-[1px_0_0_0_#e2e8f0]">
                             {student.name}
                           </TableCell>
                           <TableCell className="text-center py-2 px-1">
-                            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] ${stats.badgeBg}`}>
+                            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] ${stats.badgeStyle}`}>
                               <span>{stats.rankEmoji}</span>
-                              <span>{stats.level === 99 ? 'MAX' : `Lv.${stats.level}`}</span>
+                              <span>{stats.rankName}</span>
                             </span>
                           </TableCell>
                           {unitTests.map((test) => {
