@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -35,6 +35,10 @@ import {
   X,
   Loader2,
   GraduationCap,
+  Lock,
+  Unlock,
+  KeyRound,
+  ShieldCheck,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
@@ -54,10 +58,6 @@ interface TestProgress {
   range_end: number;
   passed: boolean;
   recorded_date: string;
-}
-
-interface ProgressWithMeta extends TestProgress {
-  student_name: string;
 }
 
 function generateUnitTests(): { start: number; end: number; label: string }[] {
@@ -82,6 +82,9 @@ const unitTests = generateUnitTests();
 const summaryTests = generateSummaryTests();
 const allTests = [...unitTests, ...summaryTests];
 
+// 先生用PINコード（環境変数またはデフォルト 7777）
+const TEACHER_PIN = process.env.NEXT_PUBLIC_TEACHER_PIN || '7777';
+
 export default function ProgressPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [progress, setProgress] = useState<TestProgress[]>([]);
@@ -89,6 +92,47 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // 先生モード（編集権限）の状態
+  const [isTeacherMode, setIsTeacherMode] = useState<boolean>(false);
+  const [pinModalOpen, setPinModalOpen] = useState<boolean>(false);
+  const [pinInput, setPinInput] = useState<string>('');
+  const [pinError, setPinError] = useState<string | null>(null);
+
+  // マウント時に端末の先生モード保存状態を復元
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('teacher_mode_unlocked');
+      if (saved === 'true') {
+        setIsTeacherMode(true);
+      }
+    } catch {
+      // localStorageが利用できない環境への対策
+    }
+  }, []);
+
+  // 先生モードのアンロック
+  const handleUnlockTeacherMode = () => {
+    if (pinInput.trim() === TEACHER_PIN) {
+      setIsTeacherMode(true);
+      setPinModalOpen(false);
+      setPinInput('');
+      setPinError(null);
+      try {
+        localStorage.setItem('teacher_mode_unlocked', 'true');
+      } catch {}
+    } else {
+      setPinError('暗証番号が正しくありません');
+    }
+  };
+
+  // 先生モードのロック（閲覧専用に戻す）
+  const handleLockTeacherMode = () => {
+    setIsTeacherMode(false);
+    try {
+      localStorage.removeItem('teacher_mode_unlocked');
+    } catch {}
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -114,6 +158,10 @@ export default function ProgressPage() {
   }, [fetchData]);
 
   const addStudent = useCallback(async () => {
+    if (!isTeacherMode) {
+      setPinModalOpen(true);
+      return;
+    }
     const name = newName.trim();
     if (!name) return;
     setError(null);
@@ -129,9 +177,10 @@ export default function ProgressPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : '生徒の追加に失敗しました');
     }
-  }, [newName]);
+  }, [newName, isTeacherMode]);
 
   const deleteStudent = useCallback(async () => {
+    if (!isTeacherMode) return;
     if (!deleteTarget) return;
     setError(null);
     try {
@@ -146,10 +195,16 @@ export default function ProgressPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : '生徒の削除に失敗しました');
     }
-  }, [deleteTarget]);
+  }, [deleteTarget, isTeacherMode]);
 
   const toggleProgress = useCallback(
     async (studentId: string, testType: 'unit' | 'summary', start: number, end: number) => {
+      // 閲覧モードの場合はPIN認証モーダルを開く
+      if (!isTeacherMode) {
+        setPinModalOpen(true);
+        return;
+      }
+
       const existing = progress.find(
         (p) =>
           p.student_id === studentId &&
@@ -196,7 +251,7 @@ export default function ProgressPage() {
         }
       }
     },
-    [progress]
+    [progress, isTeacherMode]
   );
 
   const getProgress = (studentId: string, testType: string, start: number, end: number) => {
@@ -221,58 +276,132 @@ export default function ProgressPage() {
           <div className="flex items-center gap-2">
             <span className="text-xl">📊</span>
             <div>
-              <h1 className="text-sm font-bold sm:text-base text-slate-900 leading-tight">
-                テスト進捗管理
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm font-bold sm:text-base text-slate-900 leading-tight">
+                  テスト進捗管理
+                </h1>
+                {isTeacherMode ? (
+                  <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] font-bold gap-1 py-0.5 px-2">
+                    <ShieldCheck className="h-3 w-3" />
+                    先生モード (編集中)
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-slate-100 text-slate-500 border-slate-300 text-[10px] font-medium py-0.5 px-2">
+                    閲覧専用
+                  </Badge>
+                )}
+              </div>
               <p className="text-[10px] text-slate-500 hidden sm:block">
                 Student Progress Tracking
               </p>
             </div>
             <VersionBadge />
           </div>
+
           <div className="flex items-center gap-2">
+            {/* 先生モード切替ボタン */}
+            {isTeacherMode ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLockTeacherMode}
+                className="h-8 gap-1.5 text-xs text-slate-600 hover:bg-slate-100 border-slate-300 font-bold"
+                title="編集を終了して閲覧モードに戻す"
+              >
+                <Lock className="h-3.5 w-3.5 text-slate-500" />
+                <span className="hidden sm:inline">閲覧モードに戻す</span>
+                <span className="sm:hidden">ロック</span>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setPinError(null);
+                  setPinInput('');
+                  setPinModalOpen(true);
+                }}
+                className="h-8 gap-1.5 text-xs font-bold border-amber-300 bg-amber-50/80 text-amber-800 hover:bg-amber-100 shadow-sm"
+              >
+                <KeyRound className="h-3.5 w-3.5 text-amber-600" />
+                <span>先生モード切替</span>
+              </Button>
+            )}
+
             <Nav active="progress" />
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8">
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mb-4 rounded-xl bg-red-50 p-4 text-sm text-red-700 border border-red-200 shadow-sm">
             {error}
           </div>
         )}
 
-        {/* Add Student */}
-        <Card className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <UserPlus className="h-4 w-4 text-slate-500" />
-              生徒を追加
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <Label className="mb-1 block text-xs text-slate-500">
-                  生徒名
-                </Label>
-                <Input
-                  type="text"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addStudent()}
-                  placeholder="例: 山田太郎"
-                  className="h-9"
-                />
+        {/* 先生モード時: 生徒追加フォーム */}
+        {isTeacherMode ? (
+          <Card className="mb-6 border-emerald-200 bg-emerald-50/30 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm text-emerald-950 font-bold">
+                <UserPlus className="h-4 w-4 text-emerald-600" />
+                生徒を追加する (先生専用)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <Label className="mb-1 block text-xs text-slate-600 font-medium">
+                    生徒名
+                  </Label>
+                  <Input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addStudent()}
+                    placeholder="例: 山田太郎"
+                    className="h-9 bg-white"
+                  />
+                </div>
+                <Button onClick={addStudent} size="sm" className="h-9 font-bold bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <UserPlus className="mr-1.5 h-4 w-4" />
+                  追加
+                </Button>
               </div>
-              <Button onClick={addStudent} size="sm" className="h-9">
-                <UserPlus className="mr-1.5 h-4 w-4" />
-                追加
-              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          /* 閲覧モード時: 親切なインフォメーションカード */
+          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-sm text-xs sm:text-sm text-slate-600">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                <Lock className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="font-bold text-slate-800">
+                  現在は【閲覧専用モード】です
+                </p>
+                <p className="text-[11px] sm:text-xs text-slate-500">
+                  合格チェックの入力や生徒の追加は、先生専用の暗証番号でロック解除すると行えます。
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setPinError(null);
+                setPinInput('');
+                setPinModalOpen(true);
+              }}
+              className="h-8 gap-1.5 text-xs font-bold border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 w-full sm:w-auto"
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              先生モードに切り替える
+            </Button>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex items-center justify-center py-24">
@@ -283,52 +412,54 @@ export default function ProgressPage() {
             <div className="mb-4 rounded-full bg-blue-100 p-4">
               <GraduationCap className="h-8 w-8 text-blue-600" />
             </div>
-            <h2 className="mb-2 text-lg font-semibold text-slate-700">
-              生徒を追加してください
+            <h2 className="mb-2 text-lg font-bold text-slate-700">
+              生徒が登録されていません
             </h2>
             <p className="max-w-md text-sm text-slate-500">
-              上のフォームから生徒を追加すると、ここで進捗管理ができます。
+              {isTeacherMode
+                ? '上のフォームから生徒を追加すると、合格進捗を管理できます。'
+                : '先生モードに切り替えて生徒を追加してください。'}
             </p>
           </div>
         ) : (
-          <Card>
+          <Card className="shadow-sm border-slate-200 overflow-hidden">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-slate-50">
-                      <TableHead className="sticky left-0 z-10 min-w-[140px] bg-slate-50">
+                      <TableHead className="sticky left-0 z-10 min-w-[140px] bg-slate-50 font-bold text-slate-800">
                         生徒名
                       </TableHead>
                       {unitTests.map((test) => (
                         <TableHead
                           key={`unit-${test.start}`}
-                          className="min-w-[70px] text-center text-xs"
+                          className="min-w-[64px] text-center text-xs px-1"
                         >
-                          <div className="font-semibold">{test.label}</div>
-                          <div className="text-slate-400">Unit</div>
+                          <div className="font-bold text-slate-800">{test.label}</div>
+                          <div className="text-[10px] text-slate-400">Unit</div>
                         </TableHead>
                       ))}
                       {summaryTests.map((test) => (
                         <TableHead
                           key={`summary-${test.start}`}
-                          className="min-w-[70px] text-center text-xs"
+                          className="min-w-[70px] text-center text-xs px-1 bg-amber-50/50"
                         >
-                          <div className="font-semibold">{test.label}</div>
-                          <div className="text-slate-400">まとめ</div>
+                          <div className="font-bold text-amber-900">{test.label}</div>
+                          <div className="text-[10px] text-amber-600 font-medium">まとめ</div>
                         </TableHead>
                       ))}
-                      <TableHead className="min-w-[70px] text-center text-xs">
-                        <div className="font-semibold">合格数</div>
-                        <div className="text-slate-400">/ {allTests.length}</div>
+                      <TableHead className="min-w-[70px] text-center text-xs font-bold text-slate-800">
+                        <div>合格数</div>
+                        <div className="text-[10px] text-slate-400 font-normal">/ {allTests.length}</div>
                       </TableHead>
-                      <TableHead className="w-10" />
+                      {isTeacherMode && <TableHead className="w-10" />}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {students.map((student) => (
-                      <TableRow key={student.id} className="hover:bg-slate-50">
-                        <TableCell className="sticky left-0 z-10 bg-white font-medium">
+                      <TableRow key={student.id} className="hover:bg-slate-50/80">
+                        <TableCell className="sticky left-0 z-10 bg-white font-bold text-slate-900 shadow-[1px_0_0_0_#e2e8f0]">
                           {student.name}
                         </TableCell>
                         {unitTests.map((test) => {
@@ -340,7 +471,7 @@ export default function ProgressPage() {
                           );
                           const passed = prog?.passed ?? false;
                           return (
-                            <TableCell key={`u-${test.start}`} className="text-center">
+                            <TableCell key={`u-${test.start}`} className="text-center p-1.5">
                               <button
                                 onClick={() =>
                                   toggleProgress(
@@ -350,17 +481,25 @@ export default function ProgressPage() {
                                     test.end
                                   )
                                 }
-                                className={`mx-auto flex h-7 w-7 items-center justify-center rounded-md border transition-colors ${
+                                className={`mx-auto flex h-7 w-7 items-center justify-center rounded-md border transition-all ${
                                   passed
-                                    ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
-                                    : 'border-slate-300 bg-white text-slate-300 hover:border-slate-400 hover:bg-slate-50'
-                                }`}
-                                title={passed ? '合格' : '未合格'}
+                                    ? 'border-emerald-500 bg-emerald-500 text-white shadow-xs'
+                                    : isTeacherMode
+                                    ? 'border-slate-300 bg-white text-slate-300 hover:border-blue-400 hover:bg-blue-50/50'
+                                    : 'border-slate-200 bg-slate-50 text-slate-300 opacity-60'
+                                } ${!isTeacherMode ? 'cursor-pointer' : 'cursor-pointer active:scale-90'}`}
+                                title={
+                                  !isTeacherMode
+                                    ? 'クリックして先生モードで編集'
+                                    : passed
+                                    ? 'クリックで未合格に戻す'
+                                    : 'クリックで合格にする'
+                                }
                               >
                                 {passed ? (
-                                  <Check className="h-4 w-4" />
+                                  <Check className="h-4 w-4 stroke-[3]" />
                                 ) : (
-                                  <X className="h-4 w-4 opacity-40" />
+                                  <X className="h-3.5 w-3.5 opacity-30" />
                                 )}
                               </button>
                             </TableCell>
@@ -375,7 +514,7 @@ export default function ProgressPage() {
                           );
                           const passed = prog?.passed ?? false;
                           return (
-                            <TableCell key={`s-${test.start}`} className="text-center">
+                            <TableCell key={`s-${test.start}`} className="text-center p-1.5 bg-amber-50/20">
                               <button
                                 onClick={() =>
                                   toggleProgress(
@@ -385,37 +524,48 @@ export default function ProgressPage() {
                                     test.end
                                   )
                                 }
-                                className={`mx-auto flex h-7 w-7 items-center justify-center rounded-md border transition-colors ${
+                                className={`mx-auto flex h-7 w-7 items-center justify-center rounded-md border transition-all ${
                                   passed
-                                    ? 'border-blue-500 bg-blue-500 text-white hover:bg-blue-600'
-                                    : 'border-slate-300 bg-white text-slate-300 hover:border-slate-400 hover:bg-slate-50'
-                                }`}
-                                title={passed ? '合格' : '未合格'}
+                                    ? 'border-amber-500 bg-amber-500 text-white shadow-xs'
+                                    : isTeacherMode
+                                    ? 'border-slate-300 bg-white text-slate-300 hover:border-amber-400 hover:bg-amber-50/50'
+                                    : 'border-slate-200 bg-slate-50 text-slate-300 opacity-60'
+                                } ${!isTeacherMode ? 'cursor-pointer' : 'cursor-pointer active:scale-90'}`}
+                                title={
+                                  !isTeacherMode
+                                    ? 'クリックして先生モードで編集'
+                                    : passed
+                                    ? 'クリックで未合格に戻す'
+                                    : 'クリックで合格にする'
+                                }
                               >
                                 {passed ? (
-                                  <Check className="h-4 w-4" />
+                                  <Check className="h-4 w-4 stroke-[3]" />
                                 ) : (
-                                  <X className="h-4 w-4 opacity-40" />
+                                  <X className="h-3.5 w-3.5 opacity-30" />
                                 )}
                               </button>
                             </TableCell>
                           );
                         })}
-                        <TableCell className="text-center">
-                          <span className="text-sm font-semibold text-slate-700">
+                        <TableCell className="text-center font-bold text-slate-800 text-sm">
+                          <span className={passedCount(student.id) > 0 ? 'text-blue-600 font-extrabold' : ''}>
                             {passedCount(student.id)}
                           </span>
                         </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-slate-400 hover:text-red-500"
-                            onClick={() => setDeleteTarget(student)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                        {isTeacherMode && (
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => setDeleteTarget(student)}
+                              title="生徒を削除"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -425,51 +575,118 @@ export default function ProgressPage() {
           </Card>
         )}
 
-        {/* Legend */}
+        {/* 凡例 */}
         {!loading && students.length > 0 && (
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-slate-500">
-            <div className="flex items-center gap-1.5">
-              <span className="flex h-5 w-5 items-center justify-center rounded-md border border-green-500 bg-green-500 text-white">
-                <Check className="h-3 w-3" />
-              </span>
-              <span>Unit Test 合格</span>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded border border-emerald-500 bg-emerald-500 text-white">
+                  <Check className="h-3 w-3 stroke-[3]" />
+                </span>
+                <span>Unit Test 合格</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded border border-amber-500 bg-amber-500 text-white">
+                  <Check className="h-3 w-3 stroke-[3]" />
+                </span>
+                <span>まとめテスト 合格</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded border border-slate-300 bg-white text-slate-300">
+                  <X className="h-3 w-3 opacity-40" />
+                </span>
+                <span>未合格 / 未受験</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="flex h-5 w-5 items-center justify-center rounded-md border border-blue-500 bg-blue-500 text-white">
-                <Check className="h-3 w-3" />
+
+            {!isTeacherMode && (
+              <span className="text-[11px] text-slate-400">
+                ※ 生徒や保護者の方は閲覧専用です。
               </span>
-              <span>まとめテスト 合格</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="flex h-5 w-5 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-300">
-                <X className="h-3 w-3 opacity-40" />
-              </span>
-              <span>未合格・未受験</span>
-            </div>
+            )}
           </div>
         )}
-      </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>生徒を削除しますか？</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-slate-600">
-            「{deleteTarget?.name}」の進捗記録もすべて削除されます。この操作は取り消せません。
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              キャンセル
-            </Button>
-            <Button variant="destructive" onClick={deleteStudent}>
-              <Trash2 className="mr-1.5 h-4 w-4" />
-              削除
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        {/* 生徒削除確認モーダル */}
+        <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>生徒を削除しますか？</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-slate-600">
+              「<span className="font-bold text-slate-900">{deleteTarget?.name}</span>」の進捗記録もすべて削除されます。この操作は取り消せません。
+            </p>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+                キャンセル
+              </Button>
+              <Button variant="destructive" onClick={deleteStudent}>
+                <Trash2 className="mr-1.5 h-4 w-4" />
+                削除する
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* 先生モードPIN入力モーダル */}
+        <Dialog open={pinModalOpen} onOpenChange={setPinModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
+                <Lock className="h-5 w-5 text-amber-600" />
+                先生モードのロック解除
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-3 py-2">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                合格チェックの変更や生徒の追加を行うには、暗証番号（PIN）を入力してください。
+              </p>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="teacher-pin" className="text-xs font-bold text-slate-700">
+                  暗証番号 (PIN)
+                </Label>
+                <Input
+                  id="teacher-pin"
+                  type="password"
+                  inputMode="numeric"
+                  autoFocus
+                  value={pinInput}
+                  onChange={(e) => {
+                    setPinInput(e.target.value);
+                    setPinError(null);
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUnlockTeacherMode()}
+                  placeholder="4桁の数字を入力"
+                  className="h-10 text-center text-lg tracking-widest font-mono font-bold"
+                />
+                {pinError && (
+                  <p className="text-xs font-bold text-red-600 mt-1">{pinError}</p>
+                )}
+              </div>
+
+              <div className="rounded-lg bg-slate-50 p-2.5 text-[11px] text-slate-500">
+                <p>💡 一度解除すると、この端末（ブラウザ）では次回から自動的に先生モードになります。</p>
+                <p className="mt-0.5 text-slate-400">※ 初期設定の暗証番号は <code>7777</code> です。</p>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button variant="outline" onClick={() => setPinModalOpen(false)}>
+                キャンセル
+              </Button>
+              <Button
+                onClick={handleUnlockTeacherMode}
+                className="bg-amber-600 hover:bg-amber-700 text-white font-bold"
+              >
+                <Unlock className="mr-1.5 h-4 w-4" />
+                ロック解除
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }
