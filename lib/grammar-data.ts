@@ -25,3 +25,5 @@ const grammarData: GrammarData = Object.keys(jsonData).reduce(
 export { grammarData };
 
 export const TOTAL_SECTIONS = Object.keys(grammarData).length;
+
+export * from './grammar-explanations';

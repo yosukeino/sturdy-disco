@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +18,7 @@ import {
   Sliders,
   CheckCircle2,
   HelpCircle,
+  BookOpen,
 } from 'lucide-react';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
 import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
@@ -173,6 +175,42 @@ export default function Home() {
   const [patternEmojis, setPatternEmojis] = useState<string[]>([]);
   const [revealedAnswers, setRevealedAnswers] = useState<Set<number>>(new Set());
   const [printAnswers, setPrintAnswers] = useState<boolean>(false); // 答えも印刷するか（デフォルトOFF）
+
+  // URLクエリパラメータからセクション選択（予習ページからの連携）
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const sec = params.get('section');
+      const start = params.get('start');
+      const end = params.get('end');
+
+      if (sec) {
+        const s = parseInt(sec, 10);
+        if (s >= 1 && s <= TOTAL_SECTIONS) {
+          setSelectedSections(new Set([s]));
+          setCustomStart(s);
+          setCustomEnd(s);
+          setCategoryTab('custom');
+          setActivePresetId(`custom-s${s}`);
+        }
+      } else if (start && end) {
+        const s = parseInt(start, 10);
+        const e = parseInt(end, 10);
+        if (s >= 1 && e <= TOTAL_SECTIONS && s <= e) {
+          const set = new Set<number>();
+          for (let i = s; i <= e; i++) set.add(i);
+          setSelectedSections(set);
+          setCustomStart(s);
+          setCustomEnd(e);
+          setCategoryTab('custom');
+          setActivePresetId(`custom-${s}-${e}`);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // プリセット選択ハンドラー
   const selectPreset = useCallback((preset: PresetOption) => {
@@ -613,7 +651,7 @@ export default function Home() {
       <main className="mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-6 pb-28">
         {/* STEP 1: ステージ選択 */}
         <section className="mb-6">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-black text-white shadow-sm">
                 1
@@ -622,9 +660,19 @@ export default function Home() {
                 テストするステージ（範囲）をえらぼう！
               </h2>
             </div>
-            <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 border border-blue-200">
-              {currentRangeLabel}
-            </span>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/study"
+                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 text-xs font-bold border border-blue-200 transition-colors shadow-2xs"
+                title="テスト前に例文と文法を予習しよう！"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+                <span>例文を予習する</span>
+              </Link>
+              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 border border-blue-200">
+                {currentRangeLabel}
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-200/80 p-1 text-xs font-bold text-slate-600 sm:text-sm">
