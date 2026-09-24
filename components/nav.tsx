@@ -87,7 +87,7 @@ export function MobileNavTabs({ active }: { active?: 'worksheet' | 'study' | 'pr
 export function VersionBadge() {
   return (
     <Badge variant="secondary" className="font-mono text-[11px] font-semibold bg-slate-100 text-slate-700 whitespace-nowrap shrink-0">
-      v9.5
+      v9.6
     </Badge>
   );
 }

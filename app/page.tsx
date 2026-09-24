@@ -649,7 +649,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-6 pb-28">
+      <main className="mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-6 pb-36 sm:pb-40">
         {/* STEP 1: ステージ選択 */}
         <section className="mb-6">
           <div className="mb-3 flex items-center justify-between flex-wrap gap-2">
@@ -1022,7 +1022,7 @@ export default function Home() {
         </section>
 
         {/* フッター（目立たない友達紹介・QRコードリンク） */}
-        <footer className="mt-14 text-center text-xs text-slate-400 pb-2">
+        <footer className="mt-14 text-center text-xs text-slate-400 pb-4">
           <Link
             href="/share"
             className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors py-1.5 px-3 rounded-lg hover:bg-slate-200/50"
@@ -1031,7 +1031,7 @@ export default function Home() {
             <span>友達に教える (QRコード)</span>
           </Link>
           <p className="mt-1 text-[11px] text-slate-400">
-            中学英語例文テストメーカー · v9.5
+            中学英語例文テストメーカー · v9.6
           </p>
         </footer>
       </main>
@@ -1039,13 +1039,24 @@ export default function Home() {
       {/* 画面下部固定アクションバー */}
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md p-3 sm:p-4 shadow-lg">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-3">
-          <div className="hidden sm:block">
-            <p className="text-xs font-bold text-slate-600">
-              選択中: <span className="text-blue-600">{activePresetName}</span>
-            </p>
-            <p className="text-[11px] text-slate-400">
-              {quizMode === 'jp2en' ? '英訳' : '和訳'} / 最大{questionCount}問
-            </p>
+          <div className="hidden sm:flex items-center gap-4">
+            <div>
+              <p className="text-xs font-bold text-slate-600">
+                選択中: <span className="text-blue-600">{activePresetName}</span>
+              </p>
+              <p className="text-[11px] text-slate-400">
+                {quizMode === 'jp2en' ? '英訳' : '和訳'} / 最大{questionCount}問
+              </p>
+            </div>
+            <div className="h-7 w-px bg-slate-200" />
+            <Link
+              href="/share"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 transition-colors py-1 px-2.5 rounded-lg hover:bg-slate-100 border border-slate-200/80 bg-slate-50/60 font-medium"
+              title="友達に紹介・QRコード"
+            >
+              <QrCode className="h-3.5 w-3.5 text-slate-500" />
+              <span>友達に教える</span>
+            </Link>
           </div>
 
           <Button

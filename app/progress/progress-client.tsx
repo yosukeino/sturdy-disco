@@ -910,7 +910,7 @@ export default function ProgressPage() {
             <span>友達に教える (QRコード)</span>
           </Link>
           <p className="mt-1 text-[11px] text-slate-400">
-            中学英語例文テストメーカー · v9.5
+            中学英語例文テストメーカー · v9.6
           </p>
         </footer>
 
