@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { FileText, ClipboardList, BookOpen } from 'lucide-react';
 
-export function Nav({ active }: { active: 'worksheet' | 'study' | 'progress' }) {
+export function Nav({ active }: { active?: 'worksheet' | 'study' | 'progress' | 'share' }) {
   return (
     <nav className="hidden sm:flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/50">
       <Link
@@ -44,7 +44,7 @@ export function Nav({ active }: { active: 'worksheet' | 'study' | 'progress' }) 
   );
 }
 
-export function MobileNavTabs({ active }: { active: 'worksheet' | 'study' | 'progress' }) {
+export function MobileNavTabs({ active }: { active?: 'worksheet' | 'study' | 'progress' | 'share' }) {
   return (
     <nav className="sm:hidden grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-bold shadow-inner border border-slate-200/60">
       <Link

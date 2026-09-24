@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -44,6 +45,7 @@ import {
   TableProperties,
   ArrowRight,
   TrendingUp,
+  QrCode,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
@@ -897,6 +899,20 @@ export default function ProgressPage() {
             )}
           </div>
         )}
+
+        {/* フッター（目立たない友達紹介・QRコードリンク） */}
+        <footer className="mt-14 text-center text-xs text-slate-400 pb-8">
+          <Link
+            href="/share"
+            className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors py-1.5 px-3 rounded-lg hover:bg-slate-200/50"
+          >
+            <QrCode className="h-3.5 w-3.5 opacity-80" />
+            <span>友達に教える (QRコード)</span>
+          </Link>
+          <p className="mt-1 text-[11px] text-slate-400">
+            中学英語例文テストメーカー · v9.5
+          </p>
+        </footer>
 
         {/* 生徒削除確認モーダル */}
         <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
