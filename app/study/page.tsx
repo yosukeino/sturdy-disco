@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,9 +20,12 @@ import {
   CheckCircle2,
   ListOrdered,
   FileCheck2,
+  FolderOpen,
+  ExternalLink,
 } from 'lucide-react';
 import { grammarData, TOTAL_SECTIONS, grammarExplanations } from '@/lib/grammar-data';
 import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
+import { fetchMaterials, MaterialItem, MEDIA_TYPE_LABELS } from '@/lib/materials';
 
 type MaskMode = 'none' | 'hide-en' | 'hide-jp';
 
@@ -46,6 +49,27 @@ export default function StudyPage() {
   const [maskMode, setMaskMode] = useState<MaskMode>('none');
   // 個別タップで明かされた例文のID（`${sectionIndex}-${sentenceIndex}-${type}`）
   const [revealedItems, setRevealedItems] = useState<Set<string>>(new Set());
+  // 教材ストレージからの連動教材
+  const [allMaterials, setAllMaterials] = useState<MaterialItem[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const startParam = Number(params.get('start'));
+      if (startParam >= 1 && startParam <= TOTAL_SECTIONS) {
+        setCurrentSection(startParam);
+      }
+    }
+    fetchMaterials(false).then((res) => setAllMaterials(res.items));
+  }, []);
+
+  const sectionMaterials = useMemo(() => {
+    return allMaterials.filter((m) => {
+      if (!m.related_section_start) return false;
+      const end = m.related_section_end || m.related_section_start;
+      return currentSection >= m.related_section_start && currentSection <= end;
+    });
+  }, [allMaterials, currentSection]);
 
   // 個別タップでマスクを解除/再マスク
   const toggleReveal = (key: string) => {
@@ -283,6 +307,54 @@ export default function StudyPage() {
             基本文法ルールを確認し、例文を繰り返し音読して覚えましょう。
           </p>
         </div>
+
+        {/* このセクションに連動した配布教材（PDF・音声・動画）があれば表示 */}
+        {viewMode === 'single' && sectionMaterials.length > 0 && (
+          <div className="print:hidden mb-4 rounded-2xl border border-indigo-200 bg-indigo-50/70 p-3.5 sm:p-4 space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 text-xs font-black text-indigo-950">
+                <FolderOpen className="h-4 w-4 text-indigo-600" />
+                <span>
+                  Section {currentSection} に関連する配布教材（プリント・動画・音源）
+                </span>
+              </div>
+              <Link
+                href="/materials"
+                className="text-[11px] font-bold text-indigo-600 hover:underline"
+              >
+                教材箱をすべて見る →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {sectionMaterials.map((mat) => {
+                const mediaInfo =
+                  MEDIA_TYPE_LABELS[mat.media_type] || MEDIA_TYPE_LABELS.other;
+                return (
+                  <a
+                    key={mat.id}
+                    href={mat.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between gap-2 rounded-xl border border-indigo-200/80 bg-white px-3 py-2 text-xs hover:border-indigo-400 hover:shadow-xs transition-all"
+                  >
+                    <div className="min-w-0 flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={`${mediaInfo.badgeClass} text-[10px] px-1.5 py-0 font-bold shrink-0`}
+                      >
+                        {mediaInfo.label}
+                      </Badge>
+                      <span className="font-bold text-slate-800 truncate">
+                        {mat.title}
+                      </span>
+                    </div>
+                    <ExternalLink className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* 表示内容 */}
         {viewMode === 'single' ? (
