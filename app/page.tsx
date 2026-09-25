@@ -2,9 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   FlaskConical,
@@ -17,366 +14,250 @@ import {
   Video,
   Image as ImageIcon,
   File,
-  ArrowRight,
+  ChevronRight,
   Pin,
-  Download,
-  ExternalLink,
   ShieldCheck,
+  Gamepad2,
   Sparkles,
-  GraduationCap,
 } from 'lucide-react';
 import {
   MaterialItem,
   MediaType,
   GRADE_LABELS,
-  MEDIA_TYPE_LABELS,
-  CATEGORY_LABELS,
-  fetchMaterials,
+   fetchMaterials,
 } from '@/lib/materials';
-import { TOTAL_SECTIONS } from '@/lib/grammar-data';
 
-export default function UnifiedPortalHomePage() {
-  const [materials, setMaterials] = useState<MaterialItem[]>([]);
-  const [loadingMaterials, setLoadingMaterials] = useState(true);
+export default function GameMenuHomePage() {
+  const [pinnedItems, setPinnedItems] = useState<MaterialItem[]>([]);
 
   useEffect(() => {
     fetchMaterials(false).then((res) => {
-      setMaterials(res.items.slice(0, 5));
-      setLoadingMaterials(false);
+      setPinnedItems(res.items.slice(0, 4));
     });
   }, []);
 
   const renderMediaIcon = (type: MediaType) => {
     switch (type) {
       case 'pdf':
-        return <FileText className="h-5 w-5 text-rose-600" />;
+        return <FileText className="h-4 w-4 text-rose-400 shrink-0" />;
       case 'audio':
-        return <Headphones className="h-5 w-5 text-amber-600" />;
+        return <Headphones className="h-4 w-4 text-amber-400 shrink-0" />;
       case 'video':
-        return <Video className="h-5 w-5 text-indigo-600" />;
+        return <Video className="h-4 w-4 text-indigo-400 shrink-0" />;
       case 'image':
-        return <ImageIcon className="h-5 w-5 text-teal-600" />;
+        return <ImageIcon className="h-4 w-4 text-teal-400 shrink-0" />;
       default:
-        return <File className="h-5 w-5 text-slate-600" />;
+        return <File className="h-4 w-4 text-slate-400 shrink-0" />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/25 to-slate-100 text-slate-900 pb-24">
-      {/* Global Portal Header */}
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-40">
-        <div className="mx-auto max-w-5xl px-3 py-2.5 sm:px-6">
-          <div className="flex items-center justify-between gap-2">
-            <Link href="/" className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xs">
-                <GraduationCap className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-sm font-black sm:text-base text-slate-900 leading-tight truncate">
-                  英語学習ポータル ＆ 教材ストレージ
-                </h1>
-                <p className="text-[10px] text-slate-500 hidden sm:block">
-                  Web Learning Tool Lab & Class Materials Hub
-                </p>
-              </div>
-              <VersionBadge />
-            </Link>
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between selection:bg-blue-500 selection:text-white relative overflow-hidden">
+      {/* Subtle Background Grid Pattern */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-15"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.4) 1px, transparent 0)',
+          backgroundSize: '28px 28px',
+        }}
+      />
 
-            <Nav active="home" />
+      {/* Top Status Bar */}
+      <header className="relative z-10 border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md">
+        <div className="mx-auto max-w-4xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/20">
+              <Gamepad2 className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-base sm:text-lg tracking-wider text-white">
+                  ENGLISH PORTAL
+                </span>
+                <span className="rounded bg-blue-500/20 border border-blue-400/30 px-1.5 py-0.5 font-mono text-[10px] font-black text-blue-300">
+                  VER 2.0
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-2 sm:hidden">
-            <MobileNavTabs active="home" />
-          </div>
+          <Link
+            href="/admin"
+            className="flex items-center gap-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 text-xs font-black text-slate-300 hover:text-white transition-all active:scale-95"
+          >
+            <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
+            <span>TEACHER</span>
+          </Link>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8 space-y-8">
-        {/* Hero Banner */}
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 p-6 sm:p-10 text-white shadow-xl">
-          <div className="relative z-10 max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 px-3 py-1 text-xs font-bold text-blue-200">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>塾講義連動・中学生専用Webポータル</span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
-              授業のプリントも、自宅での英語特訓も、すべてこの1つのサイトから。
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              ログイン不要で、スマホ・タブレット・PCからいつでも予習・復習アプリ（Web学習ツールLab）や、授業で配布されたPDF教材・音声・解説動画にアクセスできます。
-            </p>
+      {/* Main Game Menu Screen */}
+      <main className="relative z-10 mx-auto w-full max-w-4xl px-4 py-8 sm:py-12 flex-1 flex flex-col justify-center space-y-8">
+        {/* Title Prompt */}
+        <div className="text-center space-y-1">
+          <p className="font-mono text-xs font-black tracking-[0.3em] text-blue-400 uppercase">
+            — SELECT MODE —
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+            モードを選択してください
+          </h1>
+        </div>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link href="/lab">
-                <Button className="bg-blue-600 hover:bg-blue-500 text-white font-black h-11 px-5 rounded-xl shadow-md">
-                  <FlaskConical className="h-4 w-4 mr-2" />
-                  1. Web学習ツールLabを開く
-                </Button>
+        {/* 2 Big Main Pillars (Arcade / Switch Menu Style) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* MODE 01: WEB学習ツール Lab */}
+          <div className="group relative rounded-3xl border-2 border-blue-500/40 bg-gradient-to-b from-slate-900 via-slate-900 to-blue-950/50 p-5 sm:p-6 shadow-2xl hover:border-blue-400 transition-all">
+            <Link href="/lab" className="block">
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-600/30 group-hover:scale-105 transition-transform">
+                    <FlaskConical className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <span className="font-mono text-[11px] font-black tracking-widest text-blue-400 block">
+                      MODE 01
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                      Web学習ツール Lab
+                    </h2>
+                  </div>
+                </div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-blue-300 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                  <ChevronRight className="h-5 w-5" />
+                </div>
+              </div>
+            </Link>
+
+            {/* Quick Sub-Stage Select Commands */}
+            <div className="space-y-2 pt-2 border-t border-slate-800/80">
+              <Link
+                href="/study"
+                className="flex items-center justify-between rounded-2xl bg-slate-800/70 hover:bg-blue-600 border border-slate-700/80 hover:border-blue-400 px-4 py-3 transition-all active:scale-[0.98] group/btn"
+              >
+                <div className="flex items-center gap-3">
+                  <BookOpen className="h-5 w-5 text-blue-400 group-hover/btn:text-white" />
+                  <span className="font-black text-sm text-white">
+                    英文法 予習＆例文
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] font-bold text-slate-400 group-hover/btn:text-blue-100 flex items-center gap-1">
+                  START <ChevronRight className="h-4 w-4" />
+                </span>
               </Link>
-              <Link href="/materials">
-                <Button
-                  variant="outline"
-                  className="bg-white/10 hover:bg-white/20 text-white border-white/25 font-black h-11 px-5 rounded-xl backdrop-blur-xs"
-                >
-                  <FolderOpen className="h-4 w-4 mr-2" />
-                  2. 配布教材ストレージを見る
-                </Button>
+
+              <Link
+                href="/lab/flash"
+                className="flex items-center justify-between rounded-2xl bg-slate-800/70 hover:bg-amber-500 border border-slate-700/80 hover:border-amber-300 px-4 py-3 transition-all active:scale-[0.98] group/btn"
+              >
+                <div className="flex items-center gap-3">
+                  <Zap className="h-5 w-5 text-amber-400 group-hover/btn:text-white" />
+                  <span className="font-black text-sm text-white">
+                    瞬間英作文＆並び替え道場
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] font-bold text-slate-400 group-hover/btn:text-amber-100 flex items-center gap-1">
+                  START <ChevronRight className="h-4 w-4" />
+                </span>
+              </Link>
+
+              <Link
+                href="/progress"
+                className="flex items-center justify-between rounded-2xl bg-slate-800/70 hover:bg-emerald-600 border border-slate-700/80 hover:border-emerald-400 px-4 py-3 transition-all active:scale-[0.98] group/btn"
+              >
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-5 w-5 text-emerald-400 group-hover/btn:text-white" />
+                  <span className="font-black text-sm text-white">
+                    クエスト進捗＆ランク
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] font-bold text-slate-400 group-hover/btn:text-emerald-100 flex items-center gap-1">
+                  STATUS <ChevronRight className="h-4 w-4" />
+                </span>
               </Link>
             </div>
           </div>
-        </section>
 
-        {/* Pillar 1: Web Learning Tool Lab */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-                <FlaskConical className="h-4 w-4" />
-              </div>
-              <div>
-                <h3 className="text-base sm:text-lg font-black text-slate-900">
-                  1. Web学習ツール Lab
-                </h3>
-                <p className="text-xs text-slate-500">
-                  ゲーム感覚で英文法・語順・例文暗記をマスターできるインタラクティブ教材
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/lab"
-              className="text-xs font-black text-blue-600 hover:underline flex items-center gap-1"
-            >
-              <span>Lab一覧へ</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* App 1 */}
-            <Link href="/study" className="group block">
-              <Card className="h-full border-2 border-slate-200 hover:border-blue-500 transition-all hover:shadow-md bg-white">
-                <CardHeader className="pb-2">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-xs group-hover:scale-105 transition-transform">
-                      <BookOpen className="h-5 w-5" />
+          {/* MODE 02: データ配布用ストレージ */}
+          <div className="group relative rounded-3xl border-2 border-indigo-500/40 bg-gradient-to-b from-slate-900 via-slate-900 to-indigo-950/50 p-5 sm:p-6 shadow-2xl hover:border-indigo-400 transition-all flex flex-col justify-between">
+            <div>
+              <Link href="/materials" className="block">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
+                      <FolderOpen className="h-7 w-7" />
                     </div>
-                    <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-black">
-                      全{TOTAL_SECTIONS}セクション
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-base font-black text-slate-900 flex items-center justify-between">
-                    <span>英文法 予習＆例文マスター</span>
-                    <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 transition-all" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-slate-600 leading-relaxed">
-                  単元ごとの文法ポイント解説・ネイティブ発音読み上げ・赤シート暗記機能で小テスト対策を完璧にします。
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* App 2 */}
-            <Link href="/lab/flash" className="group block">
-              <Card className="h-full border-2 border-slate-200 hover:border-amber-500 transition-all hover:shadow-md bg-white">
-                <CardHeader className="pb-2">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-xs group-hover:scale-105 transition-transform">
-                      <Zap className="h-5 w-5" />
+                    <div>
+                      <span className="font-mono text-[11px] font-black tracking-widest text-indigo-400 block">
+                        MODE 02
+                      </span>
+                      <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                        データ配布ストレージ
+                      </h2>
                     </div>
-                    <Badge className="bg-amber-50 text-amber-800 border-amber-200 text-[10px] font-black">
-                      スピード特訓
-                    </Badge>
                   </div>
-                  <CardTitle className="text-base font-black text-slate-900 flex items-center justify-between">
-                    <span>瞬間英作文＆並び替え道場</span>
-                    <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-amber-600 transition-all" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-slate-600 leading-relaxed">
-                  バラバラの英単語をタップして正しい語順に並び替えるクイズと瞬間英作文フラッシュカードで英語の語順脳を作ります。
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* App 3 */}
-            <Link href="/progress" className="group block">
-              <Card className="h-full border-2 border-slate-200 hover:border-emerald-500 transition-all hover:shadow-md bg-white">
-                <CardHeader className="pb-2">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs group-hover:scale-105 transition-transform">
-                      <Trophy className="h-5 w-5" />
-                    </div>
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-black">
-                      RPGステータス
-                    </Badge>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-300 group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                    <ChevronRight className="h-5 w-5" />
                   </div>
-                  <CardTitle className="text-base font-black text-slate-900 flex items-center justify-between">
-                    <span>クエスト進捗＆ランクボード</span>
-                    <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-emerald-600 transition-all" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-slate-600 leading-relaxed">
-                  小テスト・まとめテストの合格記録から自分のレベル・リーグランクと次に挑戦する範囲を確認できます。
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
-        </section>
+                </div>
+              </Link>
 
-        {/* Pillar 2: Data Distribution Storage */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
-                <FolderOpen className="h-4 w-4" />
-              </div>
-              <div>
-                <h3 className="text-base sm:text-lg font-black text-slate-900">
-                  2. データ配布用ストレージ（新着・ピン留め教材）
-                </h3>
-                <p className="text-xs text-slate-500">
-                  先生から配布された授業プリント（PDF）・リスニング音源・解説ムービー
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/materials"
-              className="text-xs font-black text-indigo-600 hover:underline flex items-center gap-1"
-            >
-              <span>すべての教材を見る</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          {loadingMaterials ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-xs text-slate-500">
-              配布教材を読み込み中...
-            </div>
-          ) : materials.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-xs text-slate-500">
-              現在公開中の配布教材はありません。
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {materials.map((item) => {
-                const gradeInfo = GRADE_LABELS[item.grade] || GRADE_LABELS.all;
-                const mediaInfo = MEDIA_TYPE_LABELS[item.media_type] || MEDIA_TYPE_LABELS.other;
-
-                return (
-                  <Card
-                    key={item.id}
-                    className={`border transition-all ${
-                      item.is_pinned
-                        ? 'border-indigo-200 bg-white shadow-xs ring-1 ring-indigo-100'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
-                    }`}
-                  >
-                    <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 border border-slate-200/60">
+              {/* Recent / Pinned Item Box Slots */}
+              <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                {pinnedItems.length > 0 ? (
+                  pinnedItems.slice(0, 3).map((item) => {
+                    const gradeInfo = GRADE_LABELS[item.grade] || GRADE_LABELS.all;
+                    return (
+                      <Link
+                        key={item.id}
+                        href="/materials"
+                        className="flex items-center justify-between gap-2 rounded-2xl bg-slate-800/70 hover:bg-indigo-600 border border-slate-700/80 hover:border-indigo-400 px-3.5 py-2.5 transition-all active:scale-[0.98] group/item"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
                           {renderMediaIcon(item.media_type)}
-                        </div>
-                        <div className="space-y-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            {item.is_pinned && (
-                              <Badge className="bg-amber-500 text-white text-[10px] px-1.5 py-0 font-black">
-                                <Pin className="h-2.5 w-2.5 mr-0.5 inline" />
-                                ピン留め
-                              </Badge>
-                            )}
-                            <Badge className={`${gradeInfo.color} text-[10px] px-1.5 py-0 font-bold`}>
-                              {gradeInfo.short}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className={`${mediaInfo.badgeClass} text-[10px] px-1.5 py-0 font-bold`}
-                            >
-                              {mediaInfo.label}
-                            </Badge>
-                            <span className="text-[11px] font-bold text-slate-500">
-                              {CATEGORY_LABELS[item.category] || 'プリント'}
-                            </span>
-                          </div>
-                          <h4 className="text-sm font-black text-slate-900 truncate">
+                          <Badge className="bg-slate-700 text-slate-200 text-[10px] px-1.5 py-0 font-bold shrink-0">
+                            {gradeInfo.short}
+                          </Badge>
+                          <span className="font-bold text-xs sm:text-sm text-slate-100 truncate">
                             {item.title}
-                          </h4>
-                          {item.description && (
-                            <p className="text-xs text-slate-500 line-clamp-1">
-                              {item.description}
-                            </p>
-                          )}
+                          </span>
                         </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                        <Link href="/materials">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 text-xs font-bold border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-                          >
-                            プレビュー / 再生
-                          </Button>
-                        </Link>
-                        <a
-                          href={item.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex h-8 items-center justify-center rounded-lg bg-slate-900 hover:bg-slate-800 px-3 text-xs font-bold text-white"
-                        >
-                          <Download className="h-3.5 w-3.5 mr-1" />
-                          <span>開く</span>
-                        </a>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="text-center pt-1">
-            <Link href="/materials">
-              <Button
-                variant="outline"
-                className="border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-black text-xs px-6"
-              >
-                <FolderOpen className="h-4 w-4 mr-1.5 text-indigo-600" />
-                教材ストレージで全学年のプリント・音声・動画を見る
-              </Button>
-            </Link>
-          </div>
-        </section>
-
-        {/* Teacher Footer Card */}
-        <footer className="pt-8 border-t border-slate-200/80">
-          <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white">
-                <ShieldCheck className="h-4 w-4 text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-slate-800">
-                  講師専用メニュー（パスワード保護）
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  例文テストの印刷・QR作成、PDF/音声教材のアップロード、生徒の合格進捗管理はこちらから行えます。
-                </p>
+                        {item.is_pinned ? (
+                          <Pin className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
+                        )}
+                      </Link>
+                    );
+                  })
+                ) : (
+                  <div className="rounded-2xl bg-slate-800/40 border border-slate-800 p-4 text-center text-xs text-slate-400 font-bold">
+                    配布アイテムはありません
+                  </div>
+                )}
               </div>
             </div>
-            <Link href="/admin">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs font-black border-slate-300 text-slate-700 hover:bg-slate-100 shrink-0"
+
+            <div className="pt-3">
+              <Link
+                href="/materials"
+                className="flex items-center justify-center gap-2 w-full rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs sm:text-sm py-3 shadow-md shadow-indigo-600/20 transition-all active:scale-[0.98]"
               >
-                <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-indigo-600" />
-                講師管理画面へログイン
-              </Button>
-            </Link>
+                <FolderOpen className="h-4 w-4" />
+                <span>すべての配布データ (PDF / 音声 / 動画) を開く</span>
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
-        </footer>
+        </div>
       </main>
+
+      {/* Minimal Bottom Bar */}
+      <footer className="relative z-10 border-t border-slate-900 bg-slate-950/90 py-3 text-center">
+        <p className="font-mono text-[11px] font-bold text-slate-600 tracking-wider">
+          PRESS ANY MODE TO START
+        </p>
+      </footer>
     </div>
   );
 }

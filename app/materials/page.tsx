@@ -171,24 +171,7 @@ export default function StudentMaterialsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6 space-y-6">
-        {/* Hero Banner */}
-        <div className="rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-600 p-5 sm:p-6 text-white shadow-md">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-bold">
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>授業プリント・リスニング音声・解説ムービー</span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight">
-                塾の配布データ＆マルチメディア教材箱
-              </h2>
-              <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
-                授業で配ったPDFプリントの閲覧・ダウンロードや、音読用音声の速度調整再生、解説動画の視聴がいつでも行えます。
-              </p>
-            </div>
-          </div>
-        </div>
+      <main className="mx-auto max-w-5xl px-4 py-5 space-y-4">
 
         {/* Filters & Search Bar */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">

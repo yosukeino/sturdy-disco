@@ -44,22 +44,7 @@ export default function LabCatalogPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6 space-y-8">
-        {/* Hero Banner */}
-        <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-violet-700 p-6 sm:p-8 text-white shadow-md">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-0.5 text-xs font-bold">
-              <FlaskConical className="h-3.5 w-3.5" />
-              <span>中学生向け 英語特訓Webアプリ実験室</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Web学習ツール Lab
-            </h2>
-            <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
-              スマホやタブレットから、塾の授業と連動した英文法解説・ネイティブ発音確認・語順並び替えクイズにいつでも挑戦できます。
-            </p>
-          </div>
-        </div>
+      <main className="mx-auto max-w-5xl px-4 py-6 space-y-6">
 
         {/* Active Lab Tools Grid */}
         <section className="space-y-3">
