@@ -76,6 +76,7 @@ export default function AdminMaterialsPage() {
   const [storageSource, setStorageSource] = useState<'supabase' | 'local'>('supabase');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [sqlCopied, setSqlCopied] = useState(false);
   const [showSqlHelp, setShowSqlHelp] = useState(false);
 
@@ -100,6 +101,9 @@ export default function AdminMaterialsPage() {
     const res = await fetchMaterials(true);
     setItems(res.items);
     setStorageSource(res.source);
+    if (res.supabaseError) {
+      setActionError(`Supabaseエラー: ${res.supabaseError}`);
+    }
     setLoading(false);
   }, []);
 
@@ -109,6 +113,7 @@ export default function AdminMaterialsPage() {
 
   const handleFileSelect = (file: File | null) => {
     setSelectedFile(file);
+    setActionError(null);
     if (!file) return;
     const detected = detectMediaTypeFromFilenameOrUrl(file.name);
     setMediaType(detected);
@@ -124,6 +129,7 @@ export default function AdminMaterialsPage() {
 
   const handleUrlChange = (val: string) => {
     setExternalUrl(val);
+    setActionError(null);
     if (val) {
       const detected = detectMediaTypeFromFilenameOrUrl(val);
       setMediaType(detected);
@@ -139,6 +145,7 @@ export default function AdminMaterialsPage() {
     if (uploadMode === 'url' && !externalUrl.trim()) return;
 
     setSubmitting(true);
+    setActionError(null);
     try {
       const startNum = secStart ? Math.max(1, Math.min(TOTAL_SECTIONS, Number(secStart))) : null;
       const endNum = secEnd
@@ -173,6 +180,8 @@ export default function AdminMaterialsPage() {
       if (fileInputRef.current) fileInputRef.current.value = '';
 
       await loadData();
+    } catch (err: any) {
+      setActionError(err?.message || 'アップロードに失敗しました');
     } finally {
       setSubmitting(false);
     }
@@ -290,6 +299,12 @@ export default function AdminMaterialsPage() {
                 </pre>
               </CardContent>
             </Card>
+          )}
+
+          {actionError && (
+            <div className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-xs font-bold text-rose-800">
+              ⚠️ {actionError}
+            </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

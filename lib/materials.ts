@@ -46,55 +46,7 @@ export const CATEGORY_LABELS: Record<MaterialCategory, string> = {
   other: 'その他配布物',
 };
 
-const LOCAL_STORAGE_KEY = 'whag_portal_materials_v1';
-
-// 初期サンプルデータ（初回アクセス時にもポータルの完成イメージがすぐ確認できるよう用意）
-export const INITIAL_SAMPLE_MATERIALS: MaterialItem[] = [
-  {
-    id: 'sample-mat-1',
-    title: '【重要】中学英文法 72セクション全体ロードマップ＆学習ガイド',
-    description: '塾の講義とWeb学習ツールLabをどのように組み合わせて予習・復習するかをまとめたガイドプリント（PDF）です。最初に必ず目を通しましょう！',
-    media_type: 'pdf',
-    grade: 'all',
-    category: 'print',
-    file_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    file_size: 13264,
-    related_section_start: 1,
-    related_section_end: 72,
-    is_published: true,
-    is_pinned: true,
-    created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-  },
-  {
-    id: 'sample-mat-2',
-    title: 'Section 1〜6（be動詞・一般動詞・疑問詞）まとめ演習プリント＆解答',
-    description: 'S1-S6のまとめテスト前に取り組む対策プリントです。プリント内のQRコードから予習ページへ飛ぶこともできます。',
-    media_type: 'pdf',
-    grade: 'j1',
-    category: 'exam',
-    file_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    file_size: 28400,
-    related_section_start: 1,
-    related_section_end: 6,
-    is_published: true,
-    is_pinned: true,
-    created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  {
-    id: 'sample-mat-3',
-    title: '不定詞・動名詞（Section 25〜30）イメージ理解 解説講義ムービー',
-    description: 'to不定詞の3用法と動名詞との使い分けをイラスト図解で解説しています。授業の復習や欠席時のフォローに活用してください。',
-    media_type: 'video',
-    grade: 'j2',
-    category: 'video',
-    file_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    related_section_start: 25,
-    related_section_end: 30,
-    is_published: true,
-    is_pinned: false,
-    created_at: new Date(Date.now() - 86400000 * 1).toISOString(),
-  },
-];
+const LEGACY_LOCAL_STORAGE_KEY = 'whag_portal_materials_v1';
 
 export function formatFileSize(bytes?: number | null): string {
   if (!bytes || bytes <= 0) return '';
@@ -141,25 +93,48 @@ export function detectMediaTypeFromFilenameOrUrl(nameOrUrl: string): MediaType {
   return 'other';
 }
 
-function getLocalMaterials(): MaterialItem[] {
-  if (typeof window === 'undefined') return INITIAL_SAMPLE_MATERIALS;
-  try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_SAMPLE_MATERIALS));
-      return INITIAL_SAMPLE_MATERIALS;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return INITIAL_SAMPLE_MATERIALS;
+function resolveMimeType(file: File): string {
+  if (file.type && file.type.trim().length > 0) {
+    return file.type;
+  }
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  switch (ext) {
+    case 'pdf':
+      return 'application/pdf';
+    case 'mp3':
+      return 'audio/mpeg';
+    case 'm4a':
+      return 'audio/mp4';
+    case 'wav':
+      return 'audio/wav';
+    case 'png':
+      return 'image/png';
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'webp':
+      return 'image/webp';
+    case 'mp4':
+      return 'video/mp4';
+    default:
+      return 'application/octet-stream';
   }
 }
 
-function saveLocalMaterials(items: MaterialItem[]): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
-  } catch {}
+export function getDownloadUrl(item: MaterialItem): string {
+  if (!item.file_url) return '#';
+  // Supabase Storage の公開URLの場合は ?download=ファイル名 を付与して確実にファイル保存させる
+  if (item.file_url.includes('/storage/v1/object/public/')) {
+    const ext =
+      item.storage_path?.split('.').pop() ||
+      (item.media_type === 'pdf' ? 'pdf' : '');
+    const safeFilename = ext
+      ? `${item.title.replace(/[\\/:*?"<>|]/g, '_')}.${ext}`
+      : item.title;
+    const separator = item.file_url.includes('?') ? '&' : '?';
+    return `${item.file_url}${separator}download=${encodeURIComponent(safeFilename)}`;
+  }
+  return item.file_url;
 }
 
 export interface FetchMaterialsResult {
@@ -169,86 +144,79 @@ export interface FetchMaterialsResult {
 }
 
 export async function fetchMaterials(includeUnpublished = false): Promise<FetchMaterialsResult> {
-  try {
-    let query = supabase
-      .from('materials')
-      .select('*')
-      .order('is_pinned', { ascending: false })
-      .order('created_at', { ascending: false });
+  // 以前の一時ローカルキャッシュ（blob: URL等）が残っていればクリアする
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(LEGACY_LOCAL_STORAGE_KEY);
+    } catch {}
+  }
 
-    if (!includeUnpublished) {
-      query = query.eq('is_published', true);
-    }
+  let query = supabase
+    .from('materials')
+    .select('*')
+    .order('is_pinned', { ascending: false })
+    .order('created_at', { ascending: false });
 
-    const { data, error } = await query;
+  if (!includeUnpublished) {
+    query = query.eq('is_published', true);
+  }
 
-    if (!error && Array.isArray(data)) {
-      return {
-        items: data as MaterialItem[],
-        source: 'supabase',
-      };
-    }
+  const { data, error } = await query;
 
-    // テーブル未作成時などはローカルストレージへ安全にフォールバック
-    const localItems = getLocalMaterials();
-    const filtered = includeUnpublished
-      ? localItems
-      : localItems.filter((item) => item.is_published);
-
+  if (error) {
     return {
-      items: filtered.sort((a, b) => {
-        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      }),
-      source: 'local',
-      supabaseError: error?.message || null,
-    };
-  } catch (err: any) {
-    const localItems = getLocalMaterials();
-    return {
-      items: includeUnpublished ? localItems : localItems.filter((i) => i.is_published),
-      source: 'local',
-      supabaseError: err?.message || 'Fallback to local storage',
+      items: [],
+      source: 'supabase',
+      supabaseError: error.message,
     };
   }
+
+  return {
+    items: (data as MaterialItem[]) || [],
+    source: 'supabase',
+    supabaseError: null,
+  };
 }
 
 export async function createMaterial(
   item: Omit<MaterialItem, 'id' | 'created_at'>,
   file?: File | null
-): Promise<{ item: MaterialItem; source: 'supabase' | 'local' }> {
+): Promise<{ item: MaterialItem; source: 'supabase' }> {
   let finalFileUrl = item.file_url;
   let storagePath: string | null = null;
-  let fileSize = item.file_size ?? (file ? file.size : null);
+  const fileSize = item.file_size ?? (file ? file.size : null);
 
-  // 1. ファイルが指定されている場合、まずSupabase Storageへのアップロードを試みる
+  // 1. ファイルが指定されている場合、Supabase Storage (`materials` バケット) へアップロード
   if (file) {
-    const ext = file.name.split('.').pop() || 'bin';
-    const safePath = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const ext = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const safePath = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}.${ext || 'bin'}`;
+    const contentType = resolveMimeType(file);
+
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('materials')
       .upload(safePath, file, {
+        contentType,
         cacheControl: '3600',
         upsert: false,
       });
 
-    if (!uploadError && uploadData) {
-      storagePath = uploadData.path;
-      const { data: pubUrlData } = supabase.storage.from('materials').getPublicUrl(uploadData.path);
-      finalFileUrl = pubUrlData.publicUrl;
-    } else if (!finalFileUrl) {
-      // バケット未作成時はDataURL（小〜中サイズファイル）またはObjectURLに変換してローカル動作を保証
-      finalFileUrl = await new Promise<string>((resolve) => {
-        if (file.size <= 4 * 1024 * 1024) {
-          const reader = new FileReader();
-          reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
-          reader.onerror = () => resolve(URL.createObjectURL(file));
-          reader.readAsDataURL(file);
-        } else {
-          resolve(URL.createObjectURL(file));
-        }
-      });
+    if (uploadError || !uploadData) {
+      throw new Error(
+        `ファイルのクラウド保存に失敗しました: ${
+          uploadError?.message || 'Storage upload error'
+        }`
+      );
     }
+
+    storagePath = uploadData.path;
+    const { data: pubUrlData } = supabase.storage
+      .from('materials')
+      .getPublicUrl(uploadData.path);
+    finalFileUrl = pubUrlData.publicUrl;
+  }
+
+  if (!finalFileUrl) {
+    throw new Error('ファイルのURLが取得できませんでした。');
   }
 
   const payload = {
@@ -266,33 +234,38 @@ export async function createMaterial(
     is_pinned: item.is_pinned,
   };
 
-  // 2. Supabase `materials` テーブルへINSERTを試みる
-  const { data, error } = await supabase.from('materials').insert(payload).select().single();
+  // 2. Supabase `materials` テーブルへINSERT
+  const { data, error } = await supabase
+    .from('materials')
+    .insert(payload)
+    .select()
+    .single();
 
-  if (!error && data) {
-    return { item: data as MaterialItem, source: 'supabase' };
+  if (error || !data) {
+    // 万一DB登録に失敗した場合は孤立ファイルを削除
+    if (storagePath) {
+      await supabase.storage.from('materials').remove([storagePath]);
+    }
+    throw new Error(
+      `データベースへの登録に失敗しました: ${error?.message || 'Insert error'}`
+    );
   }
 
-  // 3. フォールバック：ローカルストレージに保存
-  const newItem: MaterialItem = {
-    ...payload,
-    id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-    created_at: new Date().toISOString(),
-  };
-  const current = getLocalMaterials();
-  saveLocalMaterials([newItem, ...current]);
-  return { item: newItem, source: 'local' };
+  return { item: data as MaterialItem, source: 'supabase' };
 }
 
 export async function updateMaterialStatus(
   id: string,
-  updates: Partial<Pick<MaterialItem, 'is_published' | 'is_pinned' | 'title' | 'description' | 'grade' | 'category'>>
+  updates: Partial<
+    Pick<
+      MaterialItem,
+      'is_published' | 'is_pinned' | 'title' | 'description' | 'grade' | 'category'
+    >
+  >
 ): Promise<void> {
   const { error } = await supabase.from('materials').update(updates).eq('id', id);
   if (error) {
-    const current = getLocalMaterials();
-    const next = current.map((item) => (item.id === id ? { ...item, ...updates } : item));
-    saveLocalMaterials(next);
+    throw new Error(`更新に失敗しました: ${error.message}`);
   }
 }
 
@@ -301,8 +274,7 @@ export async function deleteMaterial(item: MaterialItem): Promise<void> {
     await supabase.storage.from('materials').remove([item.storage_path]);
   }
   const { error } = await supabase.from('materials').delete().eq('id', item.id);
-  if (error || item.id.startsWith('local-') || item.id.startsWith('sample-')) {
-    const current = getLocalMaterials();
-    saveLocalMaterials(current.filter((i) => i.id !== item.id));
+  if (error) {
+    throw new Error(`削除に失敗しました: ${error.message}`);
   }
 }

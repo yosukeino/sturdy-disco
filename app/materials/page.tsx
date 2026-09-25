@@ -35,6 +35,7 @@ import {
   fetchMaterials,
   formatFileSize,
   getYouTubeEmbedUrl,
+  getDownloadUrl,
 } from '@/lib/materials';
 
 function CustomAudioPlayer({ src }: { src: string }) {
@@ -363,21 +364,23 @@ export default function StudentMaterialsPage() {
                           href={item.file_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          download={item.media_type === 'pdf' ? `${item.title}.pdf` : undefined}
-                          className="inline-flex h-9 items-center justify-center rounded-lg bg-slate-900 hover:bg-slate-800 px-3.5 text-xs font-black text-white shadow-xs transition-colors"
+                          className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3 text-xs font-black text-slate-800 shadow-xs transition-colors"
                         >
-                          {item.media_type === 'video' ? (
-                            <>
-                              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                              <span>別タブで開く</span>
-                            </>
-                          ) : (
-                            <>
-                              <Download className="h-3.5 w-3.5 mr-1.5" />
-                              <span>開く / 保存</span>
-                            </>
-                          )}
+                          <ExternalLink className="h-3.5 w-3.5 mr-1.5 text-slate-600" />
+                          <span>別タブで開く</span>
                         </a>
+
+                        {item.media_type !== 'video' && (
+                          <a
+                            href={getDownloadUrl(item)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex h-9 items-center justify-center rounded-lg bg-slate-900 hover:bg-slate-800 px-3.5 text-xs font-black text-white shadow-xs transition-colors"
+                          >
+                            <Download className="h-3.5 w-3.5 mr-1.5" />
+                            <span>保存</span>
+                          </a>
+                        )}
                       </div>
                     </div>
 
@@ -414,12 +417,18 @@ export default function StudentMaterialsPage() {
                             />
                           </div>
                         ) : (
-                          <div className="w-full h-[520px] rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
-                            <iframe
-                              src={item.file_url}
-                              title={item.title}
+                          <div className="w-full h-[560px] rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+                            <object
+                              data={item.file_url}
+                              type="application/pdf"
                               className="w-full h-full"
-                            />
+                            >
+                              <iframe
+                                src={item.file_url}
+                                title={item.title}
+                                className="w-full h-full"
+                              />
+                            </object>
                           </div>
                         )}
                       </div>
