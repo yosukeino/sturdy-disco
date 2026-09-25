@@ -55,7 +55,7 @@ const SUPABASE_MIGRATION_SQL = `CREATE TABLE IF NOT EXISTS materials (
   title text NOT NULL,
   description text DEFAULT '',
   media_type text NOT NULL CHECK (media_type IN ('pdf', 'audio', 'video', 'image', 'other')),
-  grade text NOT NULL DEFAULT 'all' CHECK (grade IN ('all', 'j1', 'j2', 'j3')),
+  grade text NOT NULL DEFAULT 'all' CHECK (grade IN ('all', 'j1', 'j2', 'j3', 'hs')),
   category text NOT NULL DEFAULT 'print',
   file_url text NOT NULL,
   storage_path text,
@@ -422,6 +422,7 @@ export default function AdminMaterialsPage() {
                         <option value="j1">中学1年 (中1)</option>
                         <option value="j2">中学2年 (中2)</option>
                         <option value="j3">中学3年 (中3)</option>
+                        <option value="hs">高校</option>
                       </select>
                     </div>
 

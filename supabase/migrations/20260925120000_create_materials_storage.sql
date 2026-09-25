@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS materials (
   title text NOT NULL,
   description text DEFAULT '',
   media_type text NOT NULL CHECK (media_type IN ('pdf', 'audio', 'video', 'image', 'other')),
-  grade text NOT NULL DEFAULT 'all' CHECK (grade IN ('all', 'j1', 'j2', 'j3')),
+  grade text NOT NULL DEFAULT 'all' CHECK (grade IN ('all', 'j1', 'j2', 'j3', 'hs')),
   category text NOT NULL DEFAULT 'print',
   file_url text NOT NULL,
   storage_path text,

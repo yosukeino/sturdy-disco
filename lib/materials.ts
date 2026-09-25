@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 
 export type MediaType = 'pdf' | 'audio' | 'video' | 'image' | 'other';
-export type GradeType = 'all' | 'j1' | 'j2' | 'j3';
+export type GradeType = 'all' | 'j1' | 'j2' | 'j3' | 'hs';
 export type MaterialCategory = 'print' | 'homework' | 'exam' | 'audio' | 'video' | 'other';
 
 export interface MaterialItem {
@@ -26,6 +26,7 @@ export const GRADE_LABELS: Record<GradeType, { label: string; short: string; col
   j1: { label: '中学1年生', short: '中1', color: 'bg-emerald-600 text-white' },
   j2: { label: '中学2年生', short: '中2', color: 'bg-blue-600 text-white' },
   j3: { label: '中学3年生', short: '中3', color: 'bg-purple-600 text-white' },
+  hs: { label: '高校生', short: '高校', color: 'bg-rose-600 text-white' },
 };
 
 export const MEDIA_TYPE_LABELS: Record<MediaType, { label: string; badgeClass: string }> = {

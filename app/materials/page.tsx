@@ -183,6 +183,7 @@ export default function StudentMaterialsPage() {
                 { id: 'j1', label: '中1' },
                 { id: 'j2', label: '中2' },
                 { id: 'j3', label: '中3' },
+                { id: 'hs', label: '高校' },
               ].map((tab) => (
                 <button
                   key={tab.id}

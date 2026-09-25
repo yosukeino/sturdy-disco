@@ -46,6 +46,7 @@ import {
   ArrowRight,
   TrendingUp,
   QrCode,
+  Pencil,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
@@ -214,6 +215,8 @@ export default function ProgressPage() {
   const [newName, setNewName] = useState('');
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
+  const [editTarget, setEditTarget] = useState<Student | null>(null);
+  const [editName, setEditName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   // 表示モード: 'rpg' (ステータスカード) | 'table' (全マスシート)
@@ -319,6 +322,29 @@ export default function ProgressPage() {
       setError(err instanceof Error ? err.message : '生徒の追加に失敗しました');
     }
   }, [newName, isTeacherMode]);
+
+  const updateStudentName = useCallback(async () => {
+    if (!isTeacherMode || !editTarget) return;
+    const trimmed = editName.trim();
+    if (!trimmed) return;
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('students')
+        .update({ name: trimmed })
+        .eq('id', editTarget.id);
+      if (error) throw error;
+      setStudents((prev) =>
+        prev
+          .map((s) => (s.id === editTarget.id ? { ...s, name: trimmed } : s))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      );
+      setEditTarget(null);
+      setEditName('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '生徒名の変更に失敗しました');
+    }
+  }, [editTarget, editName, isTeacherMode]);
 
   const deleteStudent = useCallback(async () => {
     if (!isTeacherMode) return;
@@ -598,9 +624,34 @@ export default function ProgressPage() {
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
-                        <h3 className="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
-                          {student.name}
-                        </h3>
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+                            {student.name}
+                          </h3>
+                          {isTeacherMode && (
+                            <div className="flex items-center gap-0.5 ml-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditTarget(student);
+                                  setEditName(student.name);
+                                }}
+                                className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                title="名前を変更"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeleteTarget(student)}
+                                className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                title="生徒を削除"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                         <div className="mt-1 flex items-center gap-1.5">
                           <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs ${stats.badgeStyle}`}>
                             <span>{stats.rankEmoji}</span>
@@ -746,7 +797,32 @@ export default function ProgressPage() {
                       return (
                         <TableRow key={student.id} className="hover:bg-slate-50/80">
                           <TableCell className="sticky left-0 z-10 bg-white font-bold text-slate-900 shadow-[1px_0_0_0_#e2e8f0]">
-                            {student.name}
+                            <div className="flex items-center justify-between gap-1.5">
+                              <span className="truncate">{student.name}</span>
+                              {isTeacherMode && (
+                                <div className="flex items-center gap-0.5 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditTarget(student);
+                                      setEditName(student.name);
+                                    }}
+                                    className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                    title="生徒名を変更"
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setDeleteTarget(student)}
+                                    className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                    title="生徒を削除"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell className="text-center py-2 px-1">
                             <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] ${stats.badgeStyle}`}>
@@ -914,6 +990,43 @@ export default function ProgressPage() {
           </p>
         </footer>
 
+        {/* 生徒名の変更モーダル */}
+        <Dialog open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
+                <Pencil className="h-4 w-4 text-blue-600" />
+                生徒の名前を変更
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 py-2">
+              <Label htmlFor="edit-student-name" className="text-xs font-bold text-slate-700">
+                新しい名前
+              </Label>
+              <Input
+                id="edit-student-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && updateStudentName()}
+                placeholder="生徒名を入力"
+                autoFocus
+              />
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button variant="outline" onClick={() => setEditTarget(null)}>
+                キャンセル
+              </Button>
+              <Button
+                onClick={updateStudentName}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              >
+                <Check className="mr-1.5 h-4 w-4" />
+                保存する
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* 生徒削除確認モーダル */}
         <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
           <DialogContent>
@@ -965,7 +1078,7 @@ export default function ProgressPage() {
                     setPinError(null);
                   }}
                   onKeyDown={(e) => e.key === 'Enter' && handleUnlockTeacherMode()}
-                  placeholder="4桁の数字を入力"
+                  placeholder="パスコードを入力"
                   className="h-10 text-center text-lg tracking-widest font-mono font-bold"
                 />
                 {pinError && (
@@ -975,7 +1088,6 @@ export default function ProgressPage() {
 
               <div className="rounded-lg bg-slate-50 p-2.5 text-[11px] text-slate-500">
                 <p>💡 一度解除すると、この端末（ブラウザ）では次回から自動的に先生モードになります。</p>
-                <p className="mt-0.5 text-slate-400">※ 初期設定の暗証番号は <code>7777</code> です。</p>
               </div>
             </div>
 

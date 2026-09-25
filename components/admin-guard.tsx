@@ -71,7 +71,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 <Input
                   type="password"
                   inputMode="numeric"
-                  placeholder="パスコードを入力 (例: 7777)"
+                  placeholder="パスコードを入力"
                   value={pin}
                   onChange={(e) => {
                     setPin(e.target.value);

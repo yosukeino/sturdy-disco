@@ -161,7 +161,7 @@ export default function LabCatalogPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               {
                 grade: '中学1年 (基礎〜過去形)',
@@ -180,6 +180,12 @@ export default function LabCatalogPage() {
                 range: 'Section 49 〜 72',
                 href: '/study?start=49&end=72',
                 badge: 'bg-purple-600 text-white',
+              },
+              {
+                grade: '高校 (総復習＆配布プリント)',
+                range: '高校・全72節',
+                href: '/materials',
+                badge: 'bg-rose-600 text-white',
               },
             ].map((item) => (
               <Link
