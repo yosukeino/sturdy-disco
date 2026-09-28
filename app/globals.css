@@ -138,9 +138,18 @@
 
   /* Prevent awkward page breaks within a single question */
   .worksheet-page li,
-  .worksheet-answer-page > div {
+  .worksheet-answer-page > div,
+  .homework-item,
+  .homework-section-header {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  .homework-page {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Page break before answer sheet */

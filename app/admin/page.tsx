@@ -157,31 +157,40 @@ export default function AdminDashboardPage() {
               </Card>
             </Link>
 
-            {/* 2. Worksheet Maker */}
-            <Link href="/admin/worksheet" className="group block">
-              <Card className="h-full border-2 border-slate-200 hover:border-blue-500 transition-all hover:shadow-md">
+            {/* 2. Worksheet & Homework Maker */}
+            <Card className="h-full border-2 border-slate-200 hover:border-blue-500 transition-all hover:shadow-md flex flex-col justify-between">
+              <Link href="/admin/worksheet" className="group block">
                 <CardHeader className="pb-3">
                   <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm group-hover:scale-105 transition-transform">
                     <FileText className="h-6 w-6" />
                   </div>
                   <Badge className="w-fit bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold">
-                    講義用プリント作成
+                    講義用テスト＆宿題プリント作成
                   </Badge>
                   <CardTitle className="text-lg font-black text-slate-900 pt-1 flex items-center justify-between">
-                    <span>例文テスト作成・印刷</span>
+                    <span>テスト＆宿題プリント印刷</span>
                     <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 transition-all" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xs text-slate-600 space-y-2 leading-relaxed">
+                <CardContent className="text-xs text-slate-600 space-y-2 leading-relaxed pb-3">
                   <p>
-                    全72セクションから範囲・出題モード（日→英／英→日）を選んで、授業用の小テスト・まとめテストプリントと模範解答を即座に印刷します。
-                  </p>
-                  <p className="font-bold text-blue-600">
-                    ・生徒がスマホで復習できるQRコード自動印字機能付き
+                    全72セクションから範囲を選んで、<strong>ランダム小テスト</strong>や、不合格者用の<strong>全例文書き込み宿題プリント</strong>を即座に作成・印刷します。
                   </p>
                 </CardContent>
-              </Card>
-            </Link>
+              </Link>
+              <div className="px-6 pb-5 pt-1 flex items-center gap-2">
+                <Link href="/admin/worksheet" className="flex-1">
+                  <Button size="sm" variant="outline" className="w-full text-xs font-bold border-blue-200 text-blue-700 hover:bg-blue-50">
+                    🚀 ランダムテスト
+                  </Button>
+                </Link>
+                <Link href="/admin/worksheet?type=homework" className="flex-1">
+                  <Button size="sm" className="w-full text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white">
+                    ✏️ 宿題プリント
+                  </Button>
+                </Link>
+              </div>
+            </Card>
 
             {/* 3. Student Progress Matrix */}
             <Link href="/admin/progress" className="group block">

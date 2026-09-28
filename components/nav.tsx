@@ -204,7 +204,7 @@ export function AdminNav({
             }`}
           >
             <FileText className="h-3.5 w-3.5" />
-            <span>テスト作成・印刷</span>
+            <span>テスト・宿題印刷</span>
           </Link>
           <Link
             href="/admin/progress"
@@ -237,7 +237,7 @@ export function VersionBadge() {
       variant="secondary"
       className="font-mono text-[11px] font-semibold bg-slate-100 text-slate-700 whitespace-nowrap shrink-0"
     >
-      Portal v2.0
+      v9.7
     </Badge>
   );
 }

@@ -20,12 +20,17 @@ import {
   HelpCircle,
   BookOpen,
   QrCode,
+  PenTool,
+  ListOrdered,
 } from 'lucide-react';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
 import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
 
 type QuizMode = 'jp2en' | 'en2jp';
 type PresetCategory = 'unit' | 'summary' | 'all' | 'custom';
+type SheetType = 'test' | 'homework';
+type HomeworkModelMode = 'show' | 'trace' | 'hide';
+type HomeworkRepeatCount = 1 | 2 | 3;
 
 interface QuizItem {
   id: number;
@@ -159,8 +164,9 @@ const SUMMARY_PRESETS = generateSummaryPresets();
 const ALL_PRESETS = generateAllPresets();
 
 export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolean }) {
-  // 画面モード: 'select' = ステージ選択・設定, 'test' = テスト・ワークシート全画面
-  const [viewMode, setViewMode] = useState<'select' | 'test'>('select');
+  // 画面モード: 'select' = ステージ選択・設定, 'test' = テスト・ワークシート全画面, 'homework' = 宿題プリント全画面
+  const [viewMode, setViewMode] = useState<'select' | 'test' | 'homework'>('select');
+  const [sheetType, setSheetType] = useState<SheetType>('test');
 
   // 設定ステート
   const [categoryTab, setCategoryTab] = useState<PresetCategory>('unit');
@@ -171,13 +177,18 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
   const [quizMode, setQuizMode] = useState<QuizMode>('jp2en'); // デフォルトは英訳
   const [questionCount, setQuestionCount] = useState<number>(10);
 
-  // テスト生成結果
+  // 宿題プリント設定ステート
+  const [homeworkModelMode, setHomeworkModelMode] = useState<HomeworkModelMode>('show');
+  const [homeworkRepeatCount, setHomeworkRepeatCount] = useState<HomeworkRepeatCount>(2);
+
+  // テスト・宿題生成結果
   const [quiz, setQuiz] = useState<QuizItem[] | null>(null);
+  const [homeworkItems, setHomeworkItems] = useState<QuizItem[] | null>(null);
   const [patternEmojis, setPatternEmojis] = useState<string[]>([]);
   const [revealedAnswers, setRevealedAnswers] = useState<Set<number>>(new Set());
   const [printAnswers, setPrintAnswers] = useState<boolean>(false); // 答えも印刷するか（デフォルトOFF）
 
-  // URLクエリパラメータからセクション選択（予習ページからの連携）
+  // URLクエリパラメータからセクション選択・モード選択（予習ページ・管理画面からの連携）
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -185,6 +196,11 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
       const sec = params.get('section');
       const start = params.get('start');
       const end = params.get('end');
+      const type = params.get('type');
+
+      if (type === 'homework') {
+        setSheetType('homework');
+      }
 
       if (sec) {
         const s = parseInt(sec, 10);
@@ -265,7 +281,18 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
     return `${sorted.length}セクション選択中 (S${sorted[0]}..S${sorted[sorted.length - 1]})`;
   }, [selectedSections]);
 
-  // ワークシート生成
+  // 選択中の範囲に含まれる全例文数
+  const totalSentencesInSelected = useMemo(() => {
+    const sections = Array.from(selectedSections).sort((a, b) => a - b);
+    let count = 0;
+    for (const sec of sections) {
+      const data = grammarData[sec];
+      if (data) count += data.sentences.length;
+    }
+    return count;
+  }, [selectedSections]);
+
+  // ワークシート（ランダムテスト）生成
   const generateWorksheet = useCallback(() => {
     const sections = Array.from(selectedSections).sort((a, b) => a - b);
     if (sections.length === 0) return;
@@ -302,6 +329,34 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [selectedSections, quizMode, questionCount]);
 
+  // 宿題プリント（指定範囲の全例文を順番に出題）生成
+  const generateHomework = useCallback(() => {
+    const sections = Array.from(selectedSections).sort((a, b) => a - b);
+    if (sections.length === 0) return;
+
+    const items: QuizItem[] = [];
+    let id = 1;
+    for (const sec of sections) {
+      const data = grammarData[sec];
+      if (!data) continue;
+      for (const s of data.sentences) {
+        items.push({
+          id: id++,
+          question: s.jp,
+          answer: s.en,
+          section: sec,
+          sectionTitle: data.title,
+        });
+      }
+    }
+
+    if (items.length === 0) return;
+
+    setHomeworkItems(items);
+    setViewMode('homework');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [selectedSections]);
+
   // 解答表示トグル
   const toggleAnswer = useCallback((id: number) => {
     setRevealedAnswers((prev) => {
@@ -336,6 +391,295 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
     if (found) return `${found.badge}: ${found.title}`;
     return currentRangeLabel;
   }, [activePresetId, currentRangeLabel]);
+
+  // ==========================================
+  // VIEW: 宿題プリント（書き込み・反復練習）全画面モード
+  // ==========================================
+  if (viewMode === 'homework' && homeworkItems) {
+    // セクションごとにグループ化
+    const groupedBySection: { section: number; title: string; items: QuizItem[] }[] = [];
+    for (const item of homeworkItems) {
+      let group = groupedBySection.find((g) => g.section === item.section);
+      if (!group) {
+        group = {
+          section: item.section,
+          title: item.sectionTitle || `Section ${item.section}`,
+          items: [],
+        };
+        groupedBySection.push(group);
+      }
+      group.items.push(item);
+    }
+
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-900">
+        {/* 操作ヘッダーバー（画面上部に常時固定、印刷時は非表示） */}
+        <header className="no-print sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
+          <div className="mx-auto flex max-w-4xl items-center justify-between px-3 py-2.5 sm:px-4">
+            <Button
+              onClick={() => setViewMode('select')}
+              variant="ghost"
+              size="sm"
+              className="-ml-1 gap-1 text-slate-700 hover:bg-slate-100 font-bold"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">ステージ選び直す</span>
+              <span className="sm:hidden">設定へ</span>
+            </Button>
+
+            <div className="flex items-center gap-2 text-center">
+              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-extrabold text-amber-800 border border-amber-200">
+                ✏️ 宿題プリント
+              </span>
+              <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-800">
+                {activePresetName}
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-slate-600">
+                全{homeworkItems.length}文
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* 答えページも印刷するかどうかのチェックボックス（デフォルトOFF） */}
+              <label
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2 sm:px-2.5 h-8 text-xs text-slate-700 cursor-pointer select-none transition-colors"
+                title="チェックを入れると別紙の模範解答一覧ページも一緒に印刷されます"
+              >
+                <Checkbox
+                  checked={printAnswers}
+                  onCheckedChange={(checked) => setPrintAnswers(!!checked)}
+                  className="h-3.5 w-3.5"
+                />
+                <span className="font-bold hidden sm:inline">答えも印刷</span>
+                <span className="font-bold sm:hidden">解答印刷</span>
+              </label>
+
+              <Button
+                onClick={handlePrint}
+                size="sm"
+                className="h-8 gap-1 bg-slate-800 text-white hover:bg-slate-900 text-xs sm:text-sm font-bold shadow-sm"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                <span>印刷</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* 2段目: 宿題フォーマットのライブ切り替えバー（印刷前にワンタップで調整可能） */}
+          <div className="border-t border-slate-100 bg-amber-50/60 px-3 py-2 sm:px-4">
+            <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-extrabold text-amber-900">英文お手本:</span>
+                <div className="inline-flex rounded-lg border border-amber-200 bg-white p-0.5 shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => setHomeworkModelMode('show')}
+                    className={`rounded-md px-2.5 py-1 font-bold transition-all ${
+                      homeworkModelMode === 'show'
+                        ? 'bg-amber-600 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    お手本あり
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHomeworkModelMode('trace')}
+                    className={`rounded-md px-2.5 py-1 font-bold transition-all ${
+                      homeworkModelMode === 'trace'
+                        ? 'bg-amber-600 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    なぞり書き
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHomeworkModelMode('hide')}
+                    className={`rounded-md px-2.5 py-1 font-bold transition-all ${
+                      homeworkModelMode === 'hide'
+                        ? 'bg-amber-600 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    お手本なし（自力）
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-amber-900">書く回数:</span>
+                <div className="inline-flex rounded-lg border border-amber-200 bg-white p-0.5 shadow-2xs">
+                  {([1, 2, 3] as HomeworkRepeatCount[]).map((cnt) => (
+                    <button
+                      key={cnt}
+                      type="button"
+                      onClick={() => setHomeworkRepeatCount(cnt)}
+                      className={`rounded-md px-2.5 py-1 font-bold transition-all ${
+                        homeworkRepeatCount === cnt
+                          ? 'bg-amber-600 text-white shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      {cnt}回ずつ
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* 宿題プリント本体（画面プレビュー＆A4印刷対応） */}
+        <main className="mx-auto max-w-4xl p-3 sm:p-6">
+          <div className="homework-page rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 shadow-sm">
+            {/* プリントヘッダー */}
+            <div className="mb-4 border-b-2 border-slate-800 pb-3">
+              <div className="flex flex-wrap items-end justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block rounded bg-slate-900 px-2 py-0.5 text-[11px] font-black text-white uppercase tracking-wider">
+                      HOMEWORK WORKSHEET
+                    </span>
+                    <span className="text-xs font-bold text-slate-600">
+                      範囲: {currentRangeLabel}（全{homeworkItems.length}文・順番通り）
+                    </span>
+                  </div>
+                  <h1 className="mt-1 text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                    中学英語 例文書き取り・復習宿題プリント（{activePresetName}）
+                  </h1>
+                </div>
+
+                {/* 氏名・日付・チェック欄 */}
+                <div className="flex items-center gap-3 text-xs font-bold text-slate-700">
+                  <div className="border-b border-slate-400 pb-0.5 min-w-[105px]">
+                    日付: ____ / ____
+                  </div>
+                  <div className="border-b border-slate-400 pb-0.5 min-w-[155px]">
+                    名前:
+                  </div>
+                  <div className="border border-slate-800 rounded px-2.5 py-1 text-[11px] font-extrabold">
+                    先生確認印 [ 　　 ]
+                  </div>
+                </div>
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-600 font-medium">
+                {homeworkModelMode === 'show' &&
+                  `★ 日本語の意味と英文のお手本をしっかり確認しながら、ていねいに${homeworkRepeatCount}回ずつ英文を書きましょう。`}
+                {homeworkModelMode === 'trace' &&
+                  `★ 1行目のうすい英文をなぞってから、下の線に自力で英文を練習しましょう（計${homeworkRepeatCount}回）。`}
+                {homeworkModelMode === 'hide' &&
+                  `★ 日本語を見て、何も見ずに自力で英文を${homeworkRepeatCount}回ずつ書いてみましょう。`}
+              </p>
+            </div>
+
+            {/* セクションごとの例文書き取りリスト */}
+            <div className="space-y-4">
+              {groupedBySection.map((group) => (
+                <div key={group.section} className="space-y-2">
+                  {/* セクション見出し */}
+                  <div className="homework-section-header flex items-center justify-between rounded-lg bg-slate-100 border border-slate-300 px-3 py-1.5">
+                    <span className="text-xs sm:text-sm font-black text-slate-800">
+                      ■ Section {group.section}: {group.title}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-500">
+                      {group.items.length}例文
+                    </span>
+                  </div>
+
+                  {/* 例文アイテム一覧 */}
+                  <div className="divide-y divide-slate-200 border-t border-b border-slate-200">
+                    {group.items.map((item) => (
+                      <div key={item.id} className="homework-item py-2.5 px-1">
+                        {/* 日本語と（お手本ありモード時の）模範英文 */}
+                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1.5">
+                          <div className="flex items-baseline gap-2">
+                            <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-800 text-[11px] font-black text-white">
+                              {item.id}
+                            </span>
+                            <span className="text-xs sm:text-sm font-bold text-slate-900">
+                              {item.question}
+                            </span>
+                          </div>
+                          {homeworkModelMode === 'show' && (
+                            <span className="text-xs sm:text-sm font-extrabold text-blue-900 sm:text-right pl-7 sm:pl-0 font-mono">
+                              {item.answer}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* 書き込み罫線（1〜3回） */}
+                        <div className="space-y-2 pl-7">
+                          {Array.from({ length: homeworkRepeatCount }).map((_, lineIdx) => {
+                            const isTraceFirstLine = homeworkModelMode === 'trace' && lineIdx === 0;
+                            return (
+                              <div
+                                key={lineIdx}
+                                className="relative flex items-end border-b border-slate-400 border-dashed h-7 pb-0.5"
+                              >
+                                <span className="text-[10px] font-bold text-slate-400 mr-2 select-none shrink-0">
+                                  ({lineIdx + 1})
+                                </span>
+                                {isTraceFirstLine ? (
+                                  <span className="text-sm sm:text-base font-mono font-semibold text-slate-300 tracking-wide select-none">
+                                    {item.answer}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-transparent select-none">.</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 別紙：模範解答一覧シート（答えも印刷ON時のみ印刷される） */}
+          <div
+            className={`worksheet-answer-page mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 shadow-sm ${
+              !printAnswers ? 'no-print' : ''
+            }`}
+          >
+            <div className="mb-4 flex items-center justify-between border-b-2 border-slate-800 pb-3">
+              <div>
+                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700">
+                  ANSWER KEY (宿題プリント 模範解答一覧)
+                </span>
+                <h2 className="text-lg font-black text-slate-900">
+                  {activePresetName}（全{homeworkItems.length}文）解答シート
+                </h2>
+              </div>
+              <span className="text-xs font-bold text-slate-500">
+                {currentRangeLabel}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
+              {homeworkItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-baseline gap-2 border-b border-slate-100 py-1.5"
+                >
+                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded bg-slate-800 text-[10px] font-bold text-white">
+                    {item.id}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] text-slate-500 truncate">{item.question}</p>
+                    <p className="font-bold text-slate-900 font-mono">{item.answer}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   // ==========================================
   // VIEW: ワークシート・テスト全画面モード
@@ -652,15 +996,67 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
       )}
 
       <main className="mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-6 pb-36 sm:pb-40">
+        {/* プリント種類（テスト or 宿題）切り替えタブ */}
+        <section className="mb-5">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-200/80 p-1.5 shadow-inner">
+            <button
+              type="button"
+              onClick={() => setSheetType('test')}
+              className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-extrabold transition-all ${
+                sheetType === 'test'
+                  ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Shuffle className="h-4 w-4 text-blue-600 shrink-0" />
+              <div className="text-left">
+                <div className="leading-tight">テストプリント作成</div>
+                <div className="text-[10px] font-semibold text-slate-400 hidden sm:block">
+                  指定範囲からランダム出題
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSheetType('homework')}
+              className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-extrabold transition-all ${
+                sheetType === 'homework'
+                  ? 'bg-white text-amber-700 shadow-sm ring-1 ring-amber-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <PenTool className="h-4 w-4 text-amber-600 shrink-0" />
+              <div className="text-left">
+                <div className="leading-tight flex items-center gap-1">
+                  <span>宿題プリント作成</span>
+                  <span className="rounded bg-amber-100 px-1.5 py-0.2 text-[9px] font-black text-amber-800">
+                    NEW
+                  </span>
+                </div>
+                <div className="text-[10px] font-semibold text-slate-400 hidden sm:block">
+                  全例文を順番に書き込み練習（不合格者の復習用）
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+
         {/* STEP 1: ステージ選択 */}
         <section className="mb-6">
           <div className="mb-3 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-black text-white shadow-sm">
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-black text-white shadow-sm ${
+                  sheetType === 'homework' ? 'bg-amber-600' : 'bg-blue-600'
+                }`}
+              >
                 1
               </span>
               <h2 className="text-sm sm:text-base font-extrabold text-slate-800">
-                テストするステージ（範囲）をえらぼう！
+                {sheetType === 'homework'
+                  ? '宿題にするステージ（範囲）をえらぼう！'
+                  : 'テストするステージ（範囲）をえらぼう！'}
               </h2>
             </div>
             <div className="flex items-center gap-2">
@@ -672,8 +1068,14 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
                 <BookOpen className="h-3.5 w-3.5" />
                 <span>例文を予習する</span>
               </Link>
-              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 border border-blue-200">
-                {currentRangeLabel}
+              <span
+                className={`rounded-full px-2.5 py-1 text-xs font-bold border ${
+                  sheetType === 'homework'
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
+                    : 'bg-blue-50 text-blue-700 border-blue-200'
+                }`}
+              >
+                {currentRangeLabel}（全{totalSentencesInSelected}文）
               </span>
             </div>
           </div>
@@ -930,97 +1332,190 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
           </div>
         </section>
 
-        {/* STEP 2: ルール設定 */}
+        {/* STEP 2: ルール設定（テスト or 宿題プリント） */}
         <section className="mb-6 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-black text-white shadow-sm">
+            <span
+              className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-black text-white shadow-sm ${
+                sheetType === 'homework' ? 'bg-amber-600' : 'bg-blue-600'
+              }`}
+            >
               2
             </span>
             <h2 className="text-sm sm:text-base font-extrabold text-slate-800">
-              出題ルールを設定しよう！
+              {sheetType === 'homework'
+                ? '宿題プリントの書式を設定しよう！'
+                : '出題ルールを設定しよう！'}
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
-              <label className="text-xs font-bold text-slate-700 mb-2 block">
-                出題形式 (モード)
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setQuizMode('jp2en')}
-                  className={`flex flex-col items-center justify-center rounded-xl border p-3 transition-all ${
-                    quizMode === 'jp2en'
-                      ? 'border-blue-500 bg-blue-50/90 text-blue-900 shadow-sm ring-2 ring-blue-400 font-black'
-                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <span className="text-lg mb-0.5">🇯🇵 ➔ 🇺🇸</span>
-                  <span className="text-xs font-extrabold">英訳テスト</span>
-                  <span className="text-[10px] text-blue-600 font-bold">★おすすめ</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setQuizMode('en2jp')}
-                  className={`flex flex-col items-center justify-center rounded-xl border p-3 transition-all ${
-                    quizMode === 'en2jp'
-                      ? 'border-blue-500 bg-blue-50/90 text-blue-900 shadow-sm ring-2 ring-blue-400 font-black'
-                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <span className="text-lg mb-0.5">🇺🇸 ➔ 🇯🇵</span>
-                  <span className="text-xs font-extrabold">和訳テスト</span>
-                  <span className="text-[10px] text-slate-400 font-medium">英語を日本語へ</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm flex flex-col justify-between">
-              <div>
+          {sheetType === 'homework' ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-amber-200 bg-white p-3.5 shadow-sm">
                 <label className="text-xs font-bold text-slate-700 mb-2 block">
-                  出題数 (問題の数)
+                  英文のお手本表示
                 </label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[5, 10, 20].map((count) => {
-                    const active = questionCount === count;
-                    return (
-                      <button
-                        key={count}
-                        type="button"
-                        onClick={() => setQuestionCount(count)}
-                        className={`rounded-lg py-2 text-xs font-bold border transition-all ${
-                          active
-                            ? 'border-blue-500 bg-blue-600 text-white shadow-sm'
-                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
-                        }`}
-                      >
-                        {count}問
-                        {count === 10 && <span className="block text-[9px] font-normal opacity-90">標準</span>}
-                      </button>
-                    );
-                  })}
+                <div className="grid grid-cols-3 gap-1.5">
                   <button
                     type="button"
-                    onClick={() => setQuestionCount(100)}
-                    className={`rounded-lg py-2 text-xs font-bold border transition-all ${
-                      questionCount >= 50
-                        ? 'border-blue-500 bg-blue-600 text-white shadow-sm'
-                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                    onClick={() => setHomeworkModelMode('show')}
+                    className={`flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all ${
+                      homeworkModelMode === 'show'
+                        ? 'border-amber-500 bg-amber-50/90 text-amber-950 shadow-sm ring-2 ring-amber-400 font-black'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    全問
-                    <span className="block text-[9px] font-normal opacity-90">MAX</span>
+                    <span className="text-base mb-0.5">📖</span>
+                    <span className="text-xs font-extrabold">お手本あり</span>
+                    <span className="text-[10px] text-amber-700 font-bold">見て書き写す</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setHomeworkModelMode('trace')}
+                    className={`flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all ${
+                      homeworkModelMode === 'trace'
+                        ? 'border-amber-500 bg-amber-50/90 text-amber-950 shadow-sm ring-2 ring-amber-400 font-black'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="text-base mb-0.5">✍️</span>
+                    <span className="text-xs font-extrabold">なぞり書き</span>
+                    <span className="text-[10px] text-slate-500 font-medium">1行目うす文字</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setHomeworkModelMode('hide')}
+                    className={`flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all ${
+                      homeworkModelMode === 'hide'
+                        ? 'border-amber-500 bg-amber-50/90 text-amber-950 shadow-sm ring-2 ring-amber-400 font-black'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="text-base mb-0.5">🔥</span>
+                    <span className="text-xs font-extrabold">お手本なし</span>
+                    <span className="text-[10px] text-slate-500 font-medium">自力で英作文</span>
                   </button>
                 </div>
               </div>
 
-              <p className="text-[11px] text-slate-400 mt-2">
-                ※ 指定した範囲の全例文からランダムに選ばれます。
-              </p>
+              <div className="rounded-xl border border-amber-200 bg-white p-3.5 shadow-sm flex flex-col justify-between">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 mb-2 block">
+                    1例文あたりの練習回数（罫線の数）
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([1, 2, 3] as HomeworkRepeatCount[]).map((cnt) => {
+                      const active = homeworkRepeatCount === cnt;
+                      return (
+                        <button
+                          key={cnt}
+                          type="button"
+                          onClick={() => setHomeworkRepeatCount(cnt)}
+                          className={`rounded-lg py-2.5 text-xs font-bold border transition-all ${
+                            active
+                              ? 'border-amber-500 bg-amber-600 text-white shadow-sm'
+                              : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          {cnt}回ずつ書く
+                          {cnt === 2 && (
+                            <span className="block text-[9px] font-normal opacity-90">おすすめ</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-amber-800 bg-amber-50/80 border border-amber-200/80 rounded-lg px-2.5 py-1.5 mt-2 font-medium">
+                  ※ ランダムではなく、選択した範囲の<strong>全{totalSentencesInSelected}例文すべて</strong>を順番に出力します。
+                </p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
+                <label className="text-xs font-bold text-slate-700 mb-2 block">
+                  出題形式 (モード)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setQuizMode('jp2en')}
+                    className={`flex flex-col items-center justify-center rounded-xl border p-3 transition-all ${
+                      quizMode === 'jp2en'
+                        ? 'border-blue-500 bg-blue-50/90 text-blue-900 shadow-sm ring-2 ring-blue-400 font-black'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="text-lg mb-0.5">🇯🇵 ➔ 🇺🇸</span>
+                    <span className="text-xs font-extrabold">英訳テスト</span>
+                    <span className="text-[10px] text-blue-600 font-bold">★おすすめ</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setQuizMode('en2jp')}
+                    className={`flex flex-col items-center justify-center rounded-xl border p-3 transition-all ${
+                      quizMode === 'en2jp'
+                        ? 'border-blue-500 bg-blue-50/90 text-blue-900 shadow-sm ring-2 ring-blue-400 font-black'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="text-lg mb-0.5">🇺🇸 ➔ 🇯🇵</span>
+                    <span className="text-xs font-extrabold">和訳テスト</span>
+                    <span className="text-[10px] text-slate-400 font-medium">英語を日本語へ</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm flex flex-col justify-between">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 mb-2 block">
+                    出題数 (問題の数)
+                  </label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[5, 10, 20].map((count) => {
+                      const active = questionCount === count;
+                      return (
+                        <button
+                          key={count}
+                          type="button"
+                          onClick={() => setQuestionCount(count)}
+                          className={`rounded-lg py-2 text-xs font-bold border transition-all ${
+                            active
+                              ? 'border-blue-500 bg-blue-600 text-white shadow-sm'
+                              : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          {count}問
+                          {count === 10 && <span className="block text-[9px] font-normal opacity-90">標準</span>}
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => setQuestionCount(100)}
+                      className={`rounded-lg py-2 text-xs font-bold border transition-all ${
+                        questionCount >= 50
+                          ? 'border-blue-500 bg-blue-600 text-white shadow-sm'
+                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      全問
+                      <span className="block text-[9px] font-normal opacity-90">MAX</span>
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-400 mt-2">
+                  ※ 指定した範囲の全例文からランダムに選ばれます。
+                </p>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* フッター（目立たない友達紹介・QRコードリンク） */}
@@ -1033,7 +1528,7 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
             <span>友達に教える (QRコード)</span>
           </Link>
           <p className="mt-1 text-[11px] text-slate-400">
-            中学英語例文テストメーカー · v9.6
+            中学英語例文テストメーカー · v9.7
           </p>
         </footer>
       </main>
@@ -1044,10 +1539,15 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
           <div className="hidden sm:flex items-center gap-4">
             <div>
               <p className="text-xs font-bold text-slate-600">
-                選択中: <span className="text-blue-600">{activePresetName}</span>
+                選択中:{' '}
+                <span className={sheetType === 'homework' ? 'text-amber-600' : 'text-blue-600'}>
+                  {activePresetName}
+                </span>
               </p>
               <p className="text-[11px] text-slate-400">
-                {quizMode === 'jp2en' ? '英訳' : '和訳'} / 最大{questionCount}問
+                {sheetType === 'homework'
+                  ? `宿題プリント / 全${totalSentencesInSelected}文（各${homeworkRepeatCount}回書き）`
+                  : `${quizMode === 'jp2en' ? '英訳' : '和訳'} / 最大${questionCount}問`}
               </p>
             </div>
             <div className="h-7 w-px bg-slate-200" />
@@ -1061,13 +1561,47 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
             </Link>
           </div>
 
-          <Button
-            onClick={generateWorksheet}
-            className="h-12 flex-1 sm:flex-none sm:min-w-[280px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-base font-black shadow-md hover:shadow-lg transition-all rounded-xl gap-2 active:scale-95"
-          >
-            <span className="text-lg">🚀</span>
-            <span>テストスタート！ (生成)</span>
-          </Button>
+          <div className="flex flex-1 sm:flex-none items-center gap-2">
+            {sheetType === 'homework' ? (
+              <>
+                <Button
+                  onClick={generateWorksheet}
+                  variant="outline"
+                  className="h-12 px-3 sm:px-4 border-blue-200 text-blue-700 hover:bg-blue-50 text-xs sm:text-sm font-bold rounded-xl gap-1.5 shrink-0"
+                  title="同じ範囲でランダムテストを作成する"
+                >
+                  <span>🚀</span>
+                  <span className="hidden md:inline">テスト作成</span>
+                </Button>
+                <Button
+                  onClick={generateHomework}
+                  className="h-12 flex-1 sm:min-w-[260px] bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-sm sm:text-base font-black shadow-md hover:shadow-lg transition-all rounded-xl gap-2 active:scale-95"
+                >
+                  <PenTool className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span>宿題プリント作成！（全{totalSentencesInSelected}文）</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={generateHomework}
+                  variant="outline"
+                  className="h-12 px-3 sm:px-4 border-amber-300 bg-amber-50/60 text-amber-800 hover:bg-amber-100 text-xs sm:text-sm font-extrabold rounded-xl gap-1.5 shrink-0"
+                  title="同じ範囲の全例文を順番に書く宿題プリントを作成する"
+                >
+                  <PenTool className="h-3.5 w-3.5 text-amber-600" />
+                  <span>宿題プリント (全{totalSentencesInSelected}文)</span>
+                </Button>
+                <Button
+                  onClick={generateWorksheet}
+                  className="h-12 flex-1 sm:min-w-[250px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm sm:text-base font-black shadow-md hover:shadow-lg transition-all rounded-xl gap-2 active:scale-95"
+                >
+                  <span className="text-lg">🚀</span>
+                  <span>テストスタート！ (生成)</span>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
