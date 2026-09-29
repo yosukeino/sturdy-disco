@@ -163,7 +163,17 @@ const UNIT_PRESETS = generateUnitPresets();
 const SUMMARY_PRESETS = generateSummaryPresets();
 const ALL_PRESETS = generateAllPresets();
 
-export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolean }) {
+export function WorksheetGenerator({
+  hideHeader = false,
+  externalSection,
+  externalSheetType,
+  onSwitchToStudy,
+}: {
+  hideHeader?: boolean;
+  externalSection?: number | null;
+  externalSheetType?: SheetType | null;
+  onSwitchToStudy?: (sec: number) => void;
+}) {
   // 画面モード: 'select' = ステージ選択・設定, 'test' = テスト・ワークシート全画面, 'homework' = 宿題プリント全画面
   const [viewMode, setViewMode] = useState<'select' | 'test' | 'homework'>('select');
   const [sheetType, setSheetType] = useState<SheetType>('test');
@@ -187,6 +197,21 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
   const [patternEmojis, setPatternEmojis] = useState<string[]>([]);
   const [revealedAnswers, setRevealedAnswers] = useState<Set<number>>(new Set());
   const [printAnswers, setPrintAnswers] = useState<boolean>(false); // 答えも印刷するか（デフォルトOFF）
+
+  // 親コンポーネント（/study のタブ切り替え等）から指定されたセクション・シート種別を反映
+  useEffect(() => {
+    if (externalSheetType) {
+      setSheetType(externalSheetType);
+    }
+    if (externalSection && externalSection >= 1 && externalSection <= TOTAL_SECTIONS) {
+      setSelectedSections(new Set([externalSection]));
+      setCustomStart(externalSection);
+      setCustomEnd(externalSection);
+      setCategoryTab('custom');
+      setActivePresetId(`custom-s${externalSection}`);
+      setViewMode('select');
+    }
+  }, [externalSection, externalSheetType]);
 
   // URLクエリパラメータからセクション選択・モード選択（予習ページ・管理画面からの連携）
   useEffect(() => {
@@ -1060,14 +1085,29 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <Link
-                href="/study"
-                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 text-xs font-bold border border-blue-200 transition-colors shadow-2xs"
-                title="テスト前に例文と文法を予習しよう！"
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-                <span>例文を予習する</span>
-              </Link>
+              {onSwitchToStudy ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const firstSec = Array.from(selectedSections).sort((a, b) => a - b)[0] || 1;
+                    onSwitchToStudy(firstSec);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 text-xs font-bold border border-blue-200 transition-colors shadow-2xs cursor-pointer"
+                  title="選択中の範囲の例文と文法を予習しよう！"
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <span>選択範囲の例文を予習する</span>
+                </button>
+              ) : (
+                <Link
+                  href="/study"
+                  className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 text-xs font-bold border border-blue-200 transition-colors shadow-2xs"
+                  title="テスト前に例文と文法を予習しよう！"
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <span>例文を予習する</span>
+                </Link>
+              )}
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-bold border ${
                   sheetType === 'homework'
@@ -1528,7 +1568,7 @@ export function WorksheetGenerator({ hideHeader = false }: { hideHeader?: boolea
             <span>友達に教える (QRコード)</span>
           </Link>
           <p className="mt-1 text-[11px] text-slate-400">
-            中学英語例文テストメーカー · v9.7
+            中学英語例文テストメーカー · v9.8
           </p>
         </footer>
       </main>

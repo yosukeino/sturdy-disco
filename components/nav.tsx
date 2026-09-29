@@ -26,7 +26,7 @@ export type NavActiveTab =
   | 'share';
 
 export function Nav({ active }: { active?: NavActiveTab }) {
-  const isLabActive = active === 'lab' || active === 'study';
+  const isStudyActive = active === 'study' || active === 'worksheet';
 
   return (
     <div className="hidden sm:flex items-center gap-2">
@@ -43,9 +43,20 @@ export function Nav({ active }: { active?: NavActiveTab }) {
           <span>ホーム</span>
         </Link>
         <Link
+          href="/study"
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+            isStudyActive
+              ? 'bg-blue-600 text-white shadow-xs font-black'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+          }`}
+        >
+          <BookOpen className="h-4 w-4" />
+          <span>予習・テスト</span>
+        </Link>
+        <Link
           href="/lab"
           className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
-            isLabActive
+            active === 'lab'
               ? 'bg-blue-600 text-white shadow-xs font-black'
               : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
           }`}
@@ -79,12 +90,8 @@ export function Nav({ active }: { active?: NavActiveTab }) {
 
       <Link
         href="/admin"
-        className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold border transition-all whitespace-nowrap ${
-          active === 'worksheet'
-            ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-        }`}
-        title="講師専用の管理・テスト印刷画面へ"
+        className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold border bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all whitespace-nowrap"
+        title="講師専用の管理コンソールへ"
       >
         <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" />
         <span>講師用</span>
@@ -94,10 +101,10 @@ export function Nav({ active }: { active?: NavActiveTab }) {
 }
 
 export function MobileNavTabs({ active }: { active?: NavActiveTab }) {
-  const isLabActive = active === 'lab' || active === 'study';
+  const isStudyActive = active === 'study' || active === 'worksheet';
 
   return (
-    <nav className="sm:hidden grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 text-[11px] font-bold shadow-inner border border-slate-200/60">
+    <nav className="sm:hidden grid grid-cols-5 gap-1 rounded-xl bg-slate-100 p-1 text-[10px] font-bold shadow-inner border border-slate-200/60">
       <Link
         href="/"
         className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all whitespace-nowrap ${
@@ -106,19 +113,30 @@ export function MobileNavTabs({ active }: { active?: NavActiveTab }) {
             : 'text-slate-600 hover:text-slate-900'
         }`}
       >
-        <Home className="h-3.5 w-3.5" />
+        <Home className="h-3 w-3" />
         <span>ホーム</span>
       </Link>
       <Link
-        href="/lab"
+        href="/study"
         className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all whitespace-nowrap ${
-          isLabActive
+          isStudyActive
             ? 'bg-white text-blue-700 shadow-xs font-black'
             : 'text-slate-600 hover:text-slate-900'
         }`}
       >
-        <FlaskConical className="h-3.5 w-3.5" />
-        <span>学習Lab</span>
+        <BookOpen className="h-3 w-3" />
+        <span>予習・テスト</span>
+      </Link>
+      <Link
+        href="/lab"
+        className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all whitespace-nowrap ${
+          active === 'lab'
+            ? 'bg-white text-blue-700 shadow-xs font-black'
+            : 'text-slate-600 hover:text-slate-900'
+        }`}
+      >
+        <FlaskConical className="h-3 w-3" />
+        <span>道場</span>
       </Link>
       <Link
         href="/materials"
@@ -128,8 +146,8 @@ export function MobileNavTabs({ active }: { active?: NavActiveTab }) {
             : 'text-slate-600 hover:text-slate-900'
         }`}
       >
-        <FolderOpen className="h-3.5 w-3.5" />
-        <span>配布教材</span>
+        <FolderOpen className="h-3 w-3" />
+        <span>教材</span>
       </Link>
       <Link
         href="/progress"
@@ -139,7 +157,7 @@ export function MobileNavTabs({ active }: { active?: NavActiveTab }) {
             : 'text-slate-600 hover:text-slate-900'
         }`}
       >
-        <Trophy className="h-3.5 w-3.5" />
+        <Trophy className="h-3 w-3" />
         <span>進捗</span>
       </Link>
     </nav>
@@ -237,7 +255,7 @@ export function VersionBadge() {
       variant="secondary"
       className="font-mono text-[11px] font-semibold bg-slate-100 text-slate-700 whitespace-nowrap shrink-0"
     >
-      v9.7
+      v9.8
     </Badge>
   );
 }

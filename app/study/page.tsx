@@ -22,12 +22,16 @@ import {
   FileCheck2,
   FolderOpen,
   ExternalLink,
+  PenTool,
+  Shuffle,
 } from 'lucide-react';
 import { grammarData, TOTAL_SECTIONS, grammarExplanations } from '@/lib/grammar-data';
 import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
 import { fetchMaterials, MaterialItem, MEDIA_TYPE_LABELS } from '@/lib/materials';
+import { WorksheetGenerator } from '@/components/worksheet-generator';
 
 type MaskMode = 'none' | 'hide-en' | 'hide-jp';
+type MainStudyTab = 'study' | 'test';
 
 // 英語音声読み上げ（Web Speech API）
 function speakEnglish(text: string) {
@@ -41,6 +45,11 @@ function speakEnglish(text: string) {
 }
 
 export default function StudyPage() {
+  // メインタブ: 'study' = 予習・例文を見る, 'test' = テストを作成して解く
+  const [activeMainTab, setActiveMainTab] = useState<MainStudyTab>('study');
+  const [targetTestSection, setTargetTestSection] = useState<number | null>(null);
+  const [targetSheetType, setTargetSheetType] = useState<'test' | 'homework' | null>(null);
+
   // 現在選択されているセクション（1〜TOTAL_SECTIONS）
   const [currentSection, setCurrentSection] = useState<number>(1);
   // 表示モード: 'single' = 1セクション集中, 'all' = 全セクション一覧（まとめ・印刷用）
@@ -56,12 +65,39 @@ export default function StudyPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const startParam = Number(params.get('start'));
-      if (startParam >= 1 && startParam <= TOTAL_SECTIONS) {
+      const secParam = Number(params.get('section'));
+      const tabParam = params.get('tab');
+      const typeParam = params.get('type');
+
+      if (secParam >= 1 && secParam <= TOTAL_SECTIONS) {
+        setCurrentSection(secParam);
+        setTargetTestSection(secParam);
+      } else if (startParam >= 1 && startParam <= TOTAL_SECTIONS) {
         setCurrentSection(startParam);
+      }
+
+      if (tabParam === 'test' || typeParam === 'homework') {
+        setActiveMainTab('test');
+      }
+      if (typeParam === 'homework') {
+        setTargetSheetType('homework');
       }
     }
     fetchMaterials(false).then((res) => setAllMaterials(res.items));
   }, []);
+
+  // 特定のセクションでテスト作成タブへ切り替えるハンドラー
+  const handleStartTestForSection = useCallback(
+    (sec: number, sheetType: 'test' | 'homework' = 'test') => {
+      setTargetTestSection(sec);
+      setTargetSheetType(sheetType);
+      setActiveMainTab('test');
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    },
+    []
+  );
 
   const sectionMaterials = useMemo(() => {
     return allMaterials.filter((m) => {
@@ -126,12 +162,12 @@ export default function StudyPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900">
-                  中学英語 予習ノート
+                  英文法 予習＆例文テスト
                 </h1>
                 <VersionBadge />
               </div>
               <p className="text-[11px] text-slate-500 hidden sm:block">
-                テスト前の予習＆文法マスター！例文を声に出して練習しよう
+                全{TOTAL_SECTIONS}セクションの予習ノート ＆ 例文テスト・宿題メーカー
               </p>
             </div>
           </div>
@@ -145,10 +181,85 @@ export default function StudyPage() {
         <div className="px-4 pb-2 sm:hidden">
           <MobileNavTabs active="study" />
         </div>
+
+        {/* 最重要：『📖 予習・例文を見る』⇄『📝 テストを作成して解く』のメインモード切替バー */}
+        <div className="border-t border-slate-200/80 bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-amber-50/50 px-3 py-2 sm:px-6">
+          <div className="max-w-5xl mx-auto grid grid-cols-2 gap-2 rounded-2xl bg-slate-200/90 p-1.5 shadow-inner">
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('study')}
+              className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-black transition-all cursor-pointer ${
+                activeMainTab === 'study'
+                  ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-300'
+                  : 'bg-white/60 text-slate-700 hover:bg-white hover:text-blue-700'
+              }`}
+            >
+              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              <div className="text-left">
+                <div className="leading-tight">📖 予習・例文を見る</div>
+                <div
+                  className={`text-[10px] font-semibold hidden sm:block ${
+                    activeMainTab === 'study' ? 'text-blue-100' : 'text-slate-500'
+                  }`}
+                >
+                  文法解説・音声読み上げ・赤シート暗記
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('test')}
+              className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-black transition-all cursor-pointer ${
+                activeMainTab === 'test'
+                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md ring-2 ring-indigo-300'
+                  : 'bg-white/60 text-slate-700 hover:bg-white hover:text-indigo-700'
+              }`}
+            >
+              <FileCheck2 className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              <div className="text-left">
+                <div className="leading-tight flex items-center gap-1.5">
+                  <span>📝 テストを作成して解く</span>
+                  <span
+                    className={`rounded px-1.5 py-0.2 text-[9px] font-black ${
+                      activeMainTab === 'test'
+                        ? 'bg-amber-300 text-slate-900'
+                        : 'bg-indigo-100 text-indigo-800'
+                    }`}
+                  >
+                    おすすめ
+                  </span>
+                </div>
+                <div
+                  className={`text-[10px] font-semibold hidden sm:block ${
+                    activeMainTab === 'test' ? 'text-indigo-100' : 'text-slate-500'
+                  }`}
+                >
+                  範囲別ランダムテスト・宿題プリント作成
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
       </header>
 
-      {/* メインコンテンツ */}
-      <main className="max-w-5xl mx-auto px-3 sm:px-6 pt-5 sm:pt-7">
+      {/* タブ2: テスト作成・宿題プリントモード */}
+      {activeMainTab === 'test' ? (
+        <WorksheetGenerator
+          hideHeader
+          externalSection={targetTestSection}
+          externalSheetType={targetSheetType}
+          onSwitchToStudy={(sec) => {
+            setCurrentSection(sec);
+            setActiveMainTab('study');
+            if (typeof window !== 'undefined') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+        />
+      ) : (
+        /* タブ1: 予習・例文ノートモード */
+        <main className="max-w-5xl mx-auto px-3 sm:px-6 pt-5 sm:pt-7">
         {/* 上部コントロールバー（印刷時は非表示） */}
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs mb-6 space-y-4 print:hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -368,6 +479,7 @@ export default function StudyPage() {
             onToggleReveal={toggleReveal}
             onNext={() => goToSection(currentSection + 1)}
             onPrev={() => goToSection(currentSection - 1)}
+            onStartTest={handleStartTestForSection}
           />
         ) : (
           // 全セクション一覧表示
@@ -382,11 +494,13 @@ export default function StudyPage() {
                 revealedItems={revealedItems}
                 onToggleReveal={toggleReveal}
                 compact={false}
+                onStartTest={handleStartTestForSection}
               />
             ))}
           </div>
         )}
-      </main>
+        </main>
+      )}
     </div>
   );
 }
@@ -404,6 +518,7 @@ interface SectionDetailViewProps {
   onNext?: () => void;
   onPrev?: () => void;
   compact?: boolean;
+  onStartTest: (sec: number, sheetType?: 'test' | 'homework') => void;
 }
 
 function SectionDetailView({
@@ -416,6 +531,7 @@ function SectionDetailView({
   onNext,
   onPrev,
   compact = false,
+  onStartTest,
 }: SectionDetailViewProps) {
   if (!sectionData) return null;
 
@@ -453,15 +569,24 @@ function SectionDetailView({
         </div>
 
         <div className="flex items-center gap-2 print:hidden">
-          <Link href={`/?section=${sectionNum}`}>
-            <Button
-              size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold gap-1.5 rounded-xl shadow-2xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <span>このセクションをテスト</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onStartTest(sectionNum, 'homework')}
+            className="border-amber-300 bg-amber-50/70 text-amber-800 hover:bg-amber-100 text-xs font-bold gap-1 rounded-xl shadow-2xs"
+            title="このセクションの全例文を順番に書く宿題プリントを作成"
+          >
+            <PenTool className="h-3.5 w-3.5 text-amber-600" />
+            <span className="hidden sm:inline">書き取り練習</span>
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => onStartTest(sectionNum, 'test')}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold gap-1.5 rounded-xl shadow-2xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <span>このセクションをテスト</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
 
@@ -704,16 +829,26 @@ function SectionDetailView({
               )}
             </div>
 
-            <Link href={`/?section=${sectionNum}`} className="w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
               <Button
                 size="sm"
+                variant="outline"
+                onClick={() => onStartTest(sectionNum, 'homework')}
+                className="w-full sm:w-auto border-amber-300 bg-amber-50/70 text-amber-800 hover:bg-amber-100 text-xs font-bold gap-1.5 rounded-xl shadow-2xs"
+              >
+                <PenTool className="h-3.5 w-3.5 text-amber-600" />
+                <span>Section {sectionNum} の書き取りプリントを作成</span>
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => onStartTest(sectionNum, 'test')}
                 className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold gap-1.5 rounded-xl shadow-xs"
               >
                 <FileCheck2 className="h-4 w-4" />
                 <span>Section {sectionNum} のテストを作成して解く！</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Button>
-            </Link>
+            </div>
           </div>
         )}
       </div>

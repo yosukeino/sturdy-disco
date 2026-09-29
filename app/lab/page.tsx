@@ -56,35 +56,42 @@ export default function LabCatalogPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Tool 1: Grammar Study & Preview */}
-            <Link href="/study" className="group block">
-              <Card className="h-full border-2 border-slate-200 hover:border-blue-500 transition-all hover:shadow-md bg-white">
+            {/* Tool 1: Grammar Study & Test Maker */}
+            <Card className="h-full border-2 border-blue-300 hover:border-blue-500 transition-all hover:shadow-md bg-white flex flex-col justify-between">
+              <Link href="/study" className="group block">
                 <CardHeader className="pb-2">
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm group-hover:scale-105 transition-transform">
                       <BookOpen className="h-6 w-6" />
                     </div>
                     <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-black">
-                      Lab #01 • 定番
+                      Lab #01 • メイン機能
                     </Badge>
                   </div>
                   <CardTitle className="text-lg font-black text-slate-900 flex items-center justify-between pt-1">
-                    <span>英文法 予習＆例文マスター</span>
+                    <span>英文法 予習＆例文テスト</span>
                     <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 transition-all" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xs text-slate-600 space-y-3 leading-relaxed">
+                <CardContent className="text-xs text-slate-600 space-y-2 leading-relaxed pb-3">
                   <p>
-                    中学英語の全{TOTAL_SECTIONS}セクションの文法ルール図解と、テストに出る重要例文の音声・和訳・英訳チェックができます。
+                    全{TOTAL_SECTIONS}セクションの文法解説・音声・赤シート暗記に加え、<strong>範囲別のランダムテスト＆宿題プリント作成</strong>ができます。
                   </p>
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    <Badge variant="secondary" className="text-[10px]">音声読み上げ</Badge>
-                    <Badge variant="secondary" className="text-[10px]">赤シート暗記</Badge>
-                    <Badge variant="secondary" className="text-[10px]">配布プリント連動</Badge>
-                  </div>
                 </CardContent>
-              </Card>
-            </Link>
+              </Link>
+              <div className="px-6 pb-5 pt-1 flex items-center gap-2">
+                <Link href="/study" className="flex-1">
+                  <Button size="sm" variant="outline" className="w-full text-xs font-bold border-blue-200 text-blue-700 hover:bg-blue-50">
+                    📖 予習ノート
+                  </Button>
+                </Link>
+                <Link href="/study?tab=test" className="flex-1">
+                  <Button size="sm" className="w-full text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white">
+                    🚀 テスト作成
+                  </Button>
+                </Link>
+              </div>
+            </Card>
 
             {/* Tool 2: Flash & Word Scramble Dojo */}
             <Link href="/lab/flash" className="group block">
