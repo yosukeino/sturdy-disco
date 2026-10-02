@@ -22,12 +22,13 @@ import {
   QrCode,
   PenTool,
   ListOrdered,
+  Flame,
 } from 'lucide-react';
-import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
+import { grammarData, TOTAL_SECTIONS, hardModeData, HARD_MODE_MAX_SECTION } from '@/lib/grammar-data';
 import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
 
 type QuizMode = 'jp2en' | 'en2jp';
-type PresetCategory = 'unit' | 'summary' | 'all' | 'custom';
+type PresetCategory = 'unit' | 'summary' | 'all' | 'custom' | 'hard';
 type SheetType = 'test' | 'homework';
 type HomeworkModelMode = 'show' | 'trace' | 'hide';
 type HomeworkRepeatCount = 1 | 2 | 3;
@@ -47,7 +48,7 @@ interface PresetOption {
   badge: string;
   title: string;
   subtitle?: string;
-  category: 'unit' | 'summary' | 'all';
+  category: 'unit' | 'summary' | 'all' | 'hard';
 }
 
 const EMOJI_POOL = [
@@ -159,19 +160,82 @@ function generateAllPresets(): PresetOption[] {
   return list;
 }
 
+// ハードモード プリセットリスト（S1-10 大ボス、S1-5 / S6-10 まとめ、S1〜S10 個別ハード）
+function generateHardPresets(): {
+  bossPreset: PresetOption;
+  summaryPresets: PresetOption[];
+  sectionPresets: PresetOption[];
+} {
+  const bossPreset: PresetOption = {
+    id: 'hard-boss-1-10',
+    start: 1,
+    end: HARD_MODE_MAX_SECTION,
+    badge: '🔥 大ボス',
+    title: 'S1 - S10 大ボスモード',
+    subtitle: 'S1〜S10の難問全50文からランダム出題！総合チャレンジ',
+    category: 'hard',
+  };
+
+  const summaryPresets: PresetOption[] = [
+    {
+      id: 'hard-summary-1-5',
+      start: 1,
+      end: 5,
+      badge: '👑 中ボス 1',
+      title: 'S1 - S5 ハードまとめ',
+      subtitle: 'S1〜S5の難問まとめ (全25文)',
+      category: 'hard',
+    },
+    {
+      id: 'hard-summary-6-10',
+      start: 6,
+      end: 10,
+      badge: '👑 中ボス 2',
+      title: 'S6 - S10 ハードまとめ',
+      subtitle: 'S6〜S10の難問まとめ (全25文)',
+      category: 'hard',
+    },
+  ];
+
+  const sectionPresets: PresetOption[] = [];
+  for (let i = 1; i <= HARD_MODE_MAX_SECTION; i++) {
+    const data = hardModeData[i];
+    const sTitle = getShortTitle(i);
+    sectionPresets.push({
+      id: `hard-sec-${i}`,
+      start: i,
+      end: i,
+      badge: `Hard S${i}`,
+      title: `S${i} ハード`,
+      subtitle: data ? data.title.replace(/^\d+\.\s*/, '') : sTitle,
+      category: 'hard',
+    });
+  }
+
+  return { bossPreset, summaryPresets, sectionPresets };
+}
+
 const UNIT_PRESETS = generateUnitPresets();
 const SUMMARY_PRESETS = generateSummaryPresets();
 const ALL_PRESETS = generateAllPresets();
+const {
+  bossPreset: HARD_BOSS_PRESET,
+  summaryPresets: HARD_SUMMARY_PRESETS,
+  sectionPresets: HARD_SECTION_PRESETS,
+} = generateHardPresets();
+const ALL_HARD_PRESETS = [HARD_BOSS_PRESET, ...HARD_SUMMARY_PRESETS, ...HARD_SECTION_PRESETS];
 
 export function WorksheetGenerator({
   hideHeader = false,
   externalSection,
   externalSheetType,
+  externalHardMode,
   onSwitchToStudy,
 }: {
   hideHeader?: boolean;
   externalSection?: number | null;
   externalSheetType?: SheetType | null;
+  externalHardMode?: boolean | null;
   onSwitchToStudy?: (sec: number) => void;
 }) {
   // 画面モード: 'select' = ステージ選択・設定, 'test' = テスト・ワークシート全画面, 'homework' = 宿題プリント全画面
@@ -198,10 +262,24 @@ export function WorksheetGenerator({
   const [revealedAnswers, setRevealedAnswers] = useState<Set<number>>(new Set());
   const [printAnswers, setPrintAnswers] = useState<boolean>(false); // 答えも印刷するか（デフォルトOFF）
 
-  // 親コンポーネント（/study のタブ切り替え等）から指定されたセクション・シート種別を反映
+  // 親コンポーネント（/study のタブ切り替え等）から指定されたセクション・シート種別・ハードモードを反映
   useEffect(() => {
     if (externalSheetType) {
       setSheetType(externalSheetType);
+    }
+    if (externalHardMode) {
+      setCategoryTab('hard');
+      if (externalSection && externalSection >= 1 && externalSection <= HARD_MODE_MAX_SECTION) {
+        setActivePresetId(`hard-sec-${externalSection}`);
+        setSelectedSections(new Set([externalSection]));
+      } else {
+        setActivePresetId(HARD_BOSS_PRESET.id);
+        const s = new Set<number>();
+        for (let i = 1; i <= HARD_MODE_MAX_SECTION; i++) s.add(i);
+        setSelectedSections(s);
+      }
+      setViewMode('select');
+      return;
     }
     if (externalSection && externalSection >= 1 && externalSection <= TOTAL_SECTIONS) {
       setSelectedSections(new Set([externalSection]));
@@ -211,7 +289,7 @@ export function WorksheetGenerator({
       setActivePresetId(`custom-s${externalSection}`);
       setViewMode('select');
     }
-  }, [externalSection, externalSheetType]);
+  }, [externalSection, externalSheetType, externalHardMode]);
 
   // URLクエリパラメータからセクション選択・モード選択（予習ページ・管理画面からの連携）
   useEffect(() => {
@@ -222,9 +300,37 @@ export function WorksheetGenerator({
       const start = params.get('start');
       const end = params.get('end');
       const type = params.get('type');
+      const category = params.get('category');
+      const hard = params.get('hard');
+      const boss = params.get('boss');
+      const summary = params.get('summary');
+      const preset = params.get('preset');
 
       if (type === 'homework') {
         setSheetType('homework');
+      }
+
+      // ハードモードのURL指定
+      if (category === 'hard' || hard === 'true' || preset?.startsWith('hard-') || boss === 'true') {
+        setCategoryTab('hard');
+        if (boss === 'true' || preset === HARD_BOSS_PRESET.id) {
+          selectPreset(HARD_BOSS_PRESET);
+        } else if (summary === '1-5' || preset === 'hard-summary-1-5') {
+          const p = HARD_SUMMARY_PRESETS.find((x) => x.id === 'hard-summary-1-5');
+          if (p) selectPreset(p);
+        } else if (summary === '6-10' || preset === 'hard-summary-6-10') {
+          const p = HARD_SUMMARY_PRESETS.find((x) => x.id === 'hard-summary-6-10');
+          if (p) selectPreset(p);
+        } else if (sec) {
+          const s = parseInt(sec, 10);
+          if (s >= 1 && s <= HARD_MODE_MAX_SECTION) {
+            const p = HARD_SECTION_PRESETS.find((x) => x.id === `hard-sec-${s}`);
+            if (p) selectPreset(p);
+          }
+        } else {
+          selectPreset(HARD_BOSS_PRESET);
+        }
+        return;
       }
 
       if (sec) {
@@ -254,6 +360,13 @@ export function WorksheetGenerator({
     }
   }, []);
 
+  // ハードモード判定
+  const isHardMode = useMemo(() => {
+    if (categoryTab === 'hard') return true;
+    if (activePresetId && activePresetId.startsWith('hard-')) return true;
+    return false;
+  }, [categoryTab, activePresetId]);
+
   // プリセット選択ハンドラー
   const selectPreset = useCallback((preset: PresetOption) => {
     setActivePresetId(preset.id);
@@ -262,6 +375,15 @@ export function WorksheetGenerator({
       s.add(i);
     }
     setSelectedSections(s);
+    if (preset.category === 'hard') {
+      if (preset.id === HARD_BOSS_PRESET.id) {
+        setQuestionCount(50);
+      } else if (preset.id.startsWith('hard-summary-')) {
+        setQuestionCount(25);
+      } else if (preset.id.startsWith('hard-sec-')) {
+        setQuestionCount(5);
+      }
+    }
   }, []);
 
   // カスタム範囲適用
@@ -311,11 +433,16 @@ export function WorksheetGenerator({
     const sections = Array.from(selectedSections).sort((a, b) => a - b);
     let count = 0;
     for (const sec of sections) {
-      const data = grammarData[sec];
-      if (data) count += data.sentences.length;
+      if (isHardMode) {
+        const data = hardModeData[sec];
+        if (data) count += data.hard_sentences.length;
+      } else {
+        const data = grammarData[sec];
+        if (data) count += data.sentences.length;
+      }
     }
     return count;
-  }, [selectedSections]);
+  }, [selectedSections, isHardMode]);
 
   // ワークシート（ランダムテスト）生成
   const generateWorksheet = useCallback(() => {
@@ -325,16 +452,30 @@ export function WorksheetGenerator({
     const pool: QuizItem[] = [];
     let id = 0;
     for (const sec of sections) {
-      const data = grammarData[sec];
-      if (!data) continue;
-      for (const s of data.sentences) {
-        pool.push({
-          id: id++,
-          question: quizMode === 'en2jp' ? s.en : s.jp,
-          answer: quizMode === 'en2jp' ? s.jp : s.en,
-          section: sec,
-          sectionTitle: data.title,
-        });
+      if (isHardMode) {
+        const data = hardModeData[sec];
+        if (!data) continue;
+        for (const s of data.hard_sentences) {
+          pool.push({
+            id: id++,
+            question: quizMode === 'en2jp' ? s.en : s.jp,
+            answer: quizMode === 'en2jp' ? s.jp : s.en,
+            section: sec,
+            sectionTitle: `${data.title} [ハード]`,
+          });
+        }
+      } else {
+        const data = grammarData[sec];
+        if (!data) continue;
+        for (const s of data.sentences) {
+          pool.push({
+            id: id++,
+            question: quizMode === 'en2jp' ? s.en : s.jp,
+            answer: quizMode === 'en2jp' ? s.jp : s.en,
+            section: sec,
+            sectionTitle: data.title,
+          });
+        }
       }
     }
 
@@ -348,11 +489,11 @@ export function WorksheetGenerator({
     }));
 
     setQuiz(selected);
-    setPatternEmojis(pickRandomEmojis(2));
+    setPatternEmojis(isHardMode ? ['🔥', '⚔️'] : pickRandomEmojis(2));
     setRevealedAnswers(new Set());
     setViewMode('test');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [selectedSections, quizMode, questionCount]);
+  }, [selectedSections, quizMode, questionCount, isHardMode]);
 
   // 宿題プリント（指定範囲の全例文を順番に出題）生成
   const generateHomework = useCallback(() => {
@@ -362,16 +503,30 @@ export function WorksheetGenerator({
     const items: QuizItem[] = [];
     let id = 1;
     for (const sec of sections) {
-      const data = grammarData[sec];
-      if (!data) continue;
-      for (const s of data.sentences) {
-        items.push({
-          id: id++,
-          question: s.jp,
-          answer: s.en,
-          section: sec,
-          sectionTitle: data.title,
-        });
+      if (isHardMode) {
+        const data = hardModeData[sec];
+        if (!data) continue;
+        for (const s of data.hard_sentences) {
+          items.push({
+            id: id++,
+            question: s.jp,
+            answer: s.en,
+            section: sec,
+            sectionTitle: `${data.title} [ハード]`,
+          });
+        }
+      } else {
+        const data = grammarData[sec];
+        if (!data) continue;
+        for (const s of data.sentences) {
+          items.push({
+            id: id++,
+            question: s.jp,
+            answer: s.en,
+            section: sec,
+            sectionTitle: data.title,
+          });
+        }
       }
     }
 
@@ -380,7 +535,7 @@ export function WorksheetGenerator({
     setHomeworkItems(items);
     setViewMode('homework');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [selectedSections]);
+  }, [selectedSections, isHardMode]);
 
   // 解答表示トグル
   const toggleAnswer = useCallback((id: number) => {
@@ -411,11 +566,11 @@ export function WorksheetGenerator({
   const modeLabel = quizMode === 'en2jp' ? '和訳 (English → Japanese)' : '英訳 (Japanese → English)';
 
   const activePresetName = useMemo(() => {
-    const all = [...UNIT_PRESETS, ...SUMMARY_PRESETS, ...ALL_PRESETS];
+    const all = [...UNIT_PRESETS, ...SUMMARY_PRESETS, ...ALL_PRESETS, ...ALL_HARD_PRESETS];
     const found = all.find((p) => p.id === activePresetId);
     if (found) return `${found.badge}: ${found.title}`;
-    return currentRangeLabel;
-  }, [activePresetId, currentRangeLabel]);
+    return isHardMode ? `🔥 ハード ${currentRangeLabel}` : currentRangeLabel;
+  }, [activePresetId, currentRangeLabel, isHardMode]);
 
   // ==========================================
   // VIEW: 宿題プリント（書き込み・反復練習）全画面モード
@@ -453,10 +608,20 @@ export function WorksheetGenerator({
             </Button>
 
             <div className="flex items-center gap-2 text-center">
-              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-extrabold text-amber-800 border border-amber-200">
-                ✏️ 宿題プリント
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold border ${
+                  isHardMode
+                    ? 'bg-red-100 text-red-900 border-red-300'
+                    : 'bg-amber-100 text-amber-800 border-amber-200'
+                }`}
+              >
+                ✏️ 宿題プリント{isHardMode ? ' [ハード]' : ''}
               </span>
-              <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-800">
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                  isHardMode ? 'bg-red-600 text-white font-black' : 'bg-blue-100 text-blue-800'
+                }`}
+              >
                 {activePresetName}
               </span>
               <span className="text-xs sm:text-sm font-bold text-slate-600">
@@ -571,7 +736,7 @@ export function WorksheetGenerator({
                     </span>
                   </div>
                   <h1 className="mt-1 text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                    中学英語 例文書き取り・復習宿題プリント（{activePresetName}）
+                    中学英語 例文書き取り・復習宿題プリント {isHardMode ? '【🔥 ハードモード】' : ''}（{activePresetName}）
                   </h1>
                 </div>
 
@@ -731,8 +896,12 @@ export function WorksheetGenerator({
             </Button>
 
             <div className="flex items-center gap-2 text-center">
-              <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-800">
-                {activePresetName}
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                  isHardMode ? 'bg-red-600 text-white font-black' : 'bg-blue-100 text-blue-800'
+                }`}
+              >
+                {isHardMode && '🔥 '}{activePresetName}
               </span>
               <span className="text-sm font-semibold text-slate-600 hidden md:inline">
                 {quizMode === 'jp2en' ? '英訳' : '和訳'} {quiz.length}問
@@ -907,10 +1076,10 @@ export function WorksheetGenerator({
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="text-lg font-bold text-slate-900">
-                      中学英語例文テスト
+                      中学英語例文テスト {isHardMode ? '【🔥 ハードモード】' : ''}
                     </h2>
                     <p className="text-xs text-slate-600">
-                      出題範囲: {currentRangeLabel} — {modeLabel}
+                      出題範囲: {activePresetName} — {modeLabel}
                     </p>
                   </div>
                   <div className="text-right">
@@ -1120,10 +1289,15 @@ export function WorksheetGenerator({
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-200/80 p-1 text-xs font-bold text-slate-600 sm:text-sm">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 rounded-xl bg-slate-200/80 p-1.5 text-xs font-bold text-slate-600 sm:text-sm">
             <button
               type="button"
-              onClick={() => setCategoryTab('unit')}
+              onClick={() => {
+                setCategoryTab('unit');
+                if (activePresetId.startsWith('hard-') || !UNIT_PRESETS.some((p) => p.id === activePresetId)) {
+                  selectPreset(UNIT_PRESETS[0]);
+                }
+              }}
               className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all ${
                 categoryTab === 'unit'
                   ? 'bg-white text-blue-600 shadow-sm'
@@ -1135,7 +1309,12 @@ export function WorksheetGenerator({
             </button>
             <button
               type="button"
-              onClick={() => setCategoryTab('summary')}
+              onClick={() => {
+                setCategoryTab('summary');
+                if (activePresetId.startsWith('hard-') || !SUMMARY_PRESETS.some((p) => p.id === activePresetId)) {
+                  selectPreset(SUMMARY_PRESETS[0]);
+                }
+              }}
               className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all ${
                 categoryTab === 'summary'
                   ? 'bg-white text-amber-600 shadow-sm'
@@ -1147,7 +1326,12 @@ export function WorksheetGenerator({
             </button>
             <button
               type="button"
-              onClick={() => setCategoryTab('all')}
+              onClick={() => {
+                setCategoryTab('all');
+                if (activePresetId.startsWith('hard-') || !ALL_PRESETS.some((p) => p.id === activePresetId)) {
+                  selectPreset(ALL_PRESETS[0]);
+                }
+              }}
               className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all ${
                 categoryTab === 'all'
                   ? 'bg-white text-emerald-600 shadow-sm'
@@ -1159,8 +1343,25 @@ export function WorksheetGenerator({
             </button>
             <button
               type="button"
-              onClick={() => setCategoryTab('custom')}
+              onClick={() => {
+                setCategoryTab('hard');
+                if (!activePresetId.startsWith('hard-')) {
+                  selectPreset(HARD_BOSS_PRESET);
+                }
+              }}
               className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all ${
+                categoryTab === 'hard'
+                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-sm ring-1 ring-red-400 font-black'
+                  : 'text-red-600 hover:text-red-700 hover:bg-white/60 font-black'
+              }`}
+            >
+              <Flame className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${categoryTab === 'hard' ? 'text-amber-300 fill-amber-300' : 'text-red-500 fill-red-500'}`} />
+              <span>🔥 ハード (S1-10)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCategoryTab('custom')}
+              className={`col-span-2 sm:col-span-1 flex items-center justify-center gap-1 rounded-lg py-2 transition-all ${
                 categoryTab === 'custom'
                   ? 'bg-white text-purple-600 shadow-sm'
                   : 'hover:text-slate-900'
@@ -1280,6 +1481,185 @@ export function WorksheetGenerator({
                     </button>
                   );
                 })}
+              </div>
+            )}
+
+            {categoryTab === 'hard' && (
+              <div className="space-y-4">
+                {/* 案内バナー */}
+                <div className="rounded-xl border border-red-200 bg-gradient-to-r from-red-50 via-rose-50 to-orange-50 p-3 sm:p-4 text-xs shadow-xs">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-white text-[11px] font-black">
+                      🔥
+                    </span>
+                    <span className="font-extrabold text-red-900 text-sm">
+                      高難度「ハードモード」テスト (S1 〜 S10)
+                    </span>
+                    <span className="ml-auto rounded-full bg-red-600 text-white text-[10px] font-black px-2 py-0.5">
+                      全50文
+                    </span>
+                  </div>
+                  <p className="text-slate-600 text-[11px] leading-relaxed">
+                    公立・私立高校入試レベルの長文・発展文法を含むハイレベルテストです。
+                    大ボス（全50問）、中ボスまとめ（各25問）、各セクション個別テスト（各5問）から選べます！
+                  </p>
+                </div>
+
+                {/* 1. 大ボスモード (Featured Hero Card) */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Flame className="h-4 w-4 text-red-600 fill-red-600" />
+                    <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                      1. 大ボスモード（S1〜10 全難問フルマラソン）
+                    </span>
+                  </div>
+                  {(() => {
+                    const p = HARD_BOSS_PRESET;
+                    const isSelected = activePresetId === p.id;
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => selectPreset(p)}
+                        className={`w-full relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border-2 p-4 text-left transition-all active:scale-[0.99] ${
+                          isSelected
+                            ? 'border-red-600 bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white shadow-xl ring-4 ring-red-300'
+                            : 'border-red-300 bg-gradient-to-r from-red-900/90 to-slate-900 text-white hover:border-red-400 hover:shadow-lg'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 shadow-xs">
+                              {p.badge}
+                            </span>
+                            <span className="text-xs text-amber-200 font-bold">
+                              Section 1 〜 10 全問網羅
+                            </span>
+                          </div>
+                          <h3 className="text-lg sm:text-xl font-black tracking-tight">
+                            {p.title}
+                          </h3>
+                          <p className="text-xs text-white/90">
+                            {p.subtitle}（be動詞から疑問詞までハイレベル問題全50文）
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <span
+                            className={`text-xs font-black px-3 py-1.5 rounded-xl border ${
+                              isSelected
+                                ? 'bg-white text-red-600 border-white shadow-md'
+                                : 'bg-white/10 text-white border-white/20'
+                            }`}
+                          >
+                            {isSelected ? '✓ 選択中' : '選択する'}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })()}
+                </div>
+
+                {/* 2. 中ボス ハードまとめテスト (2 Cards) */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Trophy className="h-4 w-4 text-amber-600" />
+                    <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                      2. ハードまとめテスト（中ボス 25問）
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {HARD_SUMMARY_PRESETS.map((p) => {
+                      const isSelected = activePresetId === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => selectPreset(p)}
+                          className={`relative flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all active:scale-95 ${
+                            isSelected
+                              ? 'border-red-500 bg-red-50/90 shadow-md ring-2 ring-red-400'
+                              : 'border-slate-200 bg-white hover:border-red-300 hover:shadow-xs'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span
+                                className={`text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded ${
+                                  isSelected ? 'bg-red-600 text-white' : 'bg-rose-100 text-rose-800'
+                                }`}
+                              >
+                                {p.badge}
+                              </span>
+                              {isSelected && <CheckCircle2 className="h-4 w-4 text-red-600" />}
+                            </div>
+                            <span className="text-sm sm:text-base font-extrabold text-slate-900 block">
+                              {p.title}
+                            </span>
+                            {p.subtitle && (
+                              <span className="text-xs text-slate-600 mt-1 block">
+                                {p.subtitle}
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-bold">
+                            <span>S{p.start} 〜 S{p.end}</span>
+                            <span className="text-red-600">全25文</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. 個別セクション ハードテスト (10 Cards) */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Swords className="h-4 w-4 text-indigo-600" />
+                    <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                      3. 個別セクション ハードテスト（S1〜10 各5問）
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                    {HARD_SECTION_PRESETS.map((p) => {
+                      const isSelected = activePresetId === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => selectPreset(p)}
+                          className={`relative flex flex-col justify-between rounded-xl border p-2.5 text-left transition-all active:scale-95 ${
+                            isSelected
+                              ? 'border-red-500 bg-red-50/90 shadow-md ring-2 ring-red-400'
+                              : 'border-slate-200 bg-white hover:border-red-300 hover:shadow-2xs'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span
+                                className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                                  isSelected ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-700'
+                                }`}
+                              >
+                                {p.badge}
+                              </span>
+                              {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-red-600" />}
+                            </div>
+                            <span className="text-xs font-black text-slate-900 block truncate">
+                              {p.title}
+                            </span>
+                            {p.subtitle && (
+                              <span className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-snug">
+                                {p.subtitle}
+                              </span>
+                            )}
+                          </div>
+                          <span className="mt-2 text-[10px] font-bold text-red-600">
+                            全5文
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1517,36 +1897,88 @@ export function WorksheetGenerator({
                     出題数 (問題の数)
                   </label>
                   <div className="grid grid-cols-4 gap-1.5">
-                    {[5, 10, 20].map((count) => {
-                      const active = questionCount === count;
-                      return (
+                    {isHardMode ? (
+                      selectedSections.size === 1 ? (
                         <button
-                          key={count}
                           type="button"
-                          onClick={() => setQuestionCount(count)}
+                          onClick={() => setQuestionCount(5)}
+                          className="col-span-4 rounded-lg py-2 text-xs font-bold border border-red-500 bg-red-600 text-white shadow-sm"
+                        >
+                          全5問 (ハード全問)
+                        </button>
+                      ) : selectedSections.size <= 5 ? (
+                        [5, 10, 15, 25].map((count) => {
+                          const active = questionCount === count;
+                          return (
+                            <button
+                              key={count}
+                              type="button"
+                              onClick={() => setQuestionCount(count)}
+                              className={`rounded-lg py-2 text-xs font-bold border transition-all ${
+                                active
+                                  ? 'border-red-500 bg-red-600 text-white shadow-sm'
+                                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              {count}問
+                              {count === 25 && <span className="block text-[9px] font-normal opacity-90">全問</span>}
+                            </button>
+                          );
+                        })
+                      ) : (
+                        [10, 20, 30, 50].map((count) => {
+                          const active = questionCount === count;
+                          return (
+                            <button
+                              key={count}
+                              type="button"
+                              onClick={() => setQuestionCount(count)}
+                              className={`rounded-lg py-2 text-xs font-bold border transition-all ${
+                                active
+                                  ? 'border-red-500 bg-red-600 text-white shadow-sm'
+                                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              {count}問
+                              {count === 50 && <span className="block text-[9px] font-normal opacity-90">大ボス全問</span>}
+                            </button>
+                          );
+                        })
+                      )
+                    ) : (
+                      <>
+                        {[5, 10, 20].map((count) => {
+                          const active = questionCount === count;
+                          return (
+                            <button
+                              key={count}
+                              type="button"
+                              onClick={() => setQuestionCount(count)}
+                              className={`rounded-lg py-2 text-xs font-bold border transition-all ${
+                                active
+                                  ? 'border-blue-500 bg-blue-600 text-white shadow-sm'
+                                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              {count}問
+                              {count === 10 && <span className="block text-[9px] font-normal opacity-90">標準</span>}
+                            </button>
+                          );
+                        })}
+                        <button
+                          type="button"
+                          onClick={() => setQuestionCount(100)}
                           className={`rounded-lg py-2 text-xs font-bold border transition-all ${
-                            active
+                            questionCount >= 50
                               ? 'border-blue-500 bg-blue-600 text-white shadow-sm'
                               : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
                           }`}
                         >
-                          {count}問
-                          {count === 10 && <span className="block text-[9px] font-normal opacity-90">標準</span>}
+                          全問
+                          <span className="block text-[9px] font-normal opacity-90">MAX</span>
                         </button>
-                      );
-                    })}
-                    <button
-                      type="button"
-                      onClick={() => setQuestionCount(100)}
-                      className={`rounded-lg py-2 text-xs font-bold border transition-all ${
-                        questionCount >= 50
-                          ? 'border-blue-500 bg-blue-600 text-white shadow-sm'
-                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
-                      }`}
-                    >
-                      全問
-                      <span className="block text-[9px] font-normal opacity-90">MAX</span>
-                    </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -1568,7 +2000,7 @@ export function WorksheetGenerator({
             <span>友達に教える (QRコード)</span>
           </Link>
           <p className="mt-1 text-[11px] text-slate-400">
-            中学英語例文テストメーカー · v9.9
+            中学英語例文テストメーカー · v10.0
           </p>
         </footer>
       </main>
@@ -1580,14 +2012,14 @@ export function WorksheetGenerator({
             <div>
               <p className="text-xs font-bold text-slate-600">
                 選択中:{' '}
-                <span className={sheetType === 'homework' ? 'text-amber-600' : 'text-blue-600'}>
-                  {activePresetName}
+                <span className={isHardMode ? 'text-red-600 font-black' : sheetType === 'homework' ? 'text-amber-600' : 'text-blue-600'}>
+                  {isHardMode ? `🔥 ${activePresetName}` : activePresetName}
                 </span>
               </p>
               <p className="text-[11px] text-slate-400">
                 {sheetType === 'homework'
                   ? `宿題プリント / 全${totalSentencesInSelected}文（各${homeworkRepeatCount}回書き）`
-                  : `${quizMode === 'jp2en' ? '英訳' : '和訳'} / 最大${questionCount}問`}
+                  : `${quizMode === 'jp2en' ? '英訳' : '和訳'} / 最大${Math.min(questionCount, totalSentencesInSelected)}問`}
               </p>
             </div>
             <div className="h-7 w-px bg-slate-200" />
@@ -1610,8 +2042,8 @@ export function WorksheetGenerator({
                   className="h-12 px-3 sm:px-4 border-blue-200 text-blue-700 hover:bg-blue-50 text-xs sm:text-sm font-bold rounded-xl gap-1.5 shrink-0"
                   title="同じ範囲でランダムテストを作成する"
                 >
-                  <span>🚀</span>
-                  <span className="hidden md:inline">テスト作成</span>
+                  <span>{isHardMode ? '🔥' : '🚀'}</span>
+                  <span className="hidden md:inline">{isHardMode ? 'ハードテスト作成' : 'テスト作成'}</span>
                 </Button>
                 <Button
                   onClick={generateHomework}
@@ -1634,10 +2066,14 @@ export function WorksheetGenerator({
                 </Button>
                 <Button
                   onClick={generateWorksheet}
-                  className="h-12 flex-1 sm:min-w-[250px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm sm:text-base font-black shadow-md hover:shadow-lg transition-all rounded-xl gap-2 active:scale-95"
+                  className={`h-12 flex-1 sm:min-w-[250px] text-white text-sm sm:text-base font-black shadow-md hover:shadow-lg transition-all rounded-xl gap-2 active:scale-95 ${
+                    isHardMode
+                      ? 'bg-gradient-to-r from-red-600 via-rose-600 to-orange-600 hover:from-red-700 hover:to-orange-700 shadow-red-500/20'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
+                  }`}
                 >
-                  <span className="text-lg">🚀</span>
-                  <span>テストスタート！ (生成)</span>
+                  <span className="text-lg">{isHardMode ? '🔥' : '🚀'}</span>
+                  <span>{isHardMode ? `ハードテストスタート！ (全${Math.min(questionCount, totalSentencesInSelected)}問)` : 'テストスタート！ (生成)'}</span>
                 </Button>
               </>
             )}

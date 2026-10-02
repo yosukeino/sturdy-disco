@@ -19,6 +19,7 @@ import {
   PenTool,
   QrCode,
   ArrowRight,
+  Flame,
 } from 'lucide-react';
 import {
   MaterialItem,
@@ -86,7 +87,7 @@ export default function GameMenuHomePage() {
                 ENGLISH PORTAL
               </span>
               <span className="rounded bg-blue-500/20 border border-blue-400/30 px-1.5 py-0.5 font-mono text-[10px] font-black text-blue-300">
-                v9.9
+                v10.0
               </span>
             </div>
           </div>
@@ -204,6 +205,13 @@ export default function GameMenuHomePage() {
                 <span>S27〜{TOTAL_SECTIONS}</span>
               </Link>
               <Link
+                href="/study?tab=test&category=hard&boss=true"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-red-600/30 hover:bg-red-600 border border-red-500/50 hover:border-red-400 px-3 py-1.5 text-xs font-black text-rose-200 hover:text-white transition-all shadow-sm"
+              >
+                <Flame className="h-3.5 w-3.5 text-orange-400 fill-orange-400" />
+                <span>🔥 S1-10 大ボス</span>
+              </Link>
+              <Link
                 href="/study?tab=test&type=homework"
                 className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 border border-amber-400/40 hover:border-amber-300 px-3 py-1.5 text-xs font-black text-amber-200 hover:text-slate-950 transition-all ml-auto"
               >
@@ -311,7 +319,7 @@ export default function GameMenuHomePage() {
       {/* Bottom Footer */}
       <footer className="relative z-10 border-t border-slate-900 bg-slate-950/90 py-4 text-center text-[11px] text-slate-500">
         <div className="mx-auto max-w-5xl px-4 flex items-center justify-between">
-          <span className="font-mono font-semibold">v9.9</span>
+          <span className="font-mono font-semibold">v10.0</span>
           <Link
             href="/share"
             className="inline-flex items-center gap-1 text-slate-400 hover:text-white transition-colors"

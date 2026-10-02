@@ -24,8 +24,9 @@ import {
   ExternalLink,
   PenTool,
   Shuffle,
+  Flame,
 } from 'lucide-react';
-import { grammarData, TOTAL_SECTIONS, grammarExplanations } from '@/lib/grammar-data';
+import { grammarData, TOTAL_SECTIONS, grammarExplanations, HARD_MODE_MAX_SECTION } from '@/lib/grammar-data';
 import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
 import { fetchMaterials, MaterialItem, MEDIA_TYPE_LABELS } from '@/lib/materials';
 import { WorksheetGenerator } from '@/components/worksheet-generator';
@@ -49,6 +50,7 @@ export default function StudyPage() {
   const [activeMainTab, setActiveMainTab] = useState<MainStudyTab>('study');
   const [targetTestSection, setTargetTestSection] = useState<number | null>(null);
   const [targetSheetType, setTargetSheetType] = useState<'test' | 'homework' | null>(null);
+  const [targetHardMode, setTargetHardMode] = useState<boolean | null>(null);
 
   // 現在選択されているセクション（1〜TOTAL_SECTIONS）
   const [currentSection, setCurrentSection] = useState<number>(1);
@@ -68,6 +70,9 @@ export default function StudyPage() {
       const secParam = Number(params.get('section'));
       const tabParam = params.get('tab');
       const typeParam = params.get('type');
+      const hardParam = params.get('hard');
+      const bossParam = params.get('boss');
+      const categoryParam = params.get('category');
 
       if (secParam >= 1 && secParam <= TOTAL_SECTIONS) {
         setCurrentSection(secParam);
@@ -76,11 +81,14 @@ export default function StudyPage() {
         setCurrentSection(startParam);
       }
 
-      if (tabParam === 'test' || typeParam === 'homework') {
+      if (tabParam === 'test' || typeParam === 'homework' || hardParam === 'true' || bossParam === 'true' || categoryParam === 'hard') {
         setActiveMainTab('test');
       }
       if (typeParam === 'homework') {
         setTargetSheetType('homework');
+      }
+      if (hardParam === 'true' || bossParam === 'true' || categoryParam === 'hard') {
+        setTargetHardMode(true);
       }
     }
     fetchMaterials(false).then((res) => setAllMaterials(res.items));
@@ -88,9 +96,10 @@ export default function StudyPage() {
 
   // 特定のセクションでテスト作成タブへ切り替えるハンドラー
   const handleStartTestForSection = useCallback(
-    (sec: number, sheetType: 'test' | 'homework' = 'test') => {
+    (sec: number, sheetType: 'test' | 'homework' = 'test', isHard: boolean = false) => {
       setTargetTestSection(sec);
       setTargetSheetType(sheetType);
+      setTargetHardMode(isHard ? true : null);
       setActiveMainTab('test');
       if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -249,6 +258,7 @@ export default function StudyPage() {
           hideHeader
           externalSection={targetTestSection}
           externalSheetType={targetSheetType}
+          externalHardMode={targetHardMode}
           onSwitchToStudy={(sec) => {
             setCurrentSection(sec);
             setActiveMainTab('study');
@@ -518,7 +528,7 @@ interface SectionDetailViewProps {
   onNext?: () => void;
   onPrev?: () => void;
   compact?: boolean;
-  onStartTest: (sec: number, sheetType?: 'test' | 'homework') => void;
+  onStartTest: (sec: number, sheetType?: 'test' | 'homework', isHard?: boolean) => void;
 }
 
 function SectionDetailView({
@@ -569,6 +579,18 @@ function SectionDetailView({
         </div>
 
         <div className="flex items-center gap-2 print:hidden">
+          {sectionNum <= HARD_MODE_MAX_SECTION && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onStartTest(sectionNum, 'test', true)}
+              className="border-red-300 bg-red-50/80 text-red-700 hover:bg-red-100 text-xs font-black gap-1 rounded-xl shadow-2xs"
+              title="このセクションのハードモード（高難度5問）テストに挑戦！"
+            >
+              <Flame className="h-3.5 w-3.5 text-red-500 fill-red-500" />
+              <span>🔥 ハード挑戦</span>
+            </Button>
+          )}
           <Button
             size="sm"
             variant="outline"
@@ -830,6 +852,17 @@ function SectionDetailView({
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+              {sectionNum <= HARD_MODE_MAX_SECTION && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onStartTest(sectionNum, 'test', true)}
+                  className="w-full sm:w-auto border-red-300 bg-red-50/80 text-red-700 hover:bg-red-100 text-xs font-black gap-1.5 rounded-xl shadow-2xs"
+                >
+                  <Flame className="h-3.5 w-3.5 text-red-500 fill-red-500" />
+                  <span>Section {sectionNum} ハードテスト (全5問)</span>
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="outline"

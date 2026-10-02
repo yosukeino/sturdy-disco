@@ -255,7 +255,7 @@ export function VersionBadge() {
       variant="secondary"
       className="font-mono text-[11px] font-semibold bg-slate-100 text-slate-700 whitespace-nowrap shrink-0"
     >
-      v9.9
+      v10.0
     </Badge>
   );
 }

@@ -27,3 +27,4 @@ export { grammarData };
 export const TOTAL_SECTIONS = Object.keys(grammarData).length;
 
 export * from './grammar-explanations';
+export * from './hard-mode-data';
