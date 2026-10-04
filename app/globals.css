@@ -158,3 +158,95 @@
     break-before: page;
   }
 }
+
+/* ==========================================================================
+   Game UI Animations for Progress & Combat Result Screens
+   ========================================================================== */
+
+@keyframes pulseGlowAmber {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4), inset 0 0 10px rgba(245, 158, 11, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(245, 158, 11, 0.85), inset 0 0 18px rgba(245, 158, 11, 0.5);
+  }
+}
+
+@keyframes pulseGlowBlue {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(59, 130, 246, 0.85), inset 0 0 18px rgba(59, 130, 246, 0.5);
+  }
+}
+
+@keyframes victoryStampPop {
+  0% {
+    transform: scale(2.6) rotate(-22deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(0.92) rotate(-8deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(1.06) rotate(-11deg);
+  }
+  100% {
+    transform: scale(1) rotate(-10deg);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmerGlow {
+  0% {
+    transform: translateX(-150%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes rainbowBorder {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+.animate-pulse-glow-amber {
+  animation: pulseGlowAmber 2s infinite ease-in-out;
+}
+
+.animate-pulse-glow-blue {
+  animation: pulseGlowBlue 2s infinite ease-in-out;
+}
+
+.animate-victory-stamp {
+  animation: victoryStampPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-shimmer-glow {
+  animation: shimmerGlow 2.5s infinite linear;
+}
+
+.animate-float-gentle {
+  animation: floatGentle 3s infinite ease-in-out;
+}
+
+.animate-rainbow-border {
+  animation: rainbowBorder 6s infinite linear;
+}
+
