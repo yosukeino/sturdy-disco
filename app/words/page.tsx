@@ -974,7 +974,7 @@ export default function WordsQuizPage() {
   const currentQ = questions[currentIdx];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden">
       {/* 正解時の画面フラッシュエフェクト（快感・達成感を高める演出） */}
       {screenFlash && (
         <div
@@ -1070,73 +1070,82 @@ export default function WordsQuizPage() {
         </header>
       )}
 
-      {/* Main Container (バトル・カウントダウン・リザルト中は上部に固定し、ワンビュー最適化) */}
+      {/* Main Container */}
       <main
-        className={`relative z-10 mx-auto w-full max-w-xl px-3 sm:px-4 flex flex-col ${
-          phase === 'battle' || phase === 'countdown' || phase === 'result'
-            ? 'pt-2 sm:pt-4 pb-2 justify-start'
-            : 'py-3 sm:py-8 flex-1 justify-center max-w-4xl'
+        className={`relative z-10 mx-auto w-full px-3 sm:px-4 flex flex-col ${
+          phase === 'lobby'
+            ? 'pt-2 sm:pt-4 pb-3 sm:pb-6 flex-1 max-w-xl'
+            : phase === 'leaderboard'
+            ? 'py-4 sm:py-8 flex-1 max-w-4xl'
+            : 'pt-2 sm:pt-4 pb-2 justify-start max-w-xl'
         }`}
       >
         {/* =================================================================== */}
-        {/* PHASE 1: LOBBY (ロビー・プレイヤー名入力・シーズン選択) */}
+        {/* PHASE 1: LOBBY (ロビー・プレイヤー名入力・シーズン選択・画面縦幅適応型) */}
         {/* =================================================================== */}
         {phase === 'lobby' && (
-          <div className="space-y-3 sm:space-y-4">
-            {/* Compact Header Row */}
-            <div className="flex items-center justify-between gap-2 px-1">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-black text-xs shrink-0">
-                  ⚡
-                </span>
-                <h2 className="text-sm sm:text-xl font-black text-white tracking-tight truncate">
-                  4択英単語スピードバトル
-                </h2>
-                <span className="rounded-full bg-amber-500/20 border border-amber-400/40 px-2 py-0.5 text-[10px] font-black text-amber-300 shrink-0">
-                  Ladder
-                </span>
+          <div className="flex-1 flex flex-col justify-between gap-3 sm:gap-4 rounded-3xl border border-slate-800/90 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-slate-950/90 backdrop-blur-md p-3.5 sm:p-5 shadow-2xl relative overflow-hidden">
+            {/* Ambient Lighting */}
+            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-500/10 blur-3xl" />
+            <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-indigo-500/10 blur-3xl" />
+
+            {/* TOP BLOCK: ヘッダー ＆ プレイヤーネーム入力 */}
+            <div className="space-y-2 sm:space-y-2.5 shrink-0 relative z-10">
+              {/* Compact Header Row */}
+              <div className="flex items-center justify-between gap-2 px-0.5">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-black text-xs shrink-0 shadow-sm">
+                    ⚡
+                  </span>
+                  <h2 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
+                    4択英単語スピードバトル
+                  </h2>
+                  <span className="rounded-full bg-amber-500/20 border border-amber-400/40 px-2 py-0.5 text-[10px] font-black text-amber-300 shrink-0">
+                    Ladder
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPhase('leaderboard');
+                    playSound('click');
+                  }}
+                  className="flex items-center gap-1 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 px-2.5 py-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors shrink-0 shadow-sm active:scale-95"
+                >
+                  <Trophy className="h-3.5 w-3.5" />
+                  <span className="text-[11px] font-black">ランキング</span>
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setPhase('leaderboard');
-                  playSound('click');
-                }}
-                className="flex items-center gap-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors shrink-0"
-              >
-                <Trophy className="h-3.5 w-3.5" />
-                <span className="text-[11px] font-black">ランキング</span>
-              </button>
+              {/* Input Card: プレイヤーネーム */}
+              <div className="rounded-2xl border border-slate-800/90 bg-slate-950/70 p-2.5 sm:p-3 shadow-inner space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                  <span className="flex items-center gap-1.5 text-slate-300">
+                    <User className="h-3.5 w-3.5 text-amber-400" />
+                    <span className="text-[11px] sm:text-xs">プレイヤーネーム</span>
+                  </span>
+                  <span className="text-[10px] text-amber-400 font-bold">
+                    ※自己ベストのみランキング掲載
+                  </span>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    placeholder="なまえを入力 (例: いのまた)"
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3.5 py-2 sm:py-2.5 text-sm sm:text-base font-bold text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all shadow-inner"
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Input Card: プレイヤーネーム (超シンプル) */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-3 sm:p-3.5 shadow-lg space-y-1.5">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                <span className="flex items-center gap-1.5 text-slate-300">
-                  <User className="h-3.5 w-3.5 text-amber-400" />
-                  <span>プレイヤーネーム</span>
-                </span>
-                <span className="text-[10px] text-amber-400 font-bold">
-                  ※自己ベストのみランキング掲載
-                </span>
-              </div>
-
-              <div className="relative">
-                <input
-                  type="text"
-                  maxLength={12}
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  placeholder="なまえを入力 (例: いのまた)"
-                  className="w-full rounded-xl bg-slate-950 border border-slate-700 px-3.5 py-2 text-sm sm:text-base font-bold text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Course / Season Selection (Season 1 vs Training) */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between px-1">
+            {/* MIDDLE BLOCK: モード選択（縦幅に合わせて柔軟に伸長・吸い付くUI） */}
+            <div className="flex-1 flex flex-col justify-center space-y-1.5 min-h-0 py-1 sm:py-2 relative z-10">
+              <div className="flex items-center justify-between px-0.5 shrink-0">
                 <h3 className="text-xs sm:text-sm font-black text-slate-200 flex items-center gap-1.5">
                   <Zap className="h-3.5 w-3.5 text-amber-400" />
                   <span>モードを選択</span>
@@ -1144,7 +1153,7 @@ export default function WordsQuizPage() {
                 <span className="text-[10px] text-amber-400/90 font-bold">木曜更新・週間ラダー</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 flex-1 min-h-[140px] max-h-[250px] sm:max-h-[280px]">
                 {COURSES.map((course) => {
                   const isSelected = selectedCourse === course.id;
                   return (
@@ -1155,36 +1164,36 @@ export default function WordsQuizPage() {
                         setSelectedCourse(course.id);
                         playSound('click');
                       }}
-                      className={`text-left rounded-2xl p-3 sm:p-4 border-2 transition-all relative flex flex-col justify-between ${
+                      className={`text-left rounded-2xl p-3 sm:p-4 border-2 transition-all relative flex flex-col justify-between h-full ${
                         isSelected
                           ? 'border-amber-400 bg-gradient-to-br from-amber-950/70 via-slate-900 to-indigo-950/70 shadow-lg shadow-amber-500/20 ring-1 ring-amber-400'
-                          : 'border-slate-800/90 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900'
+                          : 'border-slate-800/90 bg-slate-950/50 hover:border-slate-700 hover:bg-slate-900/60'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-1 mb-1">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-2xl shrink-0">{course.icon}</span>
-                          <div>
-                            <span className="font-black text-sm sm:text-base text-white block leading-tight">
-                              {course.name}
-                            </span>
-                            <span className="text-[10px] text-slate-400 font-medium hidden sm:block">
-                              {course.description}
-                            </span>
-                          </div>
+                      <div className="space-y-1">
+                        <div className="flex items-start justify-between gap-1">
+                          <span className="text-2xl sm:text-3xl shrink-0">{course.icon}</span>
+                          {isSelected && (
+                            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-400 text-slate-950 shadow-sm">
+                              <Check className="h-3.5 w-3.5 stroke-[3]" />
+                            </div>
+                          )}
                         </div>
-                        {isSelected && (
-                          <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-400 text-slate-950">
-                            <Check className="h-3 w-3 stroke-[3]" />
-                          </div>
-                        )}
+                        <div>
+                          <span className="font-black text-sm sm:text-base text-white block leading-tight">
+                            {course.name}
+                          </span>
+                          <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium line-clamp-2 mt-0.5 leading-snug">
+                            {course.description}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="flex items-center justify-between gap-1 mt-1">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${course.badgeStyle}`}>
+                      <div className="flex items-center justify-between gap-1 pt-2 border-t border-slate-800/60">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${course.badgeStyle}`}>
                           {course.badge}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-bold">
+                        <span className="text-[10px] text-slate-400 font-bold shrink-0">
                           10問勝負
                         </span>
                       </div>
@@ -1194,8 +1203,8 @@ export default function WordsQuizPage() {
               </div>
             </div>
 
-            {/* Big Start Button */}
-            <div className="pt-1">
+            {/* BOTTOM BLOCK: バトルスタートボタン ＆ ガイド */}
+            <div className="space-y-2 shrink-0 pt-1 relative z-10">
               <button
                 type="button"
                 onClick={handleStartGame}
@@ -1207,15 +1216,15 @@ export default function WordsQuizPage() {
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
-            </div>
 
-            {/* Bottom Info Tips */}
-            <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500 font-bold pt-0.5">
-              <span>📅 木曜更新</span>
-              <span>•</span>
-              <span>🎧 音声対応</span>
-              <span>•</span>
-              <span>🏆 自己ベスト記録</span>
+              {/* Bottom Info Tips */}
+              <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500 font-bold pb-0.5">
+                <span>📅 木曜更新</span>
+                <span>•</span>
+                <span>🎧 音声対応</span>
+                <span>•</span>
+                <span>🏆 自己ベスト記録</span>
+              </div>
             </div>
           </div>
         )}
