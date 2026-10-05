@@ -304,3 +304,97 @@
   animation: rankStampPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
+/* ========================================================================= */
+/* ディスガイア風 リザルト画面・豪快着地インパクトアニメーション */
+/* ========================================================================= */
+@keyframes disgaeaNumberSlam {
+  0% {
+    transform: scale(1.25);
+    filter: brightness(1.8) drop-shadow(0 0 16px rgba(255, 255, 255, 0.8));
+  }
+  45% {
+    transform: scale(0.94);
+    filter: brightness(1.2);
+  }
+  75% {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-number-slam {
+  display: inline-block;
+  animation: disgaeaNumberSlam 0.38s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+@keyframes disgaeaRankSlam {
+  0% {
+    transform: scale(1.45) translateY(-3px);
+    filter: brightness(2) drop-shadow(0 0 25px rgba(251, 191, 36, 1));
+  }
+  50% {
+    transform: scale(0.92);
+    filter: brightness(1.3) drop-shadow(0 0 12px rgba(251, 191, 36, 0.8));
+  }
+  75% {
+    transform: scale(1.06);
+    filter: brightness(1.1);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 10px rgba(251, 191, 36, 0.7));
+  }
+}
+
+.animate-rank-slam {
+  display: inline-flex;
+  animation: disgaeaRankSlam 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+@keyframes goldenGleam {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.9));
+  }
+}
+
+.animate-golden-gleam {
+  animation: goldenGleam 2s infinite ease-in-out;
+}
+
+@keyframes disgaeaBoxFlash {
+  0% {
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.15);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0), inset 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.animate-box-slam {
+  animation: disgaeaBoxFlash 0.45s ease-out forwards;
+}
+
+@keyframes disgaeaRankBoxPulse {
+  0% {
+    border-color: rgba(251, 191, 36, 0.9);
+    box-shadow: 0 0 25px rgba(251, 191, 36, 0.6), inset 0 0 15px rgba(251, 191, 36, 0.25);
+  }
+  100% {
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+  }
+}
+
+.animate-rank-box {
+  animation: disgaeaRankBoxPulse 0.5s ease-out forwards;
+}
+
+

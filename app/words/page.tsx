@@ -75,7 +75,9 @@ function playSynthesizedSound(
     | 'combo'
     | 'fanfare_s'
     | 'fanfare_normal'
-    | 'click',
+    | 'click'
+    | 'stat_slam'
+    | 'rank_stamp',
   comboCount: number = 1
 ) {
   if (typeof window === 'undefined') return;
@@ -230,6 +232,49 @@ function playSynthesizedSound(
         gain.connect(ctx.destination);
         osc.start(start);
         osc.stop(start + 0.65);
+      });
+    } else if (type === 'stat_slam') {
+      // ディスガイア風：数字カウントアップ完了の豪快かつ心地よいサイン波インパクト音
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(260, now);
+      osc1.frequency.exponentialRampToValueAtTime(110, now + 0.15);
+      gain1.gain.setValueAtTime(0.0001, now);
+      gain1.gain.linearRampToValueAtTime(0.08, now + 0.008);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.18);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(520, now);
+      gain2.gain.setValueAtTime(0.0001, now);
+      gain2.gain.linearRampToValueAtTime(0.035, now + 0.008);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now);
+      osc2.stop(now + 0.14);
+    } else if (type === 'rank_stamp') {
+      // ディスガイア風：ランキングスタンプ着地の黄金サイン波コード音
+      const notes = [440.0, 554.37, 659.25, 880.0];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        const start = now + idx * 0.02;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.linearRampToValueAtTime(0.06, start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.35);
       });
     }
   } catch {
@@ -509,7 +554,9 @@ export default function WordsQuizPage() {
         | 'combo'
         | 'fanfare_s'
         | 'fanfare_normal'
-        | 'click',
+        | 'click'
+        | 'stat_slam'
+        | 'rank_stamp',
       comboCount: number = 1
     ) => {
       if (!soundEnabled) return;
@@ -683,12 +730,13 @@ export default function WordsQuizPage() {
         setAnimatedCombo(maxCombo);
         setAnimatedPts(pts);
         setIsCountUpDone(true);
+        playSound('stat_slam');
       }
     };
 
     rafId = requestAnimationFrame(animateMetrics);
     return () => cancelAnimationFrame(rafId);
-  }, [phase, score, finalElapsedMs, maxCombo]);
+  }, [phase, score, finalElapsedMs, maxCombo, playSound]);
 
   // ---------------------------------------------------------------------------
   // リーダーボード順位のデジタルロール＆スタンプ着地演出（650ms：1秒未満）
@@ -721,12 +769,13 @@ export default function WordsQuizPage() {
       } else {
         setAnimatedRank(targetRank);
         setIsRankDone(true);
+        playSound('rank_stamp');
       }
     };
 
     rafId = requestAnimationFrame(animateRank);
     return () => cancelAnimationFrame(rafId);
-  }, [phase, userRankPosition]);
+  }, [phase, userRankPosition, playSound]);
 
   // ---------------------------------------------------------------------------
   // 回答処理（選択残りバグ・iPadゴーストタップ完全防止 ＆ 画面フラッシュ＋トランスサウンド）
@@ -1420,84 +1469,141 @@ export default function WordsQuizPage() {
                     </div>
                   </div>
 
-                  {/* 4 Core Metrics Grid (デジタルカウントアップ演出・1秒未満で着地) */}
+                  {/* 4 Core Metrics Grid (ディスガイア5風・超ド派手デジタルカウントアップ＆着地演出) */}
                   <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
                     {/* Metric 1: 正解数 */}
-                    <div className="rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left">
-                      <p className="text-[10px] text-slate-400 font-bold">正解数</p>
-                      <p className="text-xl sm:text-2xl font-black text-emerald-400 font-mono mt-0.5 tracking-tight">
-                        {animatedScore} <span className="text-xs text-slate-400 font-bold">/ 10</span>
-                      </p>
+                    <div
+                      className={`rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left transition-all ${
+                        isCountUpDone ? 'border-emerald-500/40 animate-box-slam' : ''
+                      }`}
+                    >
+                      <p className="text-[10px] text-emerald-400/90 font-bold tracking-wider">正解数</p>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span
+                          className={`text-3xl sm:text-4xl font-black text-emerald-400 font-mono tracking-tight leading-none ${
+                            isCountUpDone ? 'animate-number-slam drop-shadow-[0_0_12px_rgba(52,211,153,0.7)]' : ''
+                          }`}
+                        >
+                          {animatedScore}
+                        </span>
+                        <span className="text-xs sm:text-sm text-slate-400 font-bold">/ 10</span>
+                      </div>
                     </div>
 
                     {/* Metric 2: クリアタイム */}
-                    <div className="rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left">
-                      <p className="text-[10px] text-slate-400 font-bold">クリアタイム</p>
-                      <p className="text-xl sm:text-2xl font-black text-amber-400 font-mono mt-0.5 tracking-tight">
-                        {animatedTime.toFixed(2)}
-                        <span className="text-xs text-slate-400 font-bold ml-0.5">秒</span>
-                      </p>
+                    <div
+                      className={`rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left transition-all ${
+                        isCountUpDone ? 'border-amber-500/40 animate-box-slam' : ''
+                      }`}
+                    >
+                      <p className="text-[10px] text-amber-400/90 font-bold tracking-wider">クリアタイム</p>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span
+                          className={`text-3xl sm:text-4xl font-black text-amber-400 font-mono tracking-tight leading-none ${
+                            isCountUpDone ? 'animate-number-slam drop-shadow-[0_0_12px_rgba(251,191,36,0.7)]' : ''
+                          }`}
+                        >
+                          {animatedTime.toFixed(2)}
+                        </span>
+                        <span className="text-xs sm:text-sm text-slate-400 font-bold">秒</span>
+                      </div>
                     </div>
 
                     {/* Metric 3: 最大コンボ */}
-                    <div className="rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left">
-                      <p className="text-[10px] text-slate-400 font-bold">最大コンボ</p>
-                      <p className="text-xl sm:text-2xl font-black text-orange-400 font-mono mt-0.5 tracking-tight">
-                        {animatedCombo}
-                        <span className="text-xs text-slate-400 font-bold ml-0.5">連続</span>
-                      </p>
+                    <div
+                      className={`rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left transition-all ${
+                        isCountUpDone ? 'border-orange-500/40 animate-box-slam' : ''
+                      }`}
+                    >
+                      <p className="text-[10px] text-orange-400/90 font-bold tracking-wider">最大コンボ</p>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span
+                          className={`text-3xl sm:text-4xl font-black text-orange-400 font-mono tracking-tight leading-none ${
+                            isCountUpDone ? 'animate-number-slam drop-shadow-[0_0_12px_rgba(251,146,60,0.7)]' : ''
+                          }`}
+                        >
+                          {animatedCombo}
+                        </span>
+                        <span className="text-xs sm:text-sm text-slate-400 font-bold">連続</span>
+                      </div>
                     </div>
 
                     {/* Metric 4: 総合獲得PTS */}
-                    <div className="rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left">
-                      <p className="text-[10px] text-slate-400 font-bold">総合獲得PTS</p>
-                      <p className="text-xl sm:text-2xl font-black text-cyan-400 font-mono mt-0.5 tracking-tight">
-                        {animatedPts.toLocaleString()}
-                        <span className="text-xs text-slate-400 font-bold ml-0.5">pts</span>
-                      </p>
+                    <div
+                      className={`rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left transition-all ${
+                        isCountUpDone ? 'border-cyan-500/40 animate-box-slam' : ''
+                      }`}
+                    >
+                      <p className="text-[10px] text-cyan-400/90 font-bold tracking-wider">総合獲得PTS</p>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span
+                          className={`text-2xl sm:text-3xl font-black text-cyan-400 font-mono tracking-tight leading-none ${
+                            isCountUpDone ? 'animate-number-slam drop-shadow-[0_0_12px_rgba(34,211,238,0.7)]' : ''
+                          }`}
+                        >
+                          {animatedPts.toLocaleString()}
+                        </span>
+                        <span className="text-xs sm:text-sm text-slate-400 font-bold">pts</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Ranking Position Announcement (デジタルロール＆「第1位」ポップ演出) */}
-                  <div className="rounded-xl bg-slate-950/90 border border-amber-500/30 px-3 py-2 sm:py-2.5 shadow-lg flex items-center justify-between gap-2 text-left">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400 border border-amber-400/30 text-base">
-                        {userRankPosition === 1 ? '🥇' : userRankPosition === 2 ? '🥈' : userRankPosition === 3 ? '🥉' : '🎖️'}
+                  {/* Leaderboard Ranking Announcement (ディスガイア風スタンプ＆絶対改行ゼロ設計) */}
+                  <div
+                    className={`rounded-xl bg-slate-950/90 border border-amber-500/30 p-2.5 sm:p-3 shadow-lg space-y-1.5 text-left transition-all ${
+                      isRankDone ? 'animate-rank-box' : ''
+                    }`}
+                  >
+                    {/* 上段: ラベル ＆ ランキングボタン */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Trophy className="h-3.5 w-3.5 text-amber-400" />
+                        <span className="text-[11px] font-bold text-amber-300">
+                          リーダーボード集計
+                        </span>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] text-slate-400 font-bold leading-tight">リーダーボード集計</p>
-                        <p className="text-xs sm:text-sm font-black text-white leading-snug">
-                          {isSubmitting ? (
-                            <span className="text-slate-400 animate-pulse text-xs">ランキング集計中...</span>
-                          ) : animatedRank !== null ? (
-                            <span className="flex items-center gap-1">
-                              <span>現在</span>
-                              <span
-                                className={`font-mono font-black text-base sm:text-lg text-amber-400 inline-block ${
-                                  isRankDone ? 'animate-rank-pop' : ''
-                                }`}
-                              >
-                                第{animatedRank}位
-                              </span>
-                              <span>にランクイン！</span>
-                            </span>
-                          ) : (
-                            <span className="text-xs text-slate-300">スコアが記録されました！</span>
-                          )}
-                        </p>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhase('leaderboard');
+                          playSound('click');
+                        }}
+                        className="rounded-md bg-amber-400/90 hover:bg-amber-300 text-slate-950 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-black shadow transition-all whitespace-nowrap active:scale-95 flex items-center gap-0.5"
+                      >
+                        <span>ランキングを見る</span>
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPhase('leaderboard');
-                        playSound('click');
-                      }}
-                      className="shrink-0 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1.5 text-xs font-black shadow-md transition-all whitespace-nowrap active:scale-95"
-                    >
-                      ランキングを見る
-                    </button>
+                    {/* 下段: 「現在 第1位 にランクイン！」（幅を100%独占し、改行を完全防止） */}
+                    <div className="flex items-center justify-center py-1 px-2 bg-slate-900/60 rounded-lg border border-slate-800/80 whitespace-nowrap overflow-hidden">
+                      {isSubmitting ? (
+                        <span className="text-slate-400 animate-pulse text-xs font-bold whitespace-nowrap">
+                          ランキング集計中...
+                        </span>
+                      ) : animatedRank !== null ? (
+                        <div className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+                          <span className="text-xs sm:text-sm text-slate-300 font-bold whitespace-nowrap">現在</span>
+                          <span
+                            className={`inline-flex items-center gap-1 font-mono font-black text-xl sm:text-2xl text-amber-400 tracking-tight whitespace-nowrap ${
+                              isRankDone ? 'animate-rank-slam animate-golden-gleam' : ''
+                            }`}
+                          >
+                            <span className="text-lg sm:text-xl">
+                              {animatedRank === 1 ? '🥇' : animatedRank === 2 ? '🥈' : animatedRank === 3 ? '🥉' : '🎖️'}
+                            </span>
+                            <span>第{animatedRank}位</span>
+                          </span>
+                          <span className="text-xs sm:text-sm text-amber-200 font-black whitespace-nowrap">
+                            にランクイン！
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-300 font-bold whitespace-nowrap">
+                          スコアが記録されました！
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Action Buttons (2列並びでファーストビューに完全収容) */}
