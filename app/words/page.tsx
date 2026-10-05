@@ -470,6 +470,8 @@ export default function WordsQuizPage() {
   const [elapsedMs, setElapsedMs] = useState<number>(0);
   const [finalElapsedMs, setFinalElapsedMs] = useState<number>(0);
   const timerRafRef = useRef<number | null>(null);
+  const isAnsweringRef = useRef<boolean>(false);
+  const lastAdvanceTimeRef = useRef<number>(0);
 
   // カウントダウン
   const [countdownNum, setCountdownNum] = useState<number>(3);
@@ -556,6 +558,8 @@ export default function WordsQuizPage() {
     setSelectedChoiceIdx(null);
     setAnswerState(null);
     setIsAdvancing(false);
+    isAnsweringRef.current = false;
+    lastAdvanceTimeRef.current = 0;
     setScreenFlash(false);
     setElapsedMs(0);
     setFinalElapsedMs(0);
@@ -621,22 +625,28 @@ export default function WordsQuizPage() {
   }, [phase, currentIdx, questions]);
 
   // ---------------------------------------------------------------------------
-  // 回答処理（選択残りバグ・誤連打完全防止 ＆ 画面フラッシュ＋トランスサウンド）
+  // 回答処理（選択残りバグ・iPadゴーストタップ完全防止 ＆ 画面フラッシュ＋トランスサウンド）
   // ---------------------------------------------------------------------------
   const handleSelectChoice = (choiceIdx: number) => {
-    // 既に選択済み、または次の問題へ移行中（isAdvancing）なら二重タップを完全防止
-    if (selectedChoiceIdx !== null || isAdvancing || phase !== 'battle') return;
+    // 既に選択済み、または移行中なら即座に完全ブロック
+    if (selectedChoiceIdx !== null || isAdvancing || phase !== 'battle' || isAnsweringRef.current) return;
+
+    // iPad / スマホのゴーストタップ・タップ残留防止：問題切り替え直後（180ms以内）の入力は完全に破棄
+    if (performance.now() - lastAdvanceTimeRef.current < 180) return;
 
     const currentQ = questions[currentIdx];
     if (!currentQ) return;
 
-    // フォーカス解除（iOS / Android / PCブラウザのフォーカス残りを完全に防止）
+    // 同期フラグで即座にロック
+    isAnsweringRef.current = true;
+    setIsAdvancing(true);
+
+    // フォーカス解除（iOS / iPadOS / Android / PCブラウザのフォーカス残りを完全に防止）
     if (typeof document !== 'undefined' && document.activeElement) {
       (document.activeElement as HTMLElement).blur();
     }
 
     setSelectedChoiceIdx(choiceIdx);
-    setIsAdvancing(true); // 即座に次操作をロック
     const isCorrect = choiceIdx === currentQ.correctIndex;
 
     let newScore = score;
@@ -668,27 +678,30 @@ export default function WordsQuizPage() {
       ]);
     }
 
-    // 380ms後に次の問題へ進むか終了
+    // 400ms後に次の問題へ進むか終了
     setTimeout(() => {
       if (currentIdx + 1 < questions.length) {
         // 先に選択状態を完全クリアしてから問題インデックスを進める
         setSelectedChoiceIdx(null);
         setAnswerState(null);
         setCurrentIdx((prev) => prev + 1);
+        lastAdvanceTimeRef.current = performance.now();
 
-        // 新問題表示後120ms間はタップロックを継続（連打や指の残留による新問題への誤タップ・選択残り現象を100%防止）
+        // 新問題表示後200ms間はタップロックを継続（iPadの指残留・ゴーストクリック・連打による誤回答を100%防止）
         setTimeout(() => {
           setIsAdvancing(false);
-        }, 120);
+          isAnsweringRef.current = false;
+        }, 200);
       } else {
         // 全10問完了！
         const finalTime = performance.now() - startTime;
         setFinalElapsedMs(finalTime);
         setElapsedMs(finalTime);
         setIsAdvancing(false);
+        isAnsweringRef.current = false;
         handleFinishGame(newScore, newMaxCombo, finalTime);
       }
-    }, 380);
+    }, 400);
   };
 
   // ---------------------------------------------------------------------------
@@ -1191,7 +1204,9 @@ export default function WordsQuizPage() {
             {/* 4 Choices Grid (keyで問題切り替え時に完全再マウントし選択残りを根絶・高さ完全固定) */}
             <div
               key={`choices-grid-q-${currentIdx}`}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-1"
+              className={`grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-1 ${
+                selectedChoiceIdx !== null || isAdvancing ? 'pointer-events-none' : ''
+              }`}
             >
               {currentQ.choices.map((choice, idx) => {
                 const isSelected = selectedChoiceIdx === idx;
@@ -1199,7 +1214,7 @@ export default function WordsQuizPage() {
                 const isAnswered = selectedChoiceIdx !== null;
 
                 let btnStyle =
-                  'border-2 border-slate-800 bg-slate-900/90 text-slate-100 hover:border-amber-400 hover:bg-slate-800/90 hover:text-white shadow-lg';
+                  'border-2 border-slate-800 bg-slate-900/90 text-slate-100 hover:border-slate-700 hover:bg-slate-850 shadow-lg';
 
                 if (isAnswered) {
                   if (isSelected && isCorrect) {
@@ -1222,8 +1237,11 @@ export default function WordsQuizPage() {
                     key={`q-${currentIdx}-opt-${idx}`}
                     type="button"
                     disabled={isAnswered || isAdvancing}
-                    onClick={() => handleSelectChoice(idx)}
-                    className={`group h-[56px] sm:h-[62px] shrink-0 rounded-2xl px-4 text-left font-black text-base sm:text-lg transition-colors duration-150 flex items-center justify-between active:scale-[0.98] outline-none focus:outline-none select-none overflow-hidden ${btnStyle}`}
+                    onClick={(e) => {
+                      (e.currentTarget as HTMLElement)?.blur();
+                      handleSelectChoice(idx);
+                    }}
+                    className={`group h-[56px] sm:h-[62px] shrink-0 rounded-2xl px-4 text-left font-black text-base sm:text-lg transition-colors duration-150 flex items-center justify-between active:scale-[0.98] active:border-amber-400 active:bg-slate-850 outline-none focus:outline-none select-none overflow-hidden touch-manipulation [-webkit-tap-highlight-color:transparent] ${btnStyle}`}
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span
@@ -1232,7 +1250,9 @@ export default function WordsQuizPage() {
                             ? 'bg-white text-emerald-700'
                             : isAnswered && isSelected && !isCorrect
                             ? 'bg-white text-rose-700'
-                            : 'bg-slate-800 text-slate-300 group-hover:bg-amber-400 group-hover:text-slate-950'
+                            : isAnswered && !isSelected
+                            ? 'bg-slate-900 text-slate-500'
+                            : 'bg-slate-800 text-slate-300 group-active:bg-amber-400 group-active:text-slate-950'
                         }`}
                       >
                         {idx + 1}
