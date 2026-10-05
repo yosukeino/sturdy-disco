@@ -20,6 +20,7 @@ import {
   QrCode,
   ArrowRight,
   Flame,
+  Gamepad2,
 } from 'lucide-react';
 import {
   MaterialItem,
@@ -87,7 +88,7 @@ export default function GameMenuHomePage() {
                 ENGLISH PORTAL
               </span>
               <span className="rounded bg-blue-500/20 border border-blue-400/30 px-1.5 py-0.5 font-mono text-[10px] font-black text-blue-300">
-                v10.0
+                v10.2
               </span>
             </div>
           </div>
@@ -223,6 +224,38 @@ export default function GameMenuHomePage() {
         </section>
 
         {/* ===================================================================== */}
+        {/* ★ NEW: 4択英単語スピードバトル バナー */}
+        {/* ===================================================================== */}
+        <Link
+          href="/words"
+          className="group relative overflow-hidden rounded-2xl border-2 border-amber-400/80 bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-indigo-950/80 hover:border-amber-300 p-4 sm:p-5 transition-all shadow-xl hover:-translate-y-0.5 active:scale-[0.99] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-md group-hover:scale-105 transition-transform">
+              <Gamepad2 className="h-6 w-6 fill-slate-950" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-amber-400 text-slate-950 text-[10px] font-black px-1.5 py-0.5">
+                  NEW GAME
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-white group-hover:text-amber-300 transition-colors">
+                  4択英単語 スピードバトル
+                </h3>
+              </div>
+              <p className="text-xs text-slate-300 font-medium mt-1">
+                中1〜中3・高校入試の英単語300語！10問タイムアタック＆全国ランキング掲載
+              </p>
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 rounded-xl bg-amber-400 group-hover:bg-amber-300 text-slate-950 px-4 py-2 text-xs font-black self-start sm:self-auto transition-all shadow-md shrink-0">
+            <span>今すぐ挑戦</span>
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+
+        {/* ===================================================================== */}
         {/* サブメニュー 3カード（説明文を省いてスッキリ配置） */}
         {/* ===================================================================== */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -319,7 +352,7 @@ export default function GameMenuHomePage() {
       {/* Bottom Footer */}
       <footer className="relative z-10 border-t border-slate-900 bg-slate-950/90 py-4 text-center text-[11px] text-slate-500">
         <div className="mx-auto max-w-5xl px-4 flex items-center justify-between">
-          <span className="font-mono font-semibold">v10.0</span>
+          <span className="font-mono font-semibold">v10.2</span>
           <Link
             href="/share"
             className="inline-flex items-center gap-1 text-slate-400 hover:text-white transition-colors"

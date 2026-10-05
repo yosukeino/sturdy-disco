@@ -15,6 +15,7 @@ import {
   Volume2,
   GraduationCap,
   Layers,
+  Gamepad2,
 } from 'lucide-react';
 import { TOTAL_SECTIONS } from '@/lib/grammar-data';
 
@@ -55,7 +56,7 @@ export default function LabCatalogPage() {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Tool 1: Grammar Study & Test Maker */}
             <Card className="h-full border-2 border-blue-300 hover:border-blue-500 transition-all hover:shadow-md bg-white flex flex-col justify-between">
               <Link href="/study" className="group block">
@@ -93,7 +94,43 @@ export default function LabCatalogPage() {
               </div>
             </Card>
 
-            {/* Tool 2: Flash & Word Scramble Dojo */}
+            {/* Tool 2: 4-Choice Vocabulary Speedrun Game */}
+            <Link href="/words" className="group block">
+              <Card className="h-full border-2 border-amber-300 hover:border-amber-500 transition-all hover:shadow-md bg-white flex flex-col justify-between">
+                <CardHeader className="pb-2">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 shadow-sm group-hover:scale-105 transition-transform">
+                      <Gamepad2 className="h-6 w-6 fill-slate-950" />
+                    </div>
+                    <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-[10px] font-black">
+                      Lab #02 • NEW!
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg font-black text-slate-900 flex items-center justify-between pt-1">
+                    <span>4択英単語スピードバトル</span>
+                    <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-amber-600 transition-all" />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs text-slate-600 space-y-3 leading-relaxed pb-5">
+                  <p>
+                    中学全範囲・高校入試レベルの300英単語から10問勝負！リアルタイム計測タイムアタック＆全国デイリーランキング掲載！
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    <Badge variant="secondary" className="text-[10px] bg-amber-50 text-amber-800 border-amber-200">
+                      4択タイムアタック
+                    </Badge>
+                    <Badge variant="secondary" className="text-[10px] bg-amber-50 text-amber-800 border-amber-200">
+                      音声読み上げ
+                    </Badge>
+                    <Badge variant="secondary" className="text-[10px] bg-amber-50 text-amber-800 border-amber-200">
+                      全国ランキング
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Tool 3: Flash & Word Scramble Dojo */}
             <Link href="/lab/flash" className="group block">
               <Card className="h-full border-2 border-slate-200 hover:border-amber-500 transition-all hover:shadow-md bg-white">
                 <CardHeader className="pb-2">
@@ -101,8 +138,8 @@ export default function LabCatalogPage() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm group-hover:scale-105 transition-transform">
                       <Zap className="h-6 w-6" />
                     </div>
-                    <Badge className="bg-amber-50 text-amber-800 border-amber-200 text-[10px] font-black">
-                      Lab #02 • NEW!
+                    <Badge className="bg-slate-100 text-slate-700 border-slate-200 text-[10px] font-bold">
+                      Lab #03
                     </Badge>
                   </div>
                   <CardTitle className="text-lg font-black text-slate-900 flex items-center justify-between pt-1">
@@ -110,7 +147,7 @@ export default function LabCatalogPage() {
                     <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-amber-600 transition-all" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xs text-slate-600 space-y-3 leading-relaxed">
+                <CardContent className="text-xs text-slate-600 space-y-3 leading-relaxed pb-5">
                   <p>
                     バラバラになった英単語カードをタップして正しい語順に並び替えるゲーム形式の特訓ツール！小テスト前の直前確認に最適です。
                   </p>
@@ -123,7 +160,7 @@ export default function LabCatalogPage() {
               </Card>
             </Link>
 
-            {/* Tool 3: RPG Quest & Rank Board */}
+            {/* Tool 4: RPG Quest & Rank Board */}
             <Link href="/progress" className="group block">
               <Card className="h-full border-2 border-slate-200 hover:border-emerald-500 transition-all hover:shadow-md bg-white">
                 <CardHeader className="pb-2">
@@ -131,8 +168,8 @@ export default function LabCatalogPage() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm group-hover:scale-105 transition-transform">
                       <Trophy className="h-6 w-6" />
                     </div>
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-black">
-                      Lab #03 • ステータス
+                    <Badge className="bg-slate-100 text-slate-700 border-slate-200 text-[10px] font-bold">
+                      Lab #04 • ステータス
                     </Badge>
                   </div>
                   <CardTitle className="text-lg font-black text-slate-900 flex items-center justify-between pt-1">
@@ -140,7 +177,7 @@ export default function LabCatalogPage() {
                     <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-emerald-600 transition-all" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xs text-slate-600 space-y-3 leading-relaxed">
+                <CardContent className="text-xs text-slate-600 space-y-3 leading-relaxed pb-5">
                   <p>
                     塾の例文テストの合格状況をRPG風のレベル・ランク（Bronze〜Master）で確認！次に受けるべきクエストもひと目でわかります。
                   </p>

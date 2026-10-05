@@ -14,6 +14,7 @@ import {
   UploadCloud,
   LayoutDashboard,
   ExternalLink,
+  Gamepad2,
 } from 'lucide-react';
 
 export type NavActiveTab =
@@ -23,7 +24,8 @@ export type NavActiveTab =
   | 'study'
   | 'progress'
   | 'worksheet'
-  | 'share';
+  | 'share'
+  | 'words';
 
 export function Nav({ active }: { active?: NavActiveTab }) {
   const isStudyActive = active === 'study' || active === 'worksheet';
@@ -52,6 +54,17 @@ export function Nav({ active }: { active?: NavActiveTab }) {
         >
           <BookOpen className="h-4 w-4" />
           <span>予習・テスト</span>
+        </Link>
+        <Link
+          href="/words"
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+            active === 'words'
+              ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+          }`}
+        >
+          <Gamepad2 className="h-4 w-4 text-amber-500" />
+          <span>単語バトル</span>
         </Link>
         <Link
           href="/lab"
@@ -104,60 +117,71 @@ export function MobileNavTabs({ active }: { active?: NavActiveTab }) {
   const isStudyActive = active === 'study' || active === 'worksheet';
 
   return (
-    <nav className="sm:hidden grid grid-cols-5 gap-1 rounded-xl bg-slate-100 p-1 text-[10px] font-bold shadow-inner border border-slate-200/60">
+    <nav className="sm:hidden grid grid-cols-6 gap-0.5 rounded-xl bg-slate-100 p-1 text-[9px] font-bold shadow-inner border border-slate-200/60">
       <Link
         href="/"
-        className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all whitespace-nowrap ${
+        className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 transition-all whitespace-nowrap ${
           active === 'home'
             ? 'bg-white text-blue-700 shadow-xs font-black'
             : 'text-slate-600 hover:text-slate-900'
         }`}
       >
-        <Home className="h-3 w-3" />
+        <Home className="h-3.5 w-3.5" />
         <span>ホーム</span>
       </Link>
       <Link
         href="/study"
-        className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all whitespace-nowrap ${
+        className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 transition-all whitespace-nowrap ${
           isStudyActive
             ? 'bg-white text-blue-700 shadow-xs font-black'
             : 'text-slate-600 hover:text-slate-900'
         }`}
       >
-        <BookOpen className="h-3 w-3" />
-        <span>予習・テスト</span>
+        <BookOpen className="h-3.5 w-3.5" />
+        <span>予習</span>
+      </Link>
+      <Link
+        href="/words"
+        className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 transition-all whitespace-nowrap ${
+          active === 'words'
+            ? 'bg-amber-400 text-slate-950 shadow-xs font-black'
+            : 'text-amber-700 hover:text-amber-900'
+        }`}
+      >
+        <Gamepad2 className="h-3.5 w-3.5 text-amber-600" />
+        <span>単語</span>
       </Link>
       <Link
         href="/lab"
-        className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all whitespace-nowrap ${
+        className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 transition-all whitespace-nowrap ${
           active === 'lab'
             ? 'bg-white text-blue-700 shadow-xs font-black'
             : 'text-slate-600 hover:text-slate-900'
         }`}
       >
-        <FlaskConical className="h-3 w-3" />
+        <FlaskConical className="h-3.5 w-3.5" />
         <span>道場</span>
       </Link>
       <Link
         href="/materials"
-        className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all whitespace-nowrap ${
+        className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 transition-all whitespace-nowrap ${
           active === 'materials'
             ? 'bg-white text-blue-700 shadow-xs font-black'
             : 'text-slate-600 hover:text-slate-900'
         }`}
       >
-        <FolderOpen className="h-3 w-3" />
+        <FolderOpen className="h-3.5 w-3.5" />
         <span>教材</span>
       </Link>
       <Link
         href="/progress"
-        className={`flex items-center justify-center gap-1 rounded-lg py-2 transition-all whitespace-nowrap ${
+        className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 transition-all whitespace-nowrap ${
           active === 'progress'
             ? 'bg-white text-blue-700 shadow-xs font-black'
             : 'text-slate-600 hover:text-slate-900'
         }`}
       >
-        <Trophy className="h-3 w-3" />
+        <Trophy className="h-3.5 w-3.5" />
         <span>進捗</span>
       </Link>
     </nav>
@@ -255,7 +279,7 @@ export function VersionBadge() {
       variant="secondary"
       className="font-mono text-[11px] font-semibold bg-slate-100 text-slate-700 whitespace-nowrap shrink-0"
     >
-      v10.0
+      v10.2
     </Badge>
   );
 }

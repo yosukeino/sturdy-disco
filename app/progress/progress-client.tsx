@@ -1802,7 +1802,7 @@ export default function ProgressPage() {
             <span>友達に教える (QRコード)</span>
           </Link>
           <p className="mt-2 text-[11px] text-slate-600 font-mono">
-            中学英語例文テストメーカー · v10.0
+            中学英語例文テストメーカー · v10.2
           </p>
         </footer>
       </main>
