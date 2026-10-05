@@ -7,6 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Gamepad2,
   Trophy,
   Timer,
@@ -288,6 +294,15 @@ export default function WordsQuizPage() {
   const [selectedCourse, setSelectedCourse] = useState<'all' | 'j1' | 'j2' | 'j3'>('all');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [registeredStudents, setRegisteredStudents] = useState<{ id: string; name: string }[]>([]);
+  const [studentModalOpen, setStudentModalOpen] = useState<boolean>(false);
+  const [studentSearch, setStudentSearch] = useState<string>('');
+
+  // 検索で絞り込まれた生徒一覧
+  const filteredStudents = useMemo(() => {
+    if (!studentSearch.trim()) return registeredStudents;
+    const q = studentSearch.trim().toLowerCase();
+    return registeredStudents.filter((s) => s.name.toLowerCase().includes(q));
+  }, [registeredStudents, studentSearch]);
 
   // クイズ状態
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -702,98 +717,97 @@ export default function WordsQuizPage() {
       </header>
 
       {/* Main Container */}
-      <main className="relative z-10 mx-auto w-full max-w-4xl px-4 py-6 sm:py-8 flex-1 flex flex-col justify-center">
+      <main className="relative z-10 mx-auto w-full max-w-4xl px-3 py-3 sm:px-4 sm:py-8 flex-1 flex flex-col justify-center">
         {/* =================================================================== */}
         {/* PHASE 1: LOBBY (ロビー・プレイヤー名入力・コース選択) */}
         {/* =================================================================== */}
         {phase === 'lobby' && (
-          <div className="space-y-6">
-            {/* Hero Banner */}
-            <div className="relative rounded-3xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-950/40 via-slate-900 to-indigo-950/40 p-6 sm:p-8 shadow-2xl text-center space-y-3 overflow-hidden">
-              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-500/20 blur-3xl" />
-              <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/20 border border-amber-400/40 px-3 py-1 text-xs font-black text-amber-300">
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>中学全範囲・高校入試対応 300英単語</span>
+          <div className="space-y-3 sm:space-y-4">
+            {/* Compact Header Row */}
+            <div className="flex items-center justify-between gap-2 px-1">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-black text-xs shrink-0">
+                  ⚡
+                </span>
+                <h2 className="text-sm sm:text-xl font-black text-white tracking-tight truncate">
+                  4択英単語スピードバトル
+                </h2>
+                <span className="rounded-full bg-amber-500/20 border border-amber-400/40 px-2 py-0.5 text-[10px] font-black text-amber-300 shrink-0">
+                  全300語
+                </span>
               </div>
-              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-                ⚡ 4択英単語 スピードバトル
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
-                英単語を見て、正しい日本語の意味を瞬時にタップ！
-                <br className="hidden sm:inline" />
-                全10問のクリアタイム＆正解数で全国ランキングに名を刻め！
-              </p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('leaderboard');
+                  playSound('click');
+                }}
+                className="flex items-center gap-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors shrink-0"
+              >
+                <Trophy className="h-3.5 w-3.5" />
+                <span className="text-[11px] font-black">ランキング</span>
+              </button>
             </div>
 
-            {/* Input Card: プレイヤー名 */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 sm:p-6 shadow-xl space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-black text-slate-200 flex items-center gap-2">
-                  <User className="h-4 w-4 text-amber-400" />
-                  <span>プレイヤーネームを入力</span>
-                  <span className="text-[10px] text-rose-400 font-bold">※必須</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPhase('leaderboard');
-                    playSound('click');
-                  }}
-                  className="text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 transition-colors"
-                >
-                  <Trophy className="h-3.5 w-3.5" />
-                  <span>ランキングを見る</span>
-                </button>
+            {/* Input Card: プレイヤー名 (スリムバー) */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-3 sm:p-4 shadow-lg space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                <span className="flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5 text-amber-400" />
+                  <span>プレイヤーネーム</span>
+                </span>
+                {registeredStudents.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStudentModalOpen(true);
+                      playSound('click');
+                    }}
+                    className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 text-[11px] underline"
+                  >
+                    <span>生徒リストから選ぶ ({registeredStudents.length}名)</span>
+                  </button>
+                )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="text"
-                  maxLength={12}
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  placeholder="例: たろう, エース, Sakura"
-                  className="flex-1 rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-base font-bold text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
-                />
-              </div>
-
-              {/* 生徒一覧からのクイック選択（もし生徒データがあれば表示） */}
-              {registeredStudents.length > 0 && (
-                <div className="pt-1">
-                  <p className="text-[11px] text-slate-400 font-bold mb-1.5 flex items-center gap-1">
-                    <span>塾の生徒リストから選ぶ:</span>
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1 bg-slate-950/60 rounded-xl border border-slate-800/80">
-                    {registeredStudents.map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => {
-                          setPlayerName(s.name);
-                          playSound('click');
-                        }}
-                        className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
-                          playerName === s.name
-                            ? 'bg-amber-400 text-slate-950 font-black scale-105 shadow-sm'
-                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-                        }`}
-                      >
-                        {s.name}
-                      </button>
-                    ))}
-                  </div>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    placeholder="名前を入力 (例: たろう)"
+                    className="w-full rounded-xl bg-slate-950 border border-slate-700 px-3.5 py-2 text-sm sm:text-base font-bold text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                  />
                 </div>
-              )}
+                {registeredStudents.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStudentModalOpen(true);
+                      playSound('click');
+                    }}
+                    className="h-[38px] px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 hover:text-white transition-colors shrink-0 flex items-center gap-1"
+                  >
+                    <span>生徒選択</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Course Selection */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-black text-slate-200 flex items-center gap-2">
-                <Zap className="h-4 w-4 text-amber-400" />
-                <span>挑戦するコースを選択</span>
-              </h3>
+            {/* Course Selection (2x2 Grid) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs sm:text-sm font-black text-slate-200 flex items-center gap-1.5">
+                  <Zap className="h-3.5 w-3.5 text-amber-400" />
+                  <span>コースを選択</span>
+                </h3>
+                <span className="text-[10px] text-slate-400 font-medium">全10問勝負</span>
+              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 {COURSES.map((course) => {
                   const isSelected = selectedCourse === course.id;
                   return (
@@ -804,29 +818,34 @@ export default function WordsQuizPage() {
                         setSelectedCourse(course.id);
                         playSound('click');
                       }}
-                      className={`text-left rounded-2xl p-4 border-2 transition-all relative overflow-hidden ${
+                      className={`text-left rounded-2xl p-2.5 sm:p-3.5 border-2 transition-all relative flex flex-col justify-between ${
                         isSelected
-                          ? 'border-amber-400 bg-gradient-to-br from-amber-950/50 via-slate-900 to-indigo-950/50 shadow-xl shadow-amber-500/10 -translate-y-0.5'
-                          : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900'
+                          ? 'border-amber-400 bg-gradient-to-br from-amber-950/60 via-slate-900 to-indigo-950/60 shadow-lg shadow-amber-500/15 ring-1 ring-amber-400/50'
+                          : 'border-slate-800/90 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl">{course.icon}</span>
-                          <span className="font-black text-base text-white">{course.name}</span>
+                      <div className="flex items-start justify-between gap-1 mb-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-xl shrink-0">{course.icon}</span>
+                          <span className="font-black text-xs sm:text-sm text-white truncate">
+                            {course.name}
+                          </span>
                         </div>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${course.badgeStyle}`}>
+                        {isSelected && (
+                          <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-400 text-slate-950">
+                            <Check className="h-3 w-3 stroke-[3]" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-1 mt-0.5">
+                        <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full ${course.badgeStyle}`}>
                           {course.badge}
                         </span>
+                        <span className="text-[10px] text-slate-400 font-bold hidden sm:inline">
+                          {course.id === 'all' ? '300語' : '100語'}
+                        </span>
                       </div>
-                      <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                        {course.description}
-                      </p>
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-slate-950">
-                          <Check className="h-3.5 w-3.5 stroke-[3]" />
-                        </div>
-                      )}
                     </button>
                   );
                 })}
@@ -834,27 +853,27 @@ export default function WordsQuizPage() {
             </div>
 
             {/* Big Start Button */}
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={handleStartGame}
-                className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_auto] hover:bg-right p-5 text-center font-black text-slate-950 text-xl shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_auto] hover:bg-right py-3.5 sm:py-4 px-5 text-center font-black text-slate-950 text-base sm:text-lg shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
                 <div className="flex items-center justify-center gap-2">
-                  <Flame className="h-6 w-6 text-slate-950 fill-slate-950 animate-bounce" />
+                  <Flame className="h-5 w-5 text-slate-950 fill-slate-950 animate-bounce" />
                   <span>バトルスタート (10問勝負)</span>
-                  <ArrowRight className="h-6 w-6 group-hover:translate-x-1.5 transition-transform" />
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
             </div>
 
-            {/* Bottom Info */}
-            <div className="flex items-center justify-center gap-4 text-xs text-slate-500 font-bold">
-              <span>🎧 音声読み上げ対応</span>
+            {/* Bottom Info Tips */}
+            <div className="flex items-center justify-center gap-3 text-[11px] text-slate-500 font-bold pt-0.5">
+              <span>🎧 音声対応</span>
               <span>•</span>
-              <span>⚡ リアルタイムタイム計測</span>
+              <span>⚡ タイム計測</span>
               <span>•</span>
-              <span>🏆 ランキング自動登録</span>
+              <span>🏆 ランキング掲載</span>
             </div>
           </div>
         )}
@@ -1419,6 +1438,65 @@ export default function WordsQuizPage() {
             </div>
           </div>
         )}
+
+        {/* プレイヤー（生徒）選択モーダル */}
+        <Dialog open={studentModalOpen} onOpenChange={setStudentModalOpen}>
+          <DialogContent className="sm:max-w-md bg-slate-950 border-slate-800 text-white">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base font-black text-white">
+                <User className="h-5 w-5 text-amber-400" />
+                <span>塾の生徒リストから選択</span>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-3 py-2">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="なまえで絞り込み..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3.5 py-2.5 text-sm font-bold text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto p-1">
+                {filteredStudents.map((s) => {
+                  const isSelected = playerName === s.name;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => {
+                        setPlayerName(s.name);
+                        setStudentModalOpen(false);
+                        try {
+                          localStorage.setItem('word_quiz_player_name', s.name);
+                        } catch {
+                          // ignore
+                        }
+                        playSound('click');
+                      }}
+                      className={`rounded-xl p-2.5 text-xs font-bold transition-all text-center truncate ${
+                        isSelected
+                          ? 'bg-amber-400 text-slate-950 font-black shadow-md'
+                          : 'bg-slate-900 text-slate-200 hover:bg-slate-800 hover:text-white border border-slate-800'
+                      }`}
+                    >
+                      {s.name}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {filteredStudents.length === 0 && (
+                <p className="text-center text-xs text-slate-500 py-4 font-bold">
+                  該当する生徒が見つかりませんでした
+                </p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
 
       {/* Footer */}
