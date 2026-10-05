@@ -333,55 +333,42 @@ export const WORD_DATABASE: WordItem[] = [
 // コース定義
 // =============================================================================
 export interface CourseOption {
-  id: 'all' | 'j1' | 'j2' | 'j3';
+  id: string;
   name: string;
   badge: string;
   badgeStyle: string;
   description: string;
   icon: string;
+  isLadder?: boolean;
 }
 
 export const COURSES: CourseOption[] = [
   {
-    id: 'all',
-    name: '全範囲マスター',
-    badge: '★ 全学年',
-    badgeStyle: 'bg-gradient-to-r from-amber-500 to-rose-500 text-white font-black',
-    description: '中1〜中3・高校入試レベルの全300単語からランダム出題！',
-    icon: '🌟',
+    id: 'season1',
+    name: 'Season 1',
+    badge: '🔥 公式ラダー',
+    badgeStyle: 'bg-gradient-to-r from-amber-500 via-rose-500 to-amber-500 text-white font-black animate-pulse',
+    description: '今週の課題バトル！木曜授業までの週間ラダーランキング',
+    icon: '🏆',
+    isLadder: true,
   },
   {
-    id: 'j1',
-    name: '中1 基礎固め',
-    badge: '中1レベル',
-    badgeStyle: 'bg-emerald-600 text-white font-bold',
-    description: '英語の土台をつくる最重要基本単語100語',
-    icon: '🌱',
-  },
-  {
-    id: 'j2',
-    name: '中2 重要単語',
-    badge: '中2レベル',
+    id: 'training',
+    name: 'トレーニング',
+    badge: '自由練習',
     badgeStyle: 'bg-blue-600 text-white font-bold',
-    description: '日常会話・過去形・比較など実用的な重要単語100語',
-    icon: '⚡',
-  },
-  {
-    id: 'j3',
-    name: '中3・高校入試',
-    badge: '中3・入試',
-    badgeStyle: 'bg-purple-600 text-white font-bold',
-    description: '関係詞・抽象名詞・高校入試頻出の発展単語100語',
-    icon: '🔥',
+    description: '全学年300単語からランダム出題！自由に練習できます',
+    icon: '⚔️',
+    isLadder: false,
   },
 ];
 
 // =============================================================================
 // クイズ生成ロジック（高品質4択生成）
 // =============================================================================
-export function getWordsByCourse(courseId: 'all' | 'j1' | 'j2' | 'j3'): WordItem[] {
-  if (courseId === 'all') return WORD_DATABASE;
-  return WORD_DATABASE.filter((w) => w.level === courseId);
+export function getWordsByCourse(courseId: string): WordItem[] {
+  // 将来のシーズンごとに特定単語グループを出題可能
+  return WORD_DATABASE;
 }
 
 // 配列シャッフル
@@ -398,7 +385,7 @@ function shuffle<T>(arr: T[]): T[] {
  * 指定したコースから指定問題数（デフォルト10問）の4択クイズセットを生成
  */
 export function generateQuestionSet(
-  courseId: 'all' | 'j1' | 'j2' | 'j3' = 'all',
+  courseId: string = 'season1',
   count: number = 10
 ): QuizQuestion[] {
   const pool = getWordsByCourse(courseId);
