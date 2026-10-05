@@ -346,7 +346,6 @@ interface ComboThemeInfo {
   bgAtmosphereClass: string;
   screenEdgeClass: string;
   cardGlowClass: string;
-  banner: string | null;
 }
 
 function getComboTheme(combo: number): ComboThemeInfo {
@@ -363,7 +362,6 @@ function getComboTheme(combo: number): ComboThemeInfo {
         'shadow-[inset_0_0_70px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/40',
       cardGlowClass:
         'border-amber-300 bg-gradient-to-b from-amber-950/50 via-slate-900 to-slate-950 shadow-[0_0_50px_rgba(251,191,36,0.45)] ring-2 ring-amber-300/80',
-      banner: '👑 GODLIKE ZONE! (スコア＆タイム極限加速中)',
     };
   }
   if (combo >= 7) {
@@ -379,7 +377,6 @@ function getComboTheme(combo: number): ComboThemeInfo {
         'shadow-[inset_0_0_55px_rgba(244,63,94,0.25)]',
       cardGlowClass:
         'border-rose-500 bg-gradient-to-b from-rose-950/40 via-slate-900 to-slate-950 shadow-[0_0_35px_rgba(244,63,94,0.35)] ring-2 ring-rose-400/60',
-      banner: '💥 HYPER FEVER! 神速ゾーン突入',
     };
   }
   if (combo >= 5) {
@@ -395,7 +392,6 @@ function getComboTheme(combo: number): ComboThemeInfo {
         'shadow-[inset_0_0_40px_rgba(249,115,22,0.2)]',
       cardGlowClass:
         'border-orange-500 bg-gradient-to-b from-orange-950/30 via-slate-900 to-slate-950 shadow-[0_0_30px_rgba(249,115,22,0.25)] ring-1 ring-orange-400/50',
-      banner: '⚡ SUPER FEVER! ボーナス加速中',
     };
   }
   if (combo >= 3) {
@@ -411,7 +407,6 @@ function getComboTheme(combo: number): ComboThemeInfo {
         'shadow-[inset_0_0_30px_rgba(245,158,11,0.15)]',
       cardGlowClass:
         'border-amber-500/80 bg-gradient-to-b from-amber-950/20 via-slate-900 to-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.18)]',
-      banner: '🔥 HEAT UP! 連続正解キープ！',
     };
   }
   if (combo >= 1) {
@@ -426,7 +421,6 @@ function getComboTheme(combo: number): ComboThemeInfo {
       screenEdgeClass: '',
       cardGlowClass:
         'border-slate-700 bg-gradient-to-b from-slate-900 to-slate-950',
-      banner: null,
     };
   }
   return {
@@ -439,7 +433,6 @@ function getComboTheme(combo: number): ComboThemeInfo {
     screenEdgeClass: '',
     cardGlowClass:
       'border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950',
-    banner: null,
   };
 }
 
@@ -1155,20 +1148,13 @@ export default function WordsQuizPage() {
               />
             </div>
 
-            {/* Main Word Card (コンボに応じてオーラ発光＆不正解時シェイク) */}
+            {/* Main Word Card (高さ完全固定・視線ブレゼロ・テキスト排除で研ぎ澄まされたUI) */}
             <div
-              className={`relative rounded-3xl border-2 transition-all duration-300 p-6 sm:p-10 shadow-2xl text-center space-y-4 ${
+              className={`relative h-[140px] sm:h-[160px] flex flex-col items-center justify-center rounded-3xl border-2 transition-all duration-300 p-4 sm:p-6 shadow-2xl text-center select-none ${
                 comboTheme.cardGlowClass
               } ${answerState === 'wrong' ? 'animate-shake' : ''}`}
             >
-              {/* Dynamic Fever Banner when combo >= 3 */}
-              {comboTheme.banner && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/85 border border-amber-400/50 text-amber-300 text-[11px] sm:text-xs font-black animate-pulse shadow-md">
-                  <span>{comboTheme.banner}</span>
-                </div>
-              )}
-
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 mb-2">
                 {getPosBadge(currentQ.word.partOfSpeech)}
                 <span className="rounded bg-slate-800 text-slate-400 text-[11px] px-2 py-0.5 font-bold">
                   {currentQ.word.level.toUpperCase()}
@@ -1176,21 +1162,19 @@ export default function WordsQuizPage() {
               </div>
 
               {/* Target Word */}
-              <div className="flex items-center justify-center gap-3">
-                <h2 className="text-4xl sm:text-6xl font-black text-white tracking-wide font-sans">
+              <div className="flex items-center justify-center gap-2.5 sm:gap-3 max-w-full px-2">
+                <h2 className="text-3xl sm:text-5xl font-black text-white tracking-wide font-sans truncate">
                   {currentQ.word.en}
                 </h2>
                 <button
                   type="button"
                   onClick={() => speakEnglish(currentQ.word.en)}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-400 transition-colors shadow-md"
+                  className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-400 transition-colors shadow-md"
                   title="ネイティブ発音を聞く"
                 >
-                  <Volume2 className="h-6 w-6" />
+                  <Volume2 className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
               </div>
-
-              <p className="text-xs text-slate-400 font-bold">正しい日本語訳を選んでください</p>
             </div>
 
             {/* 4 Choices Grid (keyで問題切り替え時に完全再マウントし選択残りを根絶) */}
