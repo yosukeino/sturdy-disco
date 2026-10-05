@@ -847,63 +847,71 @@ export default function WordsQuizPage() {
       />
       <div className="pointer-events-none fixed -top-32 left-1/2 -translate-x-1/2 h-80 w-[600px] rounded-full bg-amber-500/15 blur-3xl" />
 
-      {/* Global Header */}
-      <header className="relative z-20 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md">
-        <div className="mx-auto max-w-5xl px-3 py-2.5 sm:px-6">
-          <div className="flex items-center justify-between gap-2">
-            <Link href="/" className="flex items-center gap-2 min-w-0 group">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 text-slate-950 shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
-                <Gamepad2 className="h-5 w-5 fill-slate-950" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h1 className="text-sm font-black sm:text-base text-white leading-tight truncate">
-                    英単語 4択スピードバトル
-                  </h1>
-                  <span className="rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] px-1.5 font-black hidden sm:inline-block">
-                    ARCADE
-                  </span>
+      {/* Global Header (バトル中・カウントダウン中は非表示にして学習ゲームに完全没入) */}
+      {phase !== 'battle' && phase !== 'countdown' && (
+        <header className="relative z-20 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md">
+          <div className="mx-auto max-w-5xl px-3 py-2.5 sm:px-6">
+            <div className="flex items-center justify-between gap-2">
+              <Link href="/" className="flex items-center gap-2 min-w-0 group">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 text-slate-950 shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                  <Gamepad2 className="h-5 w-5 fill-slate-950" />
                 </div>
-                <p className="text-[10px] text-slate-400 hidden sm:block">
-                  4-Choice Vocabulary Speedrun & Leaderboard
-                </p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <h1 className="text-sm font-black sm:text-base text-white leading-tight truncate">
+                      英単語 4択スピードバトル
+                    </h1>
+                    <span className="rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] px-1.5 font-black hidden sm:inline-block">
+                      ARCADE
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 hidden sm:block">
+                    4-Choice Vocabulary Speedrun & Leaderboard
+                  </p>
+                </div>
+                <VersionBadge />
+              </Link>
+
+              <div className="flex items-center gap-2">
+                {/* Sound Toggle Button */}
+                <button
+                  type="button"
+                  onClick={toggleSound}
+                  className="flex items-center gap-1 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 px-2.5 py-1.5 text-xs font-bold text-slate-300 transition-colors"
+                  title={soundEnabled ? 'サウンドをミュート' : 'サウンドを有効化'}
+                >
+                  {soundEnabled ? (
+                    <>
+                      <Volume2 className="h-4 w-4 text-emerald-400" />
+                      <span className="text-[11px] hidden sm:inline">SOUND ON</span>
+                    </>
+                  ) : (
+                    <>
+                      <VolumeX className="h-4 w-4 text-slate-500" />
+                      <span className="text-[11px] text-slate-500 hidden sm:inline">MUTE</span>
+                    </>
+                  )}
+                </button>
+
+                <Nav active="words" />
               </div>
-              <VersionBadge />
-            </Link>
+            </div>
 
-            <div className="flex items-center gap-2">
-              {/* Sound Toggle Button */}
-              <button
-                type="button"
-                onClick={toggleSound}
-                className="flex items-center gap-1 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 px-2.5 py-1.5 text-xs font-bold text-slate-300 transition-colors"
-                title={soundEnabled ? 'サウンドをミュート' : 'サウンドを有効化'}
-              >
-                {soundEnabled ? (
-                  <>
-                    <Volume2 className="h-4 w-4 text-emerald-400" />
-                    <span className="text-[11px] hidden sm:inline">SOUND ON</span>
-                  </>
-                ) : (
-                  <>
-                    <VolumeX className="h-4 w-4 text-slate-500" />
-                    <span className="text-[11px] text-slate-500 hidden sm:inline">MUTE</span>
-                  </>
-                )}
-              </button>
-
-              <Nav active="words" />
+            <div className="mt-2 sm:hidden">
+              <MobileNavTabs active="words" />
             </div>
           </div>
+        </header>
+      )}
 
-          <div className="mt-2 sm:hidden">
-            <MobileNavTabs active="words" />
-          </div>
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="relative z-10 mx-auto w-full max-w-4xl px-3 py-3 sm:px-4 sm:py-8 flex-1 flex flex-col justify-center">
+      {/* Main Container (バトル中は上部に固定し、視線移動や画面揺れを完全排除) */}
+      <main
+        className={`relative z-10 mx-auto w-full max-w-xl px-3 sm:px-4 flex flex-col ${
+          phase === 'battle' || phase === 'countdown'
+            ? 'pt-3 sm:pt-6 pb-2 justify-start'
+            : 'py-3 sm:py-8 flex-1 justify-center max-w-4xl'
+        }`}
+      >
         {/* =================================================================== */}
         {/* PHASE 1: LOBBY (ロビー・プレイヤー名入力・シーズン選択) */}
         {/* =================================================================== */}
@@ -1074,11 +1082,11 @@ export default function WordsQuizPage() {
         {/* PHASE 3: BATTLE (10 QUESTIONS SPEEDRUN) */}
         {/* =================================================================== */}
         {phase === 'battle' && currentQ && (
-          <div className="space-y-4">
+          <div className="space-y-3.5 sm:space-y-4">
             {/* Top Bar: Progress, Live Combo (Always Visible), Live Stopwatch */}
-            <div className="flex items-center justify-between gap-2 sm:gap-3 bg-slate-900/90 border border-slate-800 rounded-2xl px-3 sm:px-4 py-2.5 shadow-md">
+            <div className="h-12 sm:h-14 shrink-0 flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-800 rounded-2xl px-3 sm:px-4 shadow-md">
               {/* Question Count */}
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="w-24 sm:w-28 shrink-0 flex items-center gap-1.5">
                 <span className="text-[10px] sm:text-xs font-black text-slate-400">PROGRESS</span>
                 <span className="font-mono text-sm sm:text-base font-black text-white">
                   Q <span className="text-amber-400">{currentIdx + 1}</span> / 10
@@ -1086,26 +1094,30 @@ export default function WordsQuizPage() {
               </div>
 
               {/* Combo Streak (常時表示 & コンボ数に応じて豪華に進化) */}
-              <div
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 select-none ${comboTheme.badgeStyle}`}
-              >
-                <Flame
-                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform ${
-                    combo >= 3 ? 'animate-bounce' : ''
-                  } ${comboTheme.flameColor}`}
-                />
-                <span>{comboTheme.label}</span>
+              <div className="flex-1 flex justify-center items-center">
+                <div
+                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 select-none ${comboTheme.badgeStyle}`}
+                >
+                  <Flame
+                    className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform ${
+                      combo >= 3 ? 'animate-bounce' : ''
+                    } ${comboTheme.flameColor}`}
+                  />
+                  <span>{comboTheme.label}</span>
+                </div>
               </div>
 
               {/* Stopwatch */}
-              <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-700/80 rounded-xl px-2.5 sm:px-3 py-1 text-amber-400 font-mono font-black text-xs sm:text-base shadow-inner shrink-0">
-                <Timer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 animate-spin" />
-                <span>{formatTime(elapsedMs)}</span>
+              <div className="w-24 sm:w-28 shrink-0 flex justify-end items-center">
+                <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-700/80 rounded-xl px-2.5 sm:px-3 py-1 text-amber-400 font-mono font-black text-xs sm:text-base shadow-inner">
+                  <Timer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 animate-spin" />
+                  <span>{formatTime(elapsedMs)}</span>
+                </div>
               </div>
             </div>
 
             {/* Combo 10-Pip Gauge & Max Combo Indicator */}
-            <div className="space-y-1.5 px-1">
+            <div className="h-9 shrink-0 flex flex-col justify-between px-1">
               <div className="flex items-center justify-between text-[10px] font-black text-slate-400">
                 <span className="flex items-center gap-1">
                   <Zap
@@ -1138,23 +1150,22 @@ export default function WordsQuizPage() {
                   );
                 })}
               </div>
-            </div>
-
-            {/* Overall 10-Question Progress Bar */}
-            <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-              <div
-                className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300"
-                style={{ width: `${((currentIdx + 1) / 10) * 100}%` }}
-              />
+              {/* Overall 10-Question Progress Bar */}
+              <div className="h-1 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300"
+                  style={{ width: `${((currentIdx + 1) / 10) * 100}%` }}
+                />
+              </div>
             </div>
 
             {/* Main Word Card (高さ完全固定・視線ブレゼロ・テキスト排除で研ぎ澄まされたUI) */}
             <div
-              className={`relative h-[140px] sm:h-[160px] flex flex-col items-center justify-center rounded-3xl border-2 transition-all duration-300 p-4 sm:p-6 shadow-2xl text-center select-none ${
+              className={`relative h-[128px] sm:h-[148px] shrink-0 overflow-hidden flex flex-col items-center justify-center rounded-3xl border-2 transition-all duration-300 px-4 py-3 sm:p-6 shadow-2xl text-center select-none ${
                 comboTheme.cardGlowClass
               } ${answerState === 'wrong' ? 'animate-shake' : ''}`}
             >
-              <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="h-6 flex items-center justify-center gap-2 mb-1 shrink-0">
                 {getPosBadge(currentQ.word.partOfSpeech)}
                 <span className="rounded bg-slate-800 text-slate-400 text-[11px] px-2 py-0.5 font-bold">
                   {currentQ.word.level.toUpperCase()}
@@ -1162,7 +1173,7 @@ export default function WordsQuizPage() {
               </div>
 
               {/* Target Word */}
-              <div className="flex items-center justify-center gap-2.5 sm:gap-3 max-w-full px-2">
+              <div className="h-14 sm:h-16 flex items-center justify-center gap-2.5 sm:gap-3 max-w-full px-2 shrink-0">
                 <h2 className="text-3xl sm:text-5xl font-black text-white tracking-wide font-sans truncate">
                   {currentQ.word.en}
                 </h2>
@@ -1177,10 +1188,10 @@ export default function WordsQuizPage() {
               </div>
             </div>
 
-            {/* 4 Choices Grid (keyで問題切り替え時に完全再マウントし選択残りを根絶) */}
+            {/* 4 Choices Grid (keyで問題切り替え時に完全再マウントし選択残りを根絶・高さ完全固定) */}
             <div
               key={`choices-grid-q-${currentIdx}`}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-1"
             >
               {currentQ.choices.map((choice, idx) => {
                 const isSelected = selectedChoiceIdx === idx;
@@ -1212,9 +1223,9 @@ export default function WordsQuizPage() {
                     type="button"
                     disabled={isAnswered || isAdvancing}
                     onClick={() => handleSelectChoice(idx)}
-                    className={`group min-h-[64px] sm:min-h-[72px] rounded-2xl p-4 text-left font-black text-base sm:text-lg transition-colors duration-150 flex items-center justify-between active:scale-[0.98] outline-none focus:outline-none select-none ${btnStyle}`}
+                    className={`group h-[56px] sm:h-[62px] shrink-0 rounded-2xl px-4 text-left font-black text-base sm:text-lg transition-colors duration-150 flex items-center justify-between active:scale-[0.98] outline-none focus:outline-none select-none overflow-hidden ${btnStyle}`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span
                         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-black transition-colors ${
                           isAnswered && isCorrect
@@ -1226,7 +1237,7 @@ export default function WordsQuizPage() {
                       >
                         {idx + 1}
                       </span>
-                      <span className="truncate">{choice}</span>
+                      <span className="truncate flex-1">{choice}</span>
                     </div>
 
                     {isAnswered && (
@@ -1679,10 +1690,12 @@ export default function WordsQuizPage() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500 font-medium">
-        <p>中学英語例文テストメーカー · 4択英単語スピードバトル v10.2</p>
-      </footer>
+      {/* Footer (バトル中・カウントダウン中は非表示) */}
+      {phase !== 'battle' && phase !== 'countdown' && (
+        <footer className="relative z-10 border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500 font-medium">
+          <p>中学英語例文テストメーカー · 4択英単語スピードバトル v10.2</p>
+        </footer>
+      )}
     </div>
   );
 }
