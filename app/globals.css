@@ -265,3 +265,22 @@
 .animate-shake {
   animation: shakeAnimation 0.35s ease-in-out;
 }
+
+@keyframes screenFlashAnim {
+  0% {
+    opacity: 1;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+.animate-screen-flash {
+  animation: screenFlashAnim 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

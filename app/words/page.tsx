@@ -49,8 +49,23 @@ import {
 import { supabase } from '@/lib/supabase';
 
 // -----------------------------------------------------------------------------
-// ゲーム効果音シンセサイザー (Web Audio API - 完全自立型)
 // -----------------------------------------------------------------------------
+// 心地よくトランス感のあるアンビエント・サイン波シンセサイザー (Web Audio API)
+// -----------------------------------------------------------------------------
+// ペンタトニック・スケール（Cメジャー / Aマイナー系: 連続正解で美しいメロディを紡ぐ）
+const PENTATONIC_FREQUENCIES = [
+  523.25, // C5 (Combo 1)
+  587.33, // D5 (Combo 2)
+  659.25, // E5 (Combo 3)
+  783.99, // G5 (Combo 4)
+  880.0, // A5 (Combo 5)
+  1046.5, // C6 (Combo 6)
+  1174.66, // D6 (Combo 7)
+  1318.51, // E6 (Combo 8)
+  1567.98, // G6 (Combo 9)
+  2093.0, // C7 (Combo 10+ MAX)
+];
+
 function playSynthesizedSound(
   type:
     | 'countdown'
@@ -58,11 +73,10 @@ function playSynthesizedSound(
     | 'correct'
     | 'wrong'
     | 'combo'
-    | 'combo_super'
-    | 'combo_hyper'
     | 'fanfare_s'
     | 'fanfare_normal'
-    | 'click'
+    | 'click',
+  comboCount: number = 1
 ) {
   if (typeof window === 'undefined') return;
   try {
@@ -73,133 +87,149 @@ function playSynthesizedSound(
     const ctx = new AudioContextClass();
     if (ctx.state === 'suspended') ctx.resume();
 
+    const now = ctx.currentTime;
+
     if (type === 'click') {
+      // 穏やかな木の感触・ウォータードロップのような極めてソフトなクリック音
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, ctx.currentTime);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(260, now + 0.045);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.04, now + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.05);
+      osc.start(now);
+      osc.stop(now + 0.045);
     } else if (type === 'countdown') {
+      // シンギングボウルのような深みのある落ち着いた温かいパルス (E4: 329.63Hz)
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(329.63, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.07, now + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.1);
+      osc.start(now);
+      osc.stop(now + 0.16);
     } else if (type === 'go') {
+      // 心を整えて集中を高める清らかな和音 (G4 + C5: 392Hz & 523.25Hz)
+      [392.0, 523.25].forEach((freq) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(0.07, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      });
+    } else if (type === 'correct' || type === 'combo') {
+      // コンボ数に応じてピッチが滑らかに上昇する、極上のクリスタル・サイン波チャイム
+      // 連続正解するほど音が上がっていき、心地よいトランス状態（フロー体験）へ誘う
+      const safeCombo = Math.max(1, Math.min(comboCount, 10));
+      const baseFreq = PENTATONIC_FREQUENCIES[safeCombo - 1];
+
+      // 主音: 澄んだサイン波ベル
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(baseFreq, now);
+
+      const decay = safeCombo >= 7 ? 0.42 : 0.32;
+      gain1.gain.setValueAtTime(0.0001, now);
+      gain1.gain.linearRampToValueAtTime(0.14, now + 0.008);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + decay);
+
+      // 上品な倍音サイン波（完全5度またはオクターブ上）
+      const overtoneFreq = safeCombo >= 5 ? baseFreq * 2 : baseFreq * 1.5;
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(overtoneFreq, now);
+
+      gain2.gain.setValueAtTime(0.0001, now);
+      gain2.gain.linearRampToValueAtTime(0.035, now + 0.012);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + decay * 0.7);
+
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now);
+      osc2.stop(now + decay * 0.7);
+
+      // 7コンボ以上（フィーバー・神速ゾーン）では、天上のきらめき残響音を追加
+      if (safeCombo >= 7) {
+        const osc3 = ctx.createOscillator();
+        const gain3 = ctx.createGain();
+        osc3.type = 'sine';
+        osc3.frequency.setValueAtTime(baseFreq * 1.25, now + 0.04);
+        gain3.gain.setValueAtTime(0.0001, now + 0.04);
+        gain3.gain.linearRampToValueAtTime(0.04, now + 0.05);
+        gain3.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+        osc3.connect(gain3);
+        gain3.connect(ctx.destination);
+        osc3.start(now + 0.04);
+        osc3.stop(now + 0.38);
+      }
+    } else if (type === 'wrong') {
+      // ユーザーの集中を遮らない、低刺激で落ち着いた低音サイン波ミュート (D3 -> A2)
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.2);
-      gain.gain.setValueAtTime(0.18, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(146.83, now);
+      osc.frequency.exponentialRampToValueAtTime(110.0, now + 0.16);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.06, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
-    } else if (type === 'correct') {
-      const notes = [659.25, 880];
+      osc.start(now);
+      osc.stop(now + 0.16);
+    } else if (type === 'fanfare_normal') {
+      // 達成感を穏やかに包み込むアンビエント・アルペジオ (Cmaj7: C4, E4, G4, B4, C5)
+      const notes = [261.63, 329.63, 392.0, 493.88, 523.25];
       notes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.07);
-        gain.gain.setValueAtTime(0.14, ctx.currentTime + idx * 0.07);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.07 + 0.2);
+        const start = now + idx * 0.09;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.linearRampToValueAtTime(0.07, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.5);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.07);
-        osc.stop(ctx.currentTime + idx * 0.07 + 0.2);
-      });
-    } else if (type === 'wrong') {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(160, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.2);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
-    } else if (type === 'combo') {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.16, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.18);
-    } else if (type === 'combo_super') {
-      const notes = [523.25, 659.25, 783.99, 1046.5];
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.05);
-        gain.gain.setValueAtTime(0.14, ctx.currentTime + idx * 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.05 + 0.18);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.05);
-        osc.stop(ctx.currentTime + idx * 0.05 + 0.18);
-      });
-    } else if (type === 'combo_hyper') {
-      const notes = [659.25, 880, 1108.73, 1318.51, 1567.98];
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.04);
-        gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.04 + 0.22);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.04);
-        osc.stop(ctx.currentTime + idx * 0.04 + 0.22);
+        osc.start(start);
+        osc.stop(start + 0.5);
       });
     } else if (type === 'fanfare_s') {
-      const notes = [523.25, 659.25, 783.99, 1046.5, 1318.51, 1567.98];
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
-        gain.gain.setValueAtTime(0.13, ctx.currentTime + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.45);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.08);
-        osc.stop(ctx.currentTime + idx * 0.08 + 0.45);
-      });
-    } else if (type === 'fanfare_normal') {
-      const notes = [440, 554.37, 659.25, 880];
+      // 深い恍惚感を味わえるアンビエント・クリスタルコード (G4, C5, E5, G5, B5, C6)
+      const notes = [392.0, 523.25, 659.25, 783.99, 987.77, 1046.5];
       notes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.09);
-        gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.09);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.09 + 0.35);
+        const start = now + idx * 0.08;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.linearRampToValueAtTime(0.08, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.65);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.09);
-        osc.stop(ctx.currentTime + idx * 0.09 + 0.35);
+        osc.start(start);
+        osc.stop(start + 0.65);
       });
     }
   } catch {
@@ -434,6 +464,7 @@ export default function WordsQuizPage() {
   const [selectedChoiceIdx, setSelectedChoiceIdx] = useState<number | null>(null);
   const [answerState, setAnswerState] = useState<'correct' | 'wrong' | null>(null);
   const [isAdvancing, setIsAdvancing] = useState<boolean>(false);
+  const [screenFlash, setScreenFlash] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [combo, setCombo] = useState<number>(0);
   const [maxCombo, setMaxCombo] = useState<number>(0);
@@ -472,14 +503,13 @@ export default function WordsQuizPage() {
         | 'correct'
         | 'wrong'
         | 'combo'
-        | 'combo_super'
-        | 'combo_hyper'
         | 'fanfare_s'
         | 'fanfare_normal'
-        | 'click'
+        | 'click',
+      comboCount: number = 1
     ) => {
       if (!soundEnabled) return;
-      playSynthesizedSound(type);
+      playSynthesizedSound(type, comboCount);
     },
     [soundEnabled]
   );
@@ -533,6 +563,7 @@ export default function WordsQuizPage() {
     setSelectedChoiceIdx(null);
     setAnswerState(null);
     setIsAdvancing(false);
+    setScreenFlash(false);
     setElapsedMs(0);
     setFinalElapsedMs(0);
     setSubmittedRecord(null);
@@ -597,7 +628,7 @@ export default function WordsQuizPage() {
   }, [phase, currentIdx, questions]);
 
   // ---------------------------------------------------------------------------
-  // 回答処理（選択残りバグ・誤連打完全防止）
+  // 回答処理（選択残りバグ・誤連打完全防止 ＆ 画面フラッシュ＋トランスサウンド）
   // ---------------------------------------------------------------------------
   const handleSelectChoice = (choiceIdx: number) => {
     // 既に選択済み、または次の問題へ移行中（isAdvancing）なら二重タップを完全防止
@@ -627,15 +658,13 @@ export default function WordsQuizPage() {
       setCombo(newCombo);
       setMaxCombo(newMaxCombo);
       setAnswerState('correct');
-      if (newCombo >= 7) {
-        playSound('combo_hyper');
-      } else if (newCombo >= 4) {
-        playSound('combo_super');
-      } else if (newCombo >= 2) {
-        playSound('combo');
-      } else {
-        playSound('correct');
-      }
+
+      // 正解画面フラッシュ発動（快感・達成感演出）
+      setScreenFlash(true);
+      setTimeout(() => setScreenFlash(false), 380);
+
+      // コンボ数に応じてピッチが上昇するトランス・サイン波サウンド
+      playSound('correct', newCombo);
     } else {
       setAnswerState('wrong');
       setCombo(0);
@@ -787,6 +816,17 @@ export default function WordsQuizPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden">
+      {/* 正解時の画面フラッシュエフェクト（快感・達成感を高める演出） */}
+      {screenFlash && (
+        <div
+          className="pointer-events-none fixed inset-0 z-50 animate-screen-flash"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, rgba(52, 211, 153, 0.35) 0%, rgba(16, 185, 129, 0.18) 45%, rgba(245, 158, 11, 0.08) 75%, transparent 100%)',
+          }}
+        />
+      )}
+
       {/* Dynamic Background Atmosphere Aura based on Combo & Phase */}
       <div
         className={`pointer-events-none fixed inset-0 transition-all duration-700 ease-out ${
