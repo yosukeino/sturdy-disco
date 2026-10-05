@@ -342,13 +342,78 @@ export interface CourseOption {
   isLadder?: boolean;
 }
 
+// =============================================================================
+// シーズン1: S1〜S6 例文学習 頻出重要単語（全50語）
+// 抽象的な代名詞・冠詞・be動詞・助動詞等（I, you, the, a, is等）や固有名詞を除外し、
+// 実質的な意味を持つ動詞・名詞・形容詞・副詞・前置詞のみで厳選
+// =============================================================================
+export const SEASON_1_WORDS: WordItem[] = [
+  // --- 動詞 (Verbs: 7語) ---
+  { id: 's1-v1', en: 'speak', jp: '話す', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's1-v2', en: 'play', jp: '（スポーツや楽器を）する・弾く', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's1-v3', en: 'watch', jp: '（テレビなどを）見る', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's1-v4', en: 'teach', jp: '教える', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's1-v5', en: 'live', jp: '住む・生きる', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's1-v6', en: 'have', jp: '持っている・（家族などが）いる', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's1-v7', en: 'like', jp: '好む・好きである', level: 'j1', partOfSpeech: 'verb' },
+
+  // --- 名詞 (Nouns: 32語) ---
+  { id: 's1-n1', en: 'sister', jp: '姉・妹', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n2', en: 'brother', jp: '兄・弟', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n3', en: 'parent', jp: '親・両親', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n4', en: 'grandparent', jp: '祖父・祖母（祖父母）', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n5', en: 'father', jp: '父・お父さん', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n6', en: 'mother', jp: '母・お母さん', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n7', en: 'student', jp: '生徒・学生', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n8', en: 'school', jp: '学校', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n9', en: 'high school', jp: '高校・高等学校', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n10', en: 'book', jp: '本', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n11', en: 'notebook', jp: 'ノート', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n12', en: 'comic book', jp: 'まんが本・マンガ', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n13', en: 'subject', jp: '教科・科目', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n14', en: 'music', jp: '音楽', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n15', en: 'kitchen', jp: '台所・キッチン', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n16', en: 'bag', jp: 'かばん・バッグ', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n17', en: 'desk', jp: '机', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n18', en: 'table', jp: 'テーブル・食卓', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n19', en: 'cat', jp: 'ねこ・猫', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n20', en: 'window', jp: '窓', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n21', en: 'home', jp: '家（家庭・我が家）', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n22', en: 'house', jp: '家・住宅（建物）', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n23', en: 'station', jp: '駅', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n24', en: 'tree', jp: '木', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n25', en: 'guitar', jp: 'ギター', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n26', en: 'math', jp: '数学', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n27', en: 'baseball', jp: '野球', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n28', en: 'smartphone', jp: 'スマートフォン・スマホ', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n29', en: 'class', jp: '授業・学級', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n30', en: 'English', jp: '英語', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n31', en: 'Japanese', jp: '日本語', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's1-n32', en: 'TV', jp: 'テレビ', level: 'j1', partOfSpeech: 'noun' },
+
+  // --- 形容詞 (Adjectives: 5語) ---
+  { id: 's1-a1', en: 'tired', jp: '疲れた', level: 'j1', partOfSpeech: 'adjective' },
+  { id: 's1-a2', en: 'interesting', jp: '面白い・興味深い', level: 'j1', partOfSpeech: 'adjective' },
+  { id: 's1-a3', en: 'favorite', jp: '大好きな・お気に入りの', level: 'j1', partOfSpeech: 'adjective' },
+  { id: 's1-a4', en: 'old', jp: '〜歳の・古い', level: 'j1', partOfSpeech: 'adjective' },
+  { id: 's1-a5', en: 'high', jp: '高い', level: 'j1', partOfSpeech: 'adjective' },
+
+  // --- 副詞・前置詞・連語 (Other: 6語) ---
+  { id: 's1-o1', en: 'near', jp: '〜の近くに', level: 'j1', partOfSpeech: 'other' },
+  { id: 's1-o2', en: 'under', jp: '〜の下に', level: 'j1', partOfSpeech: 'other' },
+  { id: 's1-o3', en: 'by', jp: '〜のそばに', level: 'j1', partOfSpeech: 'other' },
+  { id: 's1-o4', en: 'here', jp: 'ここに・ここで', level: 'j1', partOfSpeech: 'other' },
+  { id: 's1-o5', en: 'now', jp: '今・現在は', level: 'j1', partOfSpeech: 'other' },
+  { id: 's1-o6', en: 'every day', jp: '毎日', level: 'j1', partOfSpeech: 'other' },
+];
+
 export const COURSES: CourseOption[] = [
   {
     id: 'season1',
     name: 'Season 1',
-    badge: '🔥 公式ラダー',
+    badge: '🔥 S1-S6 課題',
     badgeStyle: 'bg-gradient-to-r from-amber-500 via-rose-500 to-amber-500 text-white font-black animate-pulse',
-    description: '今週の課題バトル！木曜授業までの週間ラダーランキング',
+    description: 'S1〜S6の例文に登場する厳選50単語から10問バトル！木曜更新ラダー',
     icon: '🏆',
     isLadder: true,
   },
@@ -367,7 +432,9 @@ export const COURSES: CourseOption[] = [
 // クイズ生成ロジック（高品質4択生成）
 // =============================================================================
 export function getWordsByCourse(courseId: string): WordItem[] {
-  // 将来のシーズンごとに特定単語グループを出題可能
+  if (courseId === 'season1') {
+    return SEASON_1_WORDS;
+  }
   return WORD_DATABASE;
 }
 
