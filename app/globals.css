@@ -284,3 +284,23 @@
 .animate-screen-flash {
   animation: screenFlashAnim 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+@keyframes rankStampPop {
+  0% {
+    transform: scale(1.35);
+    filter: brightness(1.6);
+  }
+  60% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-rank-pop {
+  display: inline-block;
+  animation: rankStampPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+

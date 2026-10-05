@@ -486,6 +486,15 @@ export default function WordsQuizPage() {
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState<boolean>(false);
   const [showMistakesReview, setShowMistakesReview] = useState<boolean>(false);
 
+  // リザルト画面のデジタル数字カウントアップ演出用（1秒未満で着地）
+  const [animatedScore, setAnimatedScore] = useState<number>(0);
+  const [animatedTime, setAnimatedTime] = useState<number>(0);
+  const [animatedCombo, setAnimatedCombo] = useState<number>(0);
+  const [animatedPts, setAnimatedPts] = useState<number>(0);
+  const [animatedRank, setAnimatedRank] = useState<number | null>(null);
+  const [isCountUpDone, setIsCountUpDone] = useState<boolean>(false);
+  const [isRankDone, setIsRankDone] = useState<boolean>(false);
+
   // コンボテーマ算出
   const comboTheme = useMemo(() => getComboTheme(combo), [combo]);
 
@@ -565,6 +574,13 @@ export default function WordsQuizPage() {
     setFinalElapsedMs(0);
     setSubmittedRecord(null);
     setUserRankPosition(null);
+    setAnimatedScore(0);
+    setAnimatedTime(0);
+    setAnimatedCombo(0);
+    setAnimatedPts(0);
+    setAnimatedRank(null);
+    setIsCountUpDone(false);
+    setIsRankDone(false);
 
     playSound('click');
     setPhase('countdown');
@@ -623,6 +639,94 @@ export default function WordsQuizPage() {
       return () => clearTimeout(t);
     }
   }, [phase, currentIdx, questions]);
+
+  // ---------------------------------------------------------------------------
+  // リザルト画面のデジタル数字カウントアップ演出（750ms：1秒未満でテンポよく着地）
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (phase !== 'result') {
+      setAnimatedScore(0);
+      setAnimatedTime(0);
+      setAnimatedCombo(0);
+      setAnimatedPts(0);
+      setIsCountUpDone(false);
+      return;
+    }
+
+    const duration = 750; // 750ms: 1秒未満でテンポよく着地
+    const startAnimTime = performance.now();
+    const finalTimeSec = finalElapsedMs / 1000;
+    const pts =
+      score * 100 +
+      Math.max(0, Math.round(500 - finalTimeSec * 12)) +
+      maxCombo * 20 +
+      (score === 10 ? 300 : 0);
+
+    let rafId: number;
+
+    const animateMetrics = (now: number) => {
+      const elapsed = now - startAnimTime;
+      const progress = Math.min(1, elapsed / duration);
+      // easeOutExpo: ゲームのデジタルカウンター演出に最適な急加速＆スムーズな着地
+      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+      setAnimatedScore(Math.round(ease * score));
+      setAnimatedTime(ease * finalTimeSec);
+      setAnimatedCombo(Math.round(ease * maxCombo));
+      setAnimatedPts(Math.round(ease * pts));
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(animateMetrics);
+      } else {
+        setAnimatedScore(score);
+        setAnimatedTime(finalTimeSec);
+        setAnimatedCombo(maxCombo);
+        setAnimatedPts(pts);
+        setIsCountUpDone(true);
+      }
+    };
+
+    rafId = requestAnimationFrame(animateMetrics);
+    return () => cancelAnimationFrame(rafId);
+  }, [phase, score, finalElapsedMs, maxCombo]);
+
+  // ---------------------------------------------------------------------------
+  // リーダーボード順位のデジタルロール＆スタンプ着地演出（650ms：1秒未満）
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (phase !== 'result' || userRankPosition === null) {
+      setAnimatedRank(null);
+      setIsRankDone(false);
+      return;
+    }
+
+    const duration = 650;
+    const startAnimTime = performance.now();
+    const targetRank = userRankPosition;
+    // 演出：目標順位より上（例えば1位なら12位から、3位なら15位から）から高速カウントダウンして着地
+    const startRank = targetRank + (targetRank === 1 ? 11 : Math.min(14, targetRank * 2));
+
+    let rafId: number;
+
+    const animateRank = (now: number) => {
+      const elapsed = now - startAnimTime;
+      const progress = Math.min(1, elapsed / duration);
+      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+      const current = Math.max(targetRank, Math.round(startRank - ease * (startRank - targetRank)));
+      setAnimatedRank(current);
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(animateRank);
+      } else {
+        setAnimatedRank(targetRank);
+        setIsRankDone(true);
+      }
+    };
+
+    rafId = requestAnimationFrame(animateRank);
+    return () => cancelAnimationFrame(rafId);
+  }, [phase, userRankPosition]);
 
   // ---------------------------------------------------------------------------
   // 回答処理（選択残りバグ・iPadゴーストタップ完全防止 ＆ 画面フラッシュ＋トランスサウンド）
@@ -860,8 +964,8 @@ export default function WordsQuizPage() {
       />
       <div className="pointer-events-none fixed -top-32 left-1/2 -translate-x-1/2 h-80 w-[600px] rounded-full bg-amber-500/15 blur-3xl" />
 
-      {/* Global Header (バトル中・カウントダウン中は非表示にして学習ゲームに完全没入) */}
-      {phase !== 'battle' && phase !== 'countdown' && (
+      {/* Global Header (バトル中・カウントダウン中・リザルト中は非表示にして学習ゲームに完全没入) */}
+      {phase !== 'battle' && phase !== 'countdown' && phase !== 'result' && (
         <header className="relative z-20 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md">
           <div className="mx-auto max-w-5xl px-3 py-2.5 sm:px-6">
             <div className="flex items-center justify-between gap-2">
@@ -917,11 +1021,11 @@ export default function WordsQuizPage() {
         </header>
       )}
 
-      {/* Main Container (バトル中は上部に固定し、視線移動や画面揺れを完全排除) */}
+      {/* Main Container (バトル・カウントダウン・リザルト中は上部に固定し、ワンビュー最適化) */}
       <main
         className={`relative z-10 mx-auto w-full max-w-xl px-3 sm:px-4 flex flex-col ${
-          phase === 'battle' || phase === 'countdown'
-            ? 'pt-3 sm:pt-6 pb-2 justify-start'
+          phase === 'battle' || phase === 'countdown' || phase === 'result'
+            ? 'pt-2 sm:pt-4 pb-2 justify-start'
             : 'py-3 sm:py-8 flex-1 justify-center max-w-4xl'
         }`}
       >
@@ -1277,106 +1381,108 @@ export default function WordsQuizPage() {
         )}
 
         {/* =================================================================== */}
-        {/* PHASE 4: RESULT (戦闘リザルト & スコア送信) */}
+        {/* PHASE 4: RESULT (戦闘リザルト & スコア送信・ワンビュー設計) */}
         {/* =================================================================== */}
         {phase === 'result' && (
-          <div className="space-y-6">
+          <div className="space-y-3 sm:space-y-4">
             {(() => {
               const gradeInfo = calculateGrade(score, 10, finalElapsedMs);
-              const clearSec = (finalElapsedMs / 1000).toFixed(2);
-              const totalGamePoints =
-                score * 100 +
-                Math.max(0, Math.round(500 - (finalElapsedMs / 1000) * 12)) +
-                maxCombo * 20 +
-                (score === 10 ? 300 : 0);
 
               return (
                 <div
-                  className={`relative rounded-3xl border-2 border-slate-700 bg-gradient-to-br ${gradeInfo.glowColor} via-slate-900 to-slate-950 p-6 sm:p-8 shadow-2xl space-y-6 text-center overflow-hidden`}
+                  className={`relative rounded-3xl border-2 border-slate-700 bg-gradient-to-br ${gradeInfo.glowColor} via-slate-900 to-slate-950 p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-3.5 text-center overflow-hidden`}
                 >
                   <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-500/15 blur-3xl" />
 
                   {/* Header Title */}
                   <div className="space-y-1">
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-800/80 border border-slate-700 px-3 py-1 text-xs font-black text-amber-300">
-                      <Trophy className="h-3.5 w-3.5 text-amber-400" />
+                    <div className="inline-flex items-center gap-1 rounded-full bg-slate-800/80 border border-slate-700 px-2.5 py-0.5 text-[10px] sm:text-xs font-black text-amber-300">
+                      <Trophy className="h-3 w-3 text-amber-400" />
                       <span>{selectedCourseObj.name} リザルト</span>
                     </div>
-                    <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                    <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
                       BATTLE FINISHED!
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-300 font-bold">
-                      プレイヤー: <span className="text-amber-400 text-base">{playerName}</span>
+                    <p className="text-xs text-slate-300 font-bold">
+                      プレイヤー: <span className="text-amber-400 font-black text-sm">{playerName || 'ゲスト'}</span>
                     </p>
                   </div>
 
-                  {/* Combat Grade Badge */}
-                  <div className="flex flex-col items-center justify-center space-y-2">
-                    <div className="relative flex items-center justify-center h-28 w-28 sm:h-32 sm:w-32 rounded-3xl bg-slate-950/80 border-4 border-slate-700 shadow-2xl">
-                      <span className="text-5xl sm:text-6xl font-black tracking-tighter text-white">
+                  {/* Combat Grade Badge (コンパクト・ワンビュー化) */}
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="relative flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-slate-950/90 border-2 border-slate-700 shadow-xl shadow-amber-500/10">
+                      <span className="text-4xl sm:text-5xl font-black tracking-tighter text-white">
                         {gradeInfo.grade}
                       </span>
                     </div>
-                    <div className={`text-sm sm:text-base px-4 py-1 rounded-full ${gradeInfo.badgeStyle}`}>
+                    <div className={`text-xs px-3 py-0.5 mt-1.5 rounded-full font-bold shadow-md ${gradeInfo.badgeStyle}`}>
                       {gradeInfo.title}
                     </div>
                   </div>
 
-                  {/* 4 Core Metrics Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  {/* 4 Core Metrics Grid (デジタルカウントアップ演出・1秒未満で着地) */}
+                  <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
                     {/* Metric 1: 正解数 */}
-                    <div className="rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5 shadow-inner">
-                      <p className="text-[11px] text-slate-400 font-bold">正解数</p>
-                      <p className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono mt-0.5">
-                        {score} <span className="text-xs text-slate-400">/ 10</span>
+                    <div className="rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left">
+                      <p className="text-[10px] text-slate-400 font-bold">正解数</p>
+                      <p className="text-xl sm:text-2xl font-black text-emerald-400 font-mono mt-0.5 tracking-tight">
+                        {animatedScore} <span className="text-xs text-slate-400 font-bold">/ 10</span>
                       </p>
                     </div>
 
                     {/* Metric 2: クリアタイム */}
-                    <div className="rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5 shadow-inner">
-                      <p className="text-[11px] text-slate-400 font-bold">クリアタイム</p>
-                      <p className="text-2xl sm:text-3xl font-black text-amber-400 font-mono mt-0.5">
-                        {clearSec}
-                        <span className="text-xs text-slate-400">秒</span>
+                    <div className="rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left">
+                      <p className="text-[10px] text-slate-400 font-bold">クリアタイム</p>
+                      <p className="text-xl sm:text-2xl font-black text-amber-400 font-mono mt-0.5 tracking-tight">
+                        {animatedTime.toFixed(2)}
+                        <span className="text-xs text-slate-400 font-bold ml-0.5">秒</span>
                       </p>
                     </div>
 
                     {/* Metric 3: 最大コンボ */}
-                    <div className="rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5 shadow-inner">
-                      <p className="text-[11px] text-slate-400 font-bold">最大コンボ</p>
-                      <p className="text-2xl sm:text-3xl font-black text-orange-400 font-mono mt-0.5">
-                        {maxCombo}
-                        <span className="text-xs text-slate-400">連続</span>
+                    <div className="rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left">
+                      <p className="text-[10px] text-slate-400 font-bold">最大コンボ</p>
+                      <p className="text-xl sm:text-2xl font-black text-orange-400 font-mono mt-0.5 tracking-tight">
+                        {animatedCombo}
+                        <span className="text-xs text-slate-400 font-bold ml-0.5">連続</span>
                       </p>
                     </div>
 
-                    {/* Metric 4: アーケードスコア */}
-                    <div className="rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5 shadow-inner">
-                      <p className="text-[11px] text-slate-400 font-bold">総合獲得PTS</p>
-                      <p className="text-2xl sm:text-3xl font-black text-cyan-400 font-mono mt-0.5">
-                        {totalGamePoints.toLocaleString()}
-                        <span className="text-xs text-slate-400">pts</span>
+                    {/* Metric 4: 総合獲得PTS */}
+                    <div className="rounded-xl bg-slate-950/85 border border-slate-800/90 px-3 py-2 sm:py-2.5 shadow-inner text-left">
+                      <p className="text-[10px] text-slate-400 font-bold">総合獲得PTS</p>
+                      <p className="text-xl sm:text-2xl font-black text-cyan-400 font-mono mt-0.5 tracking-tight">
+                        {animatedPts.toLocaleString()}
+                        <span className="text-xs text-slate-400 font-bold ml-0.5">pts</span>
                       </p>
                     </div>
                   </div>
 
-                  {/* Ranking Position Announcement */}
-                  <div className="rounded-2xl bg-slate-950/90 border border-amber-500/30 p-4 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-400/30">
-                        <Medal className="h-5 w-5" />
+                  {/* Ranking Position Announcement (デジタルロール＆「第1位」ポップ演出) */}
+                  <div className="rounded-xl bg-slate-950/90 border border-amber-500/30 px-3 py-2 sm:py-2.5 shadow-lg flex items-center justify-between gap-2 text-left">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400 border border-amber-400/30 text-base">
+                        {userRankPosition === 1 ? '🥇' : userRankPosition === 2 ? '🥈' : userRankPosition === 3 ? '🥉' : '🎖️'}
                       </div>
-                      <div className="text-left">
-                        <p className="text-xs text-slate-400 font-bold">リーダーボード集計</p>
-                        <p className="text-sm font-black text-white">
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-slate-400 font-bold leading-tight">リーダーボード集計</p>
+                        <p className="text-xs sm:text-sm font-black text-white leading-snug">
                           {isSubmitting ? (
-                            <span className="text-slate-400 animate-pulse">ランキング集計中...</span>
-                          ) : userRankPosition ? (
-                            <span>
-                              現在 <span className="text-amber-400 text-base font-mono">第{userRankPosition}位</span> にランクイン！
+                            <span className="text-slate-400 animate-pulse text-xs">ランキング集計中...</span>
+                          ) : animatedRank !== null ? (
+                            <span className="flex items-center gap-1">
+                              <span>現在</span>
+                              <span
+                                className={`font-mono font-black text-base sm:text-lg text-amber-400 inline-block ${
+                                  isRankDone ? 'animate-rank-pop' : ''
+                                }`}
+                              >
+                                第{animatedRank}位
+                              </span>
+                              <span>にランクイン！</span>
                             </span>
                           ) : (
-                            <span>スコアが正常に記録されました！</span>
+                            <span className="text-xs text-slate-300">スコアが記録されました！</span>
                           )}
                         </p>
                       </div>
@@ -1388,58 +1494,82 @@ export default function WordsQuizPage() {
                         setPhase('leaderboard');
                         playSound('click');
                       }}
-                      className="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 px-4 py-2 text-xs font-black shadow-md transition-all whitespace-nowrap"
+                      className="shrink-0 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1.5 text-xs font-black shadow-md transition-all whitespace-nowrap active:scale-95"
                     >
                       ランキングを見る
                     </button>
                   </div>
 
-                  {/* Missed Questions Banner (if any) */}
+                  {/* Action Buttons (2列並びでファーストビューに完全収容) */}
+                  <div className="grid grid-cols-2 gap-2 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={handleStartGame}
+                      className="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 py-2.5 sm:py-3 px-3 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
+                    >
+                      <RotateCcw className="h-4 w-4 shrink-0 stroke-[2.5]" />
+                      <span className="truncate">もう一度挑戦</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPhase('lobby');
+                        playSound('click');
+                      }}
+                      className="rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-2.5 sm:py-3 px-3 font-black text-xs sm:text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-1"
+                    >
+                      <span className="truncate">ロビーに戻る</span>
+                    </button>
+                  </div>
+
+                  {/* Missed Questions Banner (展開式で省スペース化) */}
                   {missedQuestions.length > 0 && (
-                    <div className="text-left rounded-2xl bg-rose-950/30 border border-rose-800/60 p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-rose-400" />
-                          <span className="text-sm font-black text-rose-200">
+                    <div className="text-left rounded-xl bg-rose-950/30 border border-rose-800/40 p-2 sm:p-2.5 space-y-2">
+                      <div
+                        className="flex items-center justify-between cursor-pointer select-none"
+                        onClick={() => setShowMistakesReview(!showMistakesReview)}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <AlertCircle className="h-3.5 w-3.5 text-rose-400 shrink-0" />
+                          <span className="text-xs font-black text-rose-200">
                             間違えた単語の復習 ({missedQuestions.length}問)
                           </span>
                         </div>
                         <button
                           type="button"
-                          onClick={() => setShowMistakesReview(!showMistakesReview)}
-                          className="text-xs text-rose-300 hover:text-white font-bold underline transition-colors"
+                          className="text-[11px] text-rose-300 hover:text-white font-bold underline transition-colors"
                         >
-                          {showMistakesReview ? '閉じる' : '一覧を展開'}
+                          {showMistakesReview ? '閉じる ▲' : '一覧を展開 ▼'}
                         </button>
                       </div>
 
                       {showMistakesReview && (
-                        <div className="space-y-2 pt-1">
+                        <div className="space-y-1.5 pt-1 max-h-48 overflow-y-auto">
                           {missedQuestions.map((m, idx) => (
                             <div
                               key={idx}
-                              className="rounded-xl bg-slate-950/80 border border-rose-900/60 p-3 flex items-center justify-between gap-3 text-xs"
+                              className="rounded-lg bg-slate-950/80 border border-rose-900/60 p-2 flex items-center justify-between gap-2 text-xs"
                             >
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span className="font-mono font-black text-rose-400">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="font-mono font-black text-rose-400 text-[11px]">
                                   Q{m.question.questionNumber}
                                 </span>
-                                <span className="font-black text-white text-sm">
+                                <span className="font-black text-white text-xs truncate">
                                   {m.question.word.en}
                                 </span>
                                 <button
                                   type="button"
                                   onClick={() => speakEnglish(m.question.word.en)}
-                                  className="text-slate-400 hover:text-amber-400"
+                                  className="text-slate-400 hover:text-amber-400 shrink-0"
                                 >
-                                  <Volume2 className="h-4 w-4" />
+                                  <Volume2 className="h-3.5 w-3.5" />
                                 </button>
                               </div>
-                              <div className="text-right">
-                                <span className="text-slate-400 mr-2 line-through text-[11px]">
+                              <div className="text-right shrink-0">
+                                <span className="text-slate-400 mr-1.5 line-through text-[10px]">
                                   {m.chosenAnswer}
                                 </span>
-                                <span className="font-bold text-emerald-400">
+                                <span className="font-bold text-emerald-400 text-xs">
                                   正解: {m.question.word.jp}
                                 </span>
                               </div>
@@ -1449,28 +1579,6 @@ export default function WordsQuizPage() {
                       )}
                     </div>
                   )}
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={handleStartGame}
-                      className="flex-1 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 p-4 font-black text-base shadow-xl shadow-amber-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
-                    >
-                      <RotateCcw className="h-5 w-5" />
-                      <span>もう一度挑戦する</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPhase('lobby');
-                        playSound('click');
-                      }}
-                      className="rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-6 py-4 font-black text-sm transition-all"
-                    >
-                      コース変更 / ロビーに戻る
-                    </button>
-                  </div>
                 </div>
               );
             })()}
@@ -1710,8 +1818,8 @@ export default function WordsQuizPage() {
         )}
       </main>
 
-      {/* Footer (バトル中・カウントダウン中は非表示) */}
-      {phase !== 'battle' && phase !== 'countdown' && (
+      {/* Footer (バトル中・カウントダウン中・リザルト中は非表示) */}
+      {phase !== 'battle' && phase !== 'countdown' && phase !== 'result' && (
         <footer className="relative z-10 border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500 font-medium">
           <p>中学英語例文テストメーカー · 4択英単語スピードバトル v10.2</p>
         </footer>
