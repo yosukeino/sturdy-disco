@@ -58,6 +58,8 @@ function playSynthesizedSound(
     | 'correct'
     | 'wrong'
     | 'combo'
+    | 'combo_super'
+    | 'combo_hyper'
     | 'fanfare_s'
     | 'fanfare_normal'
     | 'click'
@@ -143,6 +145,34 @@ function playSynthesizedSound(
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.18);
+    } else if (type === 'combo_super') {
+      const notes = [523.25, 659.25, 783.99, 1046.5];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.05);
+        gain.gain.setValueAtTime(0.14, ctx.currentTime + idx * 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.05 + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.05);
+        osc.stop(ctx.currentTime + idx * 0.05 + 0.18);
+      });
+    } else if (type === 'combo_hyper') {
+      const notes = [659.25, 880, 1108.73, 1318.51, 1567.98];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.04);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.04 + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.04);
+        osc.stop(ctx.currentTime + idx * 0.04 + 0.22);
+      });
     } else if (type === 'fanfare_s') {
       const notes = [523.25, 659.25, 783.99, 1046.5, 1318.51, 1567.98];
       notes.forEach((freq, idx) => {
@@ -276,6 +306,114 @@ function calculateGrade(score: number, total: number, timeMs: number): CombatGra
 }
 
 // -----------------------------------------------------------------------------
+// コンボテーマ＆画面エフェクト判定（コンボ数に応じて画面全体が段階的に進化）
+// -----------------------------------------------------------------------------
+interface ComboThemeInfo {
+  tier: number;
+  label: string;
+  badgeStyle: string;
+  flameColor: string;
+  bgAtmosphereClass: string;
+  screenEdgeClass: string;
+  cardGlowClass: string;
+  banner: string | null;
+}
+
+function getComboTheme(combo: number): ComboThemeInfo {
+  if (combo >= 9) {
+    return {
+      tier: 5,
+      label: `${combo} MAX COMBO!`,
+      badgeStyle:
+        'bg-gradient-to-r from-amber-300 via-rose-500 to-cyan-300 text-slate-950 font-black shadow-[0_0_20px_rgba(251,191,36,0.8)] ring-2 ring-white animate-pulse',
+      flameColor: 'text-amber-300 fill-amber-300',
+      bgAtmosphereClass:
+        'from-amber-500/25 via-rose-950/25 to-indigo-950/30',
+      screenEdgeClass:
+        'shadow-[inset_0_0_70px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/40',
+      cardGlowClass:
+        'border-amber-300 bg-gradient-to-b from-amber-950/50 via-slate-900 to-slate-950 shadow-[0_0_50px_rgba(251,191,36,0.45)] ring-2 ring-amber-300/80',
+      banner: '👑 GODLIKE ZONE! (スコア＆タイム極限加速中)',
+    };
+  }
+  if (combo >= 7) {
+    return {
+      tier: 4,
+      label: `${combo} HYPER!`,
+      badgeStyle:
+        'bg-gradient-to-r from-rose-500 via-purple-500 to-indigo-500 text-white font-black shadow-[0_0_18px_rgba(244,63,94,0.6)] ring-1 ring-rose-300 animate-pulse',
+      flameColor: 'text-rose-400 fill-rose-400',
+      bgAtmosphereClass:
+        'from-rose-600/20 via-purple-950/20 to-slate-950',
+      screenEdgeClass:
+        'shadow-[inset_0_0_55px_rgba(244,63,94,0.25)]',
+      cardGlowClass:
+        'border-rose-500 bg-gradient-to-b from-rose-950/40 via-slate-900 to-slate-950 shadow-[0_0_35px_rgba(244,63,94,0.35)] ring-2 ring-rose-400/60',
+      banner: '💥 HYPER FEVER! 神速ゾーン突入',
+    };
+  }
+  if (combo >= 5) {
+    return {
+      tier: 3,
+      label: `${combo} SUPER!`,
+      badgeStyle:
+        'bg-gradient-to-r from-orange-500 via-rose-500 to-amber-400 text-white font-black shadow-[0_0_15px_rgba(249,115,22,0.5)] animate-bounce',
+      flameColor: 'text-orange-400 fill-orange-400',
+      bgAtmosphereClass:
+        'from-orange-600/18 via-slate-950 to-amber-950/20',
+      screenEdgeClass:
+        'shadow-[inset_0_0_40px_rgba(249,115,22,0.2)]',
+      cardGlowClass:
+        'border-orange-500 bg-gradient-to-b from-orange-950/30 via-slate-900 to-slate-950 shadow-[0_0_30px_rgba(249,115,22,0.25)] ring-1 ring-orange-400/50',
+      banner: '⚡ SUPER FEVER! ボーナス加速中',
+    };
+  }
+  if (combo >= 3) {
+    return {
+      tier: 2,
+      label: `${combo} COMBO!`,
+      badgeStyle:
+        'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black shadow-[0_0_12px_rgba(245,158,11,0.4)] animate-pulse',
+      flameColor: 'text-amber-400 fill-amber-400',
+      bgAtmosphereClass:
+        'from-amber-600/15 via-slate-950 to-slate-950',
+      screenEdgeClass:
+        'shadow-[inset_0_0_30px_rgba(245,158,11,0.15)]',
+      cardGlowClass:
+        'border-amber-500/80 bg-gradient-to-b from-amber-950/20 via-slate-900 to-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.18)]',
+      banner: '🔥 HEAT UP! 連続正解キープ！',
+    };
+  }
+  if (combo >= 1) {
+    return {
+      tier: 1,
+      label: `${combo} COMBO`,
+      badgeStyle:
+        'bg-amber-500/20 border border-amber-400/40 text-amber-300 font-bold',
+      flameColor: 'text-amber-400 fill-amber-400',
+      bgAtmosphereClass:
+        'from-blue-600/10 via-slate-950 to-slate-950',
+      screenEdgeClass: '',
+      cardGlowClass:
+        'border-slate-700 bg-gradient-to-b from-slate-900 to-slate-950',
+      banner: null,
+    };
+  }
+  return {
+    tier: 0,
+    label: '0 COMBO',
+    badgeStyle:
+      'bg-slate-950/80 border border-slate-800 text-slate-400 font-bold',
+    flameColor: 'text-slate-600 fill-slate-700',
+    bgAtmosphereClass: 'from-slate-900/10 via-slate-950 to-slate-950',
+    screenEdgeClass: '',
+    cardGlowClass:
+      'border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950',
+    banner: null,
+  };
+}
+
+// -----------------------------------------------------------------------------
 // メインコンポーネント
 // -----------------------------------------------------------------------------
 export default function WordsQuizPage() {
@@ -295,6 +433,7 @@ export default function WordsQuizPage() {
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [selectedChoiceIdx, setSelectedChoiceIdx] = useState<number | null>(null);
   const [answerState, setAnswerState] = useState<'correct' | 'wrong' | null>(null);
+  const [isAdvancing, setIsAdvancing] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [combo, setCombo] = useState<number>(0);
   const [maxCombo, setMaxCombo] = useState<number>(0);
@@ -321,6 +460,9 @@ export default function WordsQuizPage() {
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState<boolean>(false);
   const [showMistakesReview, setShowMistakesReview] = useState<boolean>(false);
 
+  // コンボテーマ算出
+  const comboTheme = useMemo(() => getComboTheme(combo), [combo]);
+
   // サウンドヘルパー
   const playSound = useCallback(
     (
@@ -330,6 +472,8 @@ export default function WordsQuizPage() {
         | 'correct'
         | 'wrong'
         | 'combo'
+        | 'combo_super'
+        | 'combo_hyper'
         | 'fanfare_s'
         | 'fanfare_normal'
         | 'click'
@@ -388,6 +532,7 @@ export default function WordsQuizPage() {
     setMissedQuestions([]);
     setSelectedChoiceIdx(null);
     setAnswerState(null);
+    setIsAdvancing(false);
     setElapsedMs(0);
     setFinalElapsedMs(0);
     setSubmittedRecord(null);
@@ -452,15 +597,22 @@ export default function WordsQuizPage() {
   }, [phase, currentIdx, questions]);
 
   // ---------------------------------------------------------------------------
-  // 回答処理
+  // 回答処理（選択残りバグ・誤連打完全防止）
   // ---------------------------------------------------------------------------
   const handleSelectChoice = (choiceIdx: number) => {
-    if (selectedChoiceIdx !== null || phase !== 'battle') return; // 二重クリック防止
+    // 既に選択済み、または次の問題へ移行中（isAdvancing）なら二重タップを完全防止
+    if (selectedChoiceIdx !== null || isAdvancing || phase !== 'battle') return;
 
     const currentQ = questions[currentIdx];
     if (!currentQ) return;
 
+    // フォーカス解除（iOS / Android / PCブラウザのフォーカス残りを完全に防止）
+    if (typeof document !== 'undefined' && document.activeElement) {
+      (document.activeElement as HTMLElement).blur();
+    }
+
     setSelectedChoiceIdx(choiceIdx);
+    setIsAdvancing(true); // 即座に次操作をロック
     const isCorrect = choiceIdx === currentQ.correctIndex;
 
     let newScore = score;
@@ -475,7 +627,11 @@ export default function WordsQuizPage() {
       setCombo(newCombo);
       setMaxCombo(newMaxCombo);
       setAnswerState('correct');
-      if (newCombo >= 3) {
+      if (newCombo >= 7) {
+        playSound('combo_hyper');
+      } else if (newCombo >= 4) {
+        playSound('combo_super');
+      } else if (newCombo >= 2) {
         playSound('combo');
       } else {
         playSound('correct');
@@ -490,20 +646,27 @@ export default function WordsQuizPage() {
       ]);
     }
 
-    // 400ms後に次の問題へ、または終了
+    // 380ms後に次の問題へ進むか終了
     setTimeout(() => {
       if (currentIdx + 1 < questions.length) {
-        setCurrentIdx((prev) => prev + 1);
+        // 先に選択状態を完全クリアしてから問題インデックスを進める
         setSelectedChoiceIdx(null);
         setAnswerState(null);
+        setCurrentIdx((prev) => prev + 1);
+
+        // 新問題表示後120ms間はタップロックを継続（連打や指の残留による新問題への誤タップ・選択残り現象を100%防止）
+        setTimeout(() => {
+          setIsAdvancing(false);
+        }, 120);
       } else {
         // 全10問完了！
         const finalTime = performance.now() - startTime;
         setFinalElapsedMs(finalTime);
         setElapsedMs(finalTime);
+        setIsAdvancing(false);
         handleFinishGame(newScore, newMaxCombo, finalTime);
       }
-    }, 420);
+    }, 380);
   };
 
   // ---------------------------------------------------------------------------
@@ -623,7 +786,23 @@ export default function WordsQuizPage() {
   const currentQ = questions[currentIdx];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden">
+      {/* Dynamic Background Atmosphere Aura based on Combo & Phase */}
+      <div
+        className={`pointer-events-none fixed inset-0 transition-all duration-700 ease-out ${
+          phase === 'battle'
+            ? `bg-gradient-to-b ${comboTheme.bgAtmosphereClass}`
+            : 'bg-radial-at-t from-slate-900/20 via-slate-950 to-slate-950'
+        }`}
+      />
+
+      {/* Dynamic Screen Edge Glow Vignette for High Combos */}
+      {phase === 'battle' && comboTheme.screenEdgeClass && (
+        <div
+          className={`pointer-events-none fixed inset-0 z-10 transition-all duration-500 ease-out ${comboTheme.screenEdgeClass}`}
+        />
+      )}
+
       {/* Background Decor */}
       <div
         className="fixed inset-0 pointer-events-none opacity-20"
@@ -863,41 +1042,92 @@ export default function WordsQuizPage() {
         {/* =================================================================== */}
         {phase === 'battle' && currentQ && (
           <div className="space-y-4">
-            {/* Top Bar: Progress & Live Stopwatch */}
-            <div className="flex items-center justify-between gap-3 bg-slate-900/90 border border-slate-800 rounded-2xl px-4 py-2.5 shadow-md">
+            {/* Top Bar: Progress, Live Combo (Always Visible), Live Stopwatch */}
+            <div className="flex items-center justify-between gap-2 sm:gap-3 bg-slate-900/90 border border-slate-800 rounded-2xl px-3 sm:px-4 py-2.5 shadow-md">
               {/* Question Count */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-slate-400">PROGRESS</span>
-                <span className="font-mono text-base font-black text-white">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-[10px] sm:text-xs font-black text-slate-400">PROGRESS</span>
+                <span className="font-mono text-sm sm:text-base font-black text-white">
                   Q <span className="text-amber-400">{currentIdx + 1}</span> / 10
                 </span>
               </div>
 
-              {/* Combo Streak */}
-              {combo >= 2 && (
-                <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/50 text-orange-400 font-black text-xs animate-bounce">
-                  <Flame className="h-3.5 w-3.5 fill-orange-400" />
-                  <span>{combo} COMBO!</span>
-                </div>
-              )}
+              {/* Combo Streak (常時表示 & コンボ数に応じて豪華に進化) */}
+              <div
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 select-none ${comboTheme.badgeStyle}`}
+              >
+                <Flame
+                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform ${
+                    combo >= 3 ? 'animate-bounce' : ''
+                  } ${comboTheme.flameColor}`}
+                />
+                <span>{comboTheme.label}</span>
+              </div>
 
               {/* Stopwatch */}
-              <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1 text-amber-400 font-mono font-black text-sm sm:text-base shadow-inner">
-                <Timer className="h-4 w-4 text-amber-400 animate-spin" />
+              <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-700/80 rounded-xl px-2.5 sm:px-3 py-1 text-amber-400 font-mono font-black text-xs sm:text-base shadow-inner shrink-0">
+                <Timer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 animate-spin" />
                 <span>{formatTime(elapsedMs)}</span>
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+            {/* Combo 10-Pip Gauge & Max Combo Indicator */}
+            <div className="space-y-1.5 px-1">
+              <div className="flex items-center justify-between text-[10px] font-black text-slate-400">
+                <span className="flex items-center gap-1">
+                  <Zap
+                    className={`h-3 w-3 ${
+                      combo >= 3 ? 'text-amber-400 animate-pulse' : 'text-slate-600'
+                    }`}
+                  />
+                  <span>COMBO GAUGE</span>
+                </span>
+                <span className="font-mono text-slate-400">
+                  MAX: <span className="text-amber-400 font-bold">{maxCombo}</span>
+                </span>
+              </div>
+              <div className="flex items-center gap-1 h-2 w-full">
+                {Array.from({ length: 10 }).map((_, i) => {
+                  const isFilled = i < combo;
+                  let pipBg = 'bg-slate-900 border border-slate-800';
+                  if (isFilled) {
+                    if (i >= 8) pipBg = 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.9)]';
+                    else if (i >= 6) pipBg = 'bg-rose-500 shadow-[0_0_7px_rgba(244,63,94,0.9)]';
+                    else if (i >= 4) pipBg = 'bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.8)]';
+                    else if (i >= 2) pipBg = 'bg-amber-400 shadow-[0_0_5px_rgba(251,191,36,0.7)]';
+                    else pipBg = 'bg-amber-300';
+                  }
+                  return (
+                    <div
+                      key={i}
+                      className={`h-full flex-1 rounded-sm transition-all duration-300 ${pipBg}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Overall 10-Question Progress Bar */}
+            <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
               <div
                 className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300"
                 style={{ width: `${((currentIdx + 1) / 10) * 100}%` }}
               />
             </div>
 
-            {/* Main Word Card */}
-            <div className="relative rounded-3xl border-2 border-slate-700 bg-gradient-to-b from-slate-900 to-slate-950 p-6 sm:p-10 shadow-2xl text-center space-y-4">
+            {/* Main Word Card (コンボに応じてオーラ発光＆不正解時シェイク) */}
+            <div
+              className={`relative rounded-3xl border-2 transition-all duration-300 p-6 sm:p-10 shadow-2xl text-center space-y-4 ${
+                comboTheme.cardGlowClass
+              } ${answerState === 'wrong' ? 'animate-shake' : ''}`}
+            >
+              {/* Dynamic Fever Banner when combo >= 3 */}
+              {comboTheme.banner && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/85 border border-amber-400/50 text-amber-300 text-[11px] sm:text-xs font-black animate-pulse shadow-md">
+                  <span>{comboTheme.banner}</span>
+                </div>
+              )}
+
               <div className="flex items-center justify-center gap-2">
                 {getPosBadge(currentQ.word.partOfSpeech)}
                 <span className="rounded bg-slate-800 text-slate-400 text-[11px] px-2 py-0.5 font-bold">
@@ -923,39 +1153,42 @@ export default function WordsQuizPage() {
               <p className="text-xs text-slate-400 font-bold">正しい日本語訳を選んでください</p>
             </div>
 
-            {/* 4 Choices Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            {/* 4 Choices Grid (keyで問題切り替え時に完全再マウントし選択残りを根絶) */}
+            <div
+              key={`choices-grid-q-${currentIdx}`}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2"
+            >
               {currentQ.choices.map((choice, idx) => {
                 const isSelected = selectedChoiceIdx === idx;
                 const isCorrect = idx === currentQ.correctIndex;
                 const isAnswered = selectedChoiceIdx !== null;
 
                 let btnStyle =
-                  'border-2 border-slate-800 bg-slate-900/90 text-slate-100 hover:border-amber-400 hover:bg-slate-850 hover:text-white shadow-lg';
+                  'border-2 border-slate-800 bg-slate-900/90 text-slate-100 hover:border-amber-400 hover:bg-slate-800/90 hover:text-white shadow-lg';
 
                 if (isAnswered) {
                   if (isSelected && isCorrect) {
                     btnStyle =
-                      'border-2 border-emerald-400 bg-emerald-600 text-white shadow-emerald-500/50 shadow-lg scale-[1.02]';
+                      'border-2 border-emerald-400 bg-emerald-600 text-white shadow-[0_0_20px_rgba(52,211,153,0.5)] shadow-emerald-500/50 scale-[1.02] ring-2 ring-emerald-400';
                   } else if (isSelected && !isCorrect) {
                     btnStyle =
                       'border-2 border-rose-500 bg-rose-600 text-white shadow-rose-500/50 shadow-lg animate-shake';
                   } else if (!isSelected && isCorrect) {
                     // 正解を緑色で強調
                     btnStyle =
-                      'border-2 border-emerald-400 bg-emerald-950/80 text-emerald-200 ring-2 ring-emerald-400';
+                      'border-2 border-emerald-400 bg-emerald-950/80 text-emerald-200 ring-2 ring-emerald-400/80';
                   } else {
-                    btnStyle = 'border-2 border-slate-900 bg-slate-950/50 text-slate-600 opacity-50';
+                    btnStyle = 'border-2 border-slate-900 bg-slate-950/40 text-slate-600 opacity-40';
                   }
                 }
 
                 return (
                   <button
-                    key={idx}
+                    key={`q-${currentIdx}-opt-${idx}`}
                     type="button"
-                    disabled={isAnswered}
+                    disabled={isAnswered || isAdvancing}
                     onClick={() => handleSelectChoice(idx)}
-                    className={`group min-h-[64px] sm:min-h-[72px] rounded-2xl p-4 text-left font-black text-base sm:text-lg transition-all flex items-center justify-between active:scale-[0.98] ${btnStyle}`}
+                    className={`group min-h-[64px] sm:min-h-[72px] rounded-2xl p-4 text-left font-black text-base sm:text-lg transition-colors duration-150 flex items-center justify-between active:scale-[0.98] outline-none focus:outline-none select-none ${btnStyle}`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span
