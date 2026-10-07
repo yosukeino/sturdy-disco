@@ -127,17 +127,17 @@ export default function GameMenuHomePage() {
           {/* STAGE 01: 例文で覚える中学英単語＆英文法 */}
           <Link
             href="/study"
-            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-cyan-400/90 bl-comic-border bl-rare shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none"
+            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-cyan-400/90 bl-comic-border bl-rare shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none min-h-[110px] sm:min-h-[125px]"
           >
-            {/* Background Image Layer (後で画像パスを指定可能) */}
+            {/* Background Image Layer (Cyan Alien Monolith & Terminals) */}
             <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+              className="absolute inset-0 bg-cover bg-right transition-transform duration-700 ease-out group-hover:scale-105"
               style={{
-                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(8, 47, 73, 0.85) 50%, rgba(2, 6, 23, 0.95) 100%)',
+                backgroundImage: 'url(/images/stages/stage01_grammar.png)',
               }}
             />
             {/* Dark Contrast Overlay (テキスト可読性確保) */}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/20 pointer-events-none" />
             <div className="absolute inset-0 bl-scanlines opacity-15 pointer-events-none" />
 
             {/* Foreground Content */}
@@ -178,16 +178,16 @@ export default function GameMenuHomePage() {
           {/* STAGE 02: 4択英単語 スピードバトル */}
           <Link
             href="/words"
-            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-amber-400 bl-comic-border-lg bl-legendary animate-bl-pulse-gold shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none"
+            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-amber-400 bl-comic-border-lg bl-legendary animate-bl-pulse-gold shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none min-h-[110px] sm:min-h-[125px]"
           >
-            {/* Background Image Layer */}
+            {/* Background Image Layer (Gold Exploding Loot Chest) */}
             <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+              className="absolute inset-0 bg-cover bg-right transition-transform duration-700 ease-out group-hover:scale-105"
               style={{
-                background: 'linear-gradient(135deg, rgba(69, 26, 3, 0.95) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(124, 45, 18, 0.9) 100%)',
+                backgroundImage: 'url(/images/stages/stage02_words.png)',
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/20 pointer-events-none" />
             <div className="absolute inset-0 bl-scanlines opacity-15 pointer-events-none" />
 
             {/* Foreground Content */}
@@ -228,16 +228,16 @@ export default function GameMenuHomePage() {
           {/* STAGE 03: 中学社会 暗記マスター */}
           <Link
             href="/social"
-            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-purple-400 bl-comic-border bl-epic shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none"
+            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-purple-400 bl-comic-border bl-epic shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none min-h-[110px] sm:min-h-[125px]"
           >
-            {/* Background Image Layer */}
+            {/* Background Image Layer (Purple Courthouse & Scales of Justice) */}
             <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+              className="absolute inset-0 bg-cover bg-right transition-transform duration-700 ease-out group-hover:scale-105"
               style={{
-                background: 'linear-gradient(135deg, rgba(49, 46, 129, 0.95) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(88, 28, 135, 0.9) 100%)',
+                backgroundImage: 'url(/images/stages/stage03_social.png)',
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/20 pointer-events-none" />
             <div className="absolute inset-0 bl-scanlines opacity-15 pointer-events-none" />
 
             {/* Foreground Content */}
@@ -278,16 +278,16 @@ export default function GameMenuHomePage() {
           {/* STAGE 04: 瞬間英作文＆並び替え道場 */}
           <Link
             href="/lab/flash"
-            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-emerald-400/80 bl-comic-border bl-uncommon shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none"
+            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-emerald-400/80 bl-comic-border bl-uncommon shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none min-h-[110px] sm:min-h-[125px]"
           >
-            {/* Background Image Layer */}
+            {/* Background Image Layer (Green Lightning Dummy & Gym) */}
             <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+              className="absolute inset-0 bg-cover bg-right transition-transform duration-700 ease-out group-hover:scale-105"
               style={{
-                background: 'linear-gradient(135deg, rgba(6, 78, 59, 0.95) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(19, 78, 74, 0.9) 100%)',
+                backgroundImage: 'url(/images/stages/stage04_flash.png)',
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/20 pointer-events-none" />
             <div className="absolute inset-0 bl-scanlines opacity-15 pointer-events-none" />
 
             {/* Foreground Content */}
