@@ -103,245 +103,268 @@ export default function GameMenuHomePage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="relative z-10 mx-auto w-full max-w-5xl px-4 py-6 sm:py-10 flex-1 flex flex-col justify-center space-y-5 sm:space-y-6">
-        {/* ===================================================================== */}
-        {/* ★ 主役セクション: 英文法 予習＆例文（Borderlands Rare Mission Card） */}
-        {/* ===================================================================== */}
-        <section className="relative rounded-3xl border-2 border-cyan-400/80 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950/90 p-5 sm:p-7 shadow-2xl bl-card bl-rare relative overflow-hidden">
-          <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-cyan-500/15 blur-2xl" />
-
-          <div className="relative z-10 space-y-5">
-            {/* シンプルな見出し */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-3">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400 text-slate-950 font-black text-xs shrink-0 bl-comic-border">
-                  ★
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-mono uppercase">
-                  英文法 予習＆例文
-                </h1>
-                <span className="rounded bg-cyan-500/20 border border-cyan-400/50 px-2.5 py-0.5 text-xs font-mono font-black text-cyan-300">
-                  [全{TOTAL_SECTIONS}セクション // RARE TIER]
-                </span>
-              </div>
-            </div>
-
-            {/* 2大メインボタン */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Button 1: 予習・例文を見る */}
-              <Link
-                href="/study"
-                className="group flex items-center justify-between rounded-2xl border-2 border-cyan-400 bg-gradient-to-r from-slate-900 via-blue-950/80 to-slate-900 hover:border-cyan-300 p-5 bl-comic-border shadow-xl transition-all hover:-translate-y-0.5 active:scale-[0.99]"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-cyan-400 text-slate-950 bl-comic-border shadow-md">
-                    <BookOpen className="h-6 w-6 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-black text-white leading-snug">
-                      📖 予習・例文を見る
-                    </h2>
-                    <p className="text-xs text-cyan-300/90 font-mono font-bold mt-0.5">
-                      文法解説・音声・赤シート [ACC: 100%]
-                    </p>
-                  </div>
-                </div>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300 group-hover:translate-x-1 transition-transform">
-                  <ArrowRight className="h-5 w-5" />
-                </div>
-              </Link>
-
-              {/* Button 2: 例文テストを作る */}
-              <Link
-                href="/study?tab=test"
-                className="group flex items-center justify-between rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-slate-900 via-amber-950/80 to-slate-900 hover:border-amber-300 p-5 bl-comic-border bl-legendary shadow-xl transition-all hover:-translate-y-0.5 active:scale-[0.99]"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 bl-comic-border shadow-md">
-                    <FileCheck2 className="h-6 w-6 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-black text-white leading-snug">
-                      🚀 例文テストを作る
-                    </h2>
-                    <p className="text-xs text-amber-300/90 font-mono font-bold mt-0.5">
-                      ランダム小テスト・宿題 [EXP BOOST]
-                    </p>
-                  </div>
-                </div>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 group-hover:translate-x-1 transition-transform">
-                  <ArrowRight className="h-5 w-5" />
-                </div>
-              </Link>
-            </div>
-
-            {/* ミニショートカット */}
-            <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs font-black">
-              <Link
-                href="/study?start=1"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-emerald-600/90 border-2 border-emerald-500/60 hover:border-emerald-400 px-3 py-1.5 text-emerald-300 hover:text-white transition-all bl-comic-border"
-              >
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                <span>[S1〜13]</span>
-              </Link>
-              <Link
-                href="/study?start=14"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-blue-600/90 border-2 border-blue-500/60 hover:border-blue-400 px-3 py-1.5 text-blue-300 hover:text-white transition-all bl-comic-border"
-              >
-                <span className="h-2 w-2 rounded-full bg-blue-400" />
-                <span>[S14〜26]</span>
-              </Link>
-              <Link
-                href="/study?start=27"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-purple-600/90 border-2 border-purple-500/60 hover:border-purple-400 px-3 py-1.5 text-purple-300 hover:text-white transition-all bl-comic-border"
-              >
-                <span className="h-2 w-2 rounded-full bg-purple-400" />
-                <span>[S27〜{TOTAL_SECTIONS}]</span>
-              </Link>
-              <Link
-                href="/study?tab=test&category=hard&boss=true"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-red-950/80 hover:bg-red-600 border-2 border-red-500 hover:border-red-400 px-3 py-1.5 text-rose-300 hover:text-white transition-all shadow-md bl-comic-border"
-              >
-                <Flame className="h-3.5 w-3.5 text-orange-400 fill-orange-400 animate-bounce" />
-                <span>[🔥 S1-10 大ボス]</span>
-              </Link>
-              <Link
-                href="/study?tab=test&type=homework"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-400 border-2 border-amber-400/60 hover:border-amber-300 px-3 py-1.5 text-amber-300 hover:text-slate-950 transition-all ml-auto bl-comic-border"
-              >
-                <PenTool className="h-3.5 w-3.5" />
-                <span>[宿題プリント作成]</span>
-              </Link>
-            </div>
+      {/* Main Content: GAME STAGE SELECT SCREEN */}
+      <main className="relative z-10 mx-auto w-full max-w-5xl px-4 py-6 sm:py-8 flex-1 flex flex-col justify-center space-y-4 sm:space-y-5">
+        {/* Mission Select Header HUD */}
+        <div className="flex items-center justify-between pb-1 border-b-2 border-slate-800">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 text-black font-black text-xs bl-comic-border">
+              ⚔️
+            </span>
+            <h2 className="text-sm sm:text-base font-black tracking-wider text-white font-mono uppercase">
+              [STAGE SELECT // VAULT MISSIONS]
+            </h2>
           </div>
-        </section>
+          <span className="text-[11px] font-mono font-bold text-amber-400">
+            CHOOSE YOUR LEARNING MISSION
+          </span>
+        </div>
 
         {/* ===================================================================== */}
-        {/* ★ LEGENDARY BOUNTY: 4択英単語スピードバトル バナー */}
+        {/* STAGE SELECT CARDS (バナー背景画像を重ねてステージ選択ボタン化) */}
         {/* ===================================================================== */}
-        <Link
-          href="/words"
-          className="group relative overflow-hidden rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-950/70 via-slate-900 to-orange-950/70 hover:border-amber-300 p-4 sm:p-5 transition-all bl-comic-border-lg bl-legendary animate-bl-pulse-gold shadow-2xl hover:-translate-y-0.5 active:scale-[0.99] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        >
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-500/20 blur-2xl" />
-          <div className="flex items-center gap-3.5 relative z-10">
-            <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-md bl-comic-border group-hover:scale-105 transition-transform">
-              <Gamepad2 className="h-7 w-7 fill-slate-950" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="rounded bg-amber-400 text-slate-950 text-[10px] font-mono font-black px-1.5 py-0.5 bl-comic-border">
-                  ★ LEGENDARY MISSION
-                </span>
-                <span className="rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 text-[10px] font-mono font-black px-1.5 py-0.5">
-                  [SEASON 1 LADDER]
-                </span>
-                <h3 className="text-base sm:text-lg font-black text-white group-hover:text-amber-300 transition-colors">
-                  4択英単語 スピードバトル
-                </h3>
-              </div>
-              <p className="text-xs text-slate-300 font-medium mt-1">
-                中1〜中3・高校入試300語！10問タイムアタック ＆ 全国自己ベスト・リーダーボード集計中！
-              </p>
-            </div>
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 rounded-xl bg-amber-400 group-hover:bg-amber-300 text-slate-950 px-4 py-2.5 text-xs font-black self-start sm:self-auto transition-all bl-comic-border shadow-md shrink-0 relative z-10">
-            <span>出撃する (DEPLOY)</span>
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </div>
-        </Link>
-
-        {/* ===================================================================== */}
-        {/* ★ EPIC MOD: 中学社会 暗記マスター バナー */}
-        {/* ===================================================================== */}
-        <Link
-          href="/social"
-          className="group relative overflow-hidden rounded-2xl border-2 border-indigo-400 bg-gradient-to-r from-indigo-950/70 via-slate-900 to-purple-950/70 hover:border-indigo-300 p-4 sm:p-5 transition-all bl-comic-border bl-epic shadow-xl hover:-translate-y-0.5 active:scale-[0.99] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md bl-comic-border group-hover:scale-105 transition-transform">
-              <Brain className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="rounded bg-indigo-500 text-white text-[10px] font-mono font-black px-1.5 py-0.5 bl-comic-border">
-                  ◆ EPIC CLASS MOD
-                </span>
-                <span className="rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold px-1.5 py-0.5">
-                  [スマホ×紙×ペン]
-                </span>
-                <h3 className="text-base sm:text-lg font-black text-white group-hover:text-indigo-300 transition-colors">
-                  中学社会 暗記マスター（一問一答）
-                </h3>
-              </div>
-              <p className="text-xs text-slate-300 font-medium mt-1">
-                日本国憲法・人権・民主政治の全70問！間違えた問題を自動反復するiKnow式エンジン搭載
-              </p>
-            </div>
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 group-hover:bg-indigo-500 text-white px-4 py-2 text-xs font-black self-start sm:self-auto transition-all bl-comic-border shadow-md shrink-0">
-            <span>学習スタート</span>
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </div>
-        </Link>
-
-        {/* ===================================================================== */}
-        {/* サブメニュー 3カード（Borderlands Tactical Modules） */}
-        {/* ===================================================================== */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Sub Card 1: 瞬間英作文＆並び替え道場 */}
+        <div className="space-y-3.5 sm:space-y-4">
+          {/* STAGE 01: 例文で覚える中学英単語＆英文法 */}
           <Link
-            href="/lab/flash"
-            className="group rounded-2xl border-2 border-slate-800 bg-slate-900/90 hover:bg-slate-900 hover:border-amber-400 p-4 sm:p-5 transition-all bl-comic-border flex items-center justify-between shadow-lg"
+            href="/study"
+            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-cyan-400/90 bl-comic-border bl-rare shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none"
           >
-            <div className="flex items-center gap-3.5">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-400 group-hover:scale-105 transition-transform bl-comic-border">
-                <Zap className="h-5 w-5" />
+            {/* Background Image Layer (後で画像パスを指定可能) */}
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(8, 47, 73, 0.85) 50%, rgba(2, 6, 23, 0.95) 100%)',
+              }}
+            />
+            {/* Dark Contrast Overlay (テキスト可読性確保) */}
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40 pointer-events-none" />
+            <div className="absolute inset-0 bl-scanlines opacity-15 pointer-events-none" />
+
+            {/* Foreground Content */}
+            <div className="relative z-10 flex items-center gap-3.5 sm:gap-4 min-w-0">
+              <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl bg-cyan-400 text-slate-950 border-2 border-black shadow-[2px_2px_0px_#000] group-hover:scale-105 transition-transform">
+                <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 stroke-[2.5]" />
               </div>
-              <div>
-                <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors">
-                  瞬間英作文＆並び替え
+
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap font-mono">
+                  <span className="rounded bg-black border border-white/20 text-white text-[10px] sm:text-xs font-black px-1.5 py-0.5 tracking-wider">
+                    STAGE 01
+                  </span>
+                  <span className="rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-[10px] sm:text-xs font-black px-2 py-0.5 shadow-[1px_1px_0px_#000]">
+                    [全{TOTAL_SECTIONS}セクション // RARE TIER]
+                  </span>
+                </div>
+
+                <h3 className="text-lg sm:text-2xl font-black text-white group-hover:text-cyan-300 transition-colors tracking-tight truncate">
+                  例文で覚える中学英単語＆英文法
                 </h3>
-                <p className="text-xs text-slate-400 font-mono font-medium mt-0.5">
-                  語順整序クイズ [DOJO]
+
+                <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                  文法解説・音声読み上げ・赤シート暗記 ＆ 範囲別テスト・宿題作成
                 </p>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-slate-500 group-hover:translate-x-1 group-hover:text-amber-300 transition-all shrink-0" />
+
+            {/* Stage Deploy Button */}
+            <div className="relative z-10 flex items-center justify-end">
+              <div className="inline-flex items-center gap-1.5 rounded-xl bg-cyan-400 group-hover:bg-cyan-300 text-slate-950 px-4 py-2.5 text-xs sm:text-sm font-black border-2 border-black shadow-[2px_2px_0px_#000] transition-all shrink-0 font-mono whitespace-nowrap">
+                <span>ステージ選択 (ENTER)</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
           </Link>
 
-          {/* Sub Card 2: クエスト進捗＆ランク */}
+          {/* STAGE 02: 4択英単語 スピードバトル */}
+          <Link
+            href="/words"
+            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-amber-400 bl-comic-border-lg bl-legendary animate-bl-pulse-gold shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none"
+          >
+            {/* Background Image Layer */}
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, rgba(69, 26, 3, 0.95) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(124, 45, 18, 0.9) 100%)',
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40 pointer-events-none" />
+            <div className="absolute inset-0 bl-scanlines opacity-15 pointer-events-none" />
+
+            {/* Foreground Content */}
+            <div className="relative z-10 flex items-center gap-3.5 sm:gap-4 min-w-0">
+              <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 border-2 border-black shadow-[2px_2px_0px_#000] group-hover:scale-105 transition-transform">
+                <Gamepad2 className="h-6 w-6 sm:h-7 sm:w-7 fill-slate-950" />
+              </div>
+
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap font-mono">
+                  <span className="rounded bg-black border border-white/20 text-white text-[10px] sm:text-xs font-black px-1.5 py-0.5 tracking-wider">
+                    STAGE 02
+                  </span>
+                  <span className="rounded bg-amber-400 text-slate-950 text-[10px] sm:text-xs font-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_#000]">
+                    ★ LEGENDARY MISSION // SEASON 1
+                  </span>
+                </div>
+
+                <h3 className="text-lg sm:text-2xl font-black text-white group-hover:text-amber-300 transition-colors tracking-tight truncate">
+                  4択英単語 スピードバトル
+                </h3>
+
+                <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                  中1〜中3・高校入試300語！10問タイムアタック ＆ 全国自己ベスト・リーダーボード集計中！
+                </p>
+              </div>
+            </div>
+
+            {/* Stage Deploy Button */}
+            <div className="relative z-10 flex items-center justify-end">
+              <div className="inline-flex items-center gap-1.5 rounded-xl bg-amber-400 group-hover:bg-amber-300 text-slate-950 px-4 py-2.5 text-xs sm:text-sm font-black border-2 border-black shadow-[2px_2px_0px_#000] transition-all shrink-0 font-mono whitespace-nowrap">
+                <span>出撃する (DEPLOY)</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          {/* STAGE 03: 中学社会 暗記マスター */}
+          <Link
+            href="/social"
+            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-purple-400 bl-comic-border bl-epic shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none"
+          >
+            {/* Background Image Layer */}
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, rgba(49, 46, 129, 0.95) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(88, 28, 135, 0.9) 100%)',
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40 pointer-events-none" />
+            <div className="absolute inset-0 bl-scanlines opacity-15 pointer-events-none" />
+
+            {/* Foreground Content */}
+            <div className="relative z-10 flex items-center gap-3.5 sm:gap-4 min-w-0">
+              <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl bg-purple-600 text-white border-2 border-black shadow-[2px_2px_0px_#000] group-hover:scale-105 transition-transform">
+                <Brain className="h-6 w-6 sm:h-7 sm:w-7" />
+              </div>
+
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap font-mono">
+                  <span className="rounded bg-black border border-white/20 text-white text-[10px] sm:text-xs font-black px-1.5 py-0.5 tracking-wider">
+                    STAGE 03
+                  </span>
+                  <span className="rounded bg-purple-600 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_#000]">
+                    ◆ EPIC CLASS MOD // スマホ×紙×ペン
+                  </span>
+                </div>
+
+                <h3 className="text-lg sm:text-2xl font-black text-white group-hover:text-purple-300 transition-colors tracking-tight truncate">
+                  中学社会 暗記マスター（一問一答）
+                </h3>
+
+                <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                  日本国憲法・人権・民主政治の全70問！忘却曲線で自動反復するiKnow式エンジン搭載
+                </p>
+              </div>
+            </div>
+
+            {/* Stage Deploy Button */}
+            <div className="relative z-10 flex items-center justify-end">
+              <div className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 group-hover:bg-purple-500 text-white px-4 py-2.5 text-xs sm:text-sm font-black border-2 border-black shadow-[2px_2px_0px_#000] transition-all shrink-0 font-mono whitespace-nowrap">
+                <span>学習スタート (START)</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          {/* STAGE 04: 瞬間英作文＆並び替え道場 */}
+          <Link
+            href="/lab/flash"
+            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-emerald-400/80 bl-comic-border bl-uncommon shadow-[4px_4px_0px_#000] p-4 sm:p-5 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none"
+          >
+            {/* Background Image Layer */}
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, rgba(6, 78, 59, 0.95) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(19, 78, 74, 0.9) 100%)',
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40 pointer-events-none" />
+            <div className="absolute inset-0 bl-scanlines opacity-15 pointer-events-none" />
+
+            {/* Foreground Content */}
+            <div className="relative z-10 flex items-center gap-3.5 sm:gap-4 min-w-0">
+              <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-slate-950 border-2 border-black shadow-[2px_2px_0px_#000] group-hover:scale-105 transition-transform">
+                <Zap className="h-6 w-6 sm:h-7 sm:w-7 stroke-[2.5]" />
+              </div>
+
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap font-mono">
+                  <span className="rounded bg-black border border-white/20 text-white text-[10px] sm:text-xs font-black px-1.5 py-0.5 tracking-wider">
+                    STAGE 04
+                  </span>
+                  <span className="rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 text-[10px] sm:text-xs font-black px-2 py-0.5 shadow-[1px_1px_0px_#000]">
+                    COMBAT DOJO // 語順整序
+                  </span>
+                </div>
+
+                <h3 className="text-lg sm:text-2xl font-black text-white group-hover:text-emerald-300 transition-colors tracking-tight truncate">
+                  瞬間英作文＆並び替え道場
+                </h3>
+
+                <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                  英文法80セクション連動！反射的に英語を組み立てるスピード語順整序クイズ特訓
+                </p>
+              </div>
+            </div>
+
+            {/* Stage Deploy Button */}
+            <div className="relative z-10 flex items-center justify-end">
+              <div className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 group-hover:bg-emerald-400 text-slate-950 px-4 py-2.5 text-xs sm:text-sm font-black border-2 border-black shadow-[2px_2px_0px_#000] transition-all shrink-0 font-mono whitespace-nowrap">
+                <span>道場入り (ENTER)</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* ===================================================================== */}
+        {/* EXTRA MISSIONS: 2カラム (進捗 & 配布教材) */}
+        {/* ===================================================================== */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 pt-1">
+          {/* Extra Card 1: クエスト進捗＆ランク */}
           <Link
             href="/progress"
-            className="group rounded-2xl border-2 border-slate-800 bg-slate-900/90 hover:bg-slate-900 hover:border-emerald-400 p-4 sm:p-5 transition-all bl-comic-border flex items-center justify-between shadow-lg"
+            className="group relative overflow-hidden rounded-2xl border-2 border-slate-800 bg-slate-900/90 hover:border-emerald-400 p-4 sm:p-5 transition-all bl-comic-border shadow-[3px_3px_0px_#000] hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 group-hover:scale-105 transition-transform bl-comic-border">
                 <Trophy className="h-5 w-5" />
               </div>
               <div>
+                <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                  [EXTRA 01 // LEAGUE LOG]
+                </span>
                 <h3 className="text-base font-black text-white group-hover:text-emerald-300 transition-colors">
-                  クエスト進捗＆ランク
+                  クエスト進捗＆全国ランク
                 </h3>
                 <p className="text-xs text-slate-400 font-mono font-medium mt-0.5">
-                  合格スタンプ・称号 [VAULT]
+                  合格スタンプ・称号・ランキング集計
                 </p>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 text-slate-500 group-hover:translate-x-1 group-hover:text-emerald-300 transition-all shrink-0" />
           </Link>
 
-          {/* Sub Card 3: 配布教材ストレージ */}
-          <div className="rounded-2xl border-2 border-slate-800 bg-slate-900/90 hover:border-cyan-400 p-4 sm:p-5 transition-all bl-comic-border flex flex-col justify-center shadow-lg space-y-2.5">
+          {/* Extra Card 2: 配布教材ストレージ */}
+          <div className="rounded-2xl border-2 border-slate-800 bg-slate-900/90 hover:border-cyan-400 p-4 sm:p-5 transition-all bl-comic-border shadow-[3px_3px_0px_#000] flex flex-col justify-center space-y-2">
             <Link href="/materials" className="group flex items-center justify-between">
               <div className="flex items-center gap-3.5">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-400 group-hover:scale-105 transition-transform bl-comic-border">
                   <FolderOpen className="h-5 w-5" />
                 </div>
                 <div>
+                  <span className="text-[10px] font-mono text-cyan-400 font-bold">
+                    [EXTRA 02 // LOOT ARCHIVE]
+                  </span>
                   <h3 className="text-base font-black text-white group-hover:text-cyan-300 transition-colors">
                     配布教材ストレージ
                   </h3>
@@ -354,7 +377,7 @@ export default function GameMenuHomePage() {
             </Link>
 
             {pinnedItems.length > 0 && (
-              <div className="pt-2 border-t border-slate-800 space-y-1">
+              <div className="pt-2 border-t border-slate-800">
                 {pinnedItems.slice(0, 1).map((item) => {
                   const gradeInfo = GRADE_LABELS[item.grade] || GRADE_LABELS.all;
                   return (

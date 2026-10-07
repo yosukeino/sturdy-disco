@@ -192,26 +192,29 @@ export default function StudyPage() {
         </div>
 
         {/* 最重要：『📖 予習・例文を見る』⇄『📝 テストを作成して解く』のメインモード切替バー */}
-        <div className="border-t-2 border-black bg-slate-900 px-3 py-2 sm:px-6">
-          <div className="max-w-5xl mx-auto grid grid-cols-2 gap-2 rounded-xl bg-slate-950 p-1.5 border-2 border-black shadow-[3px_3px_0px_#000]">
+        <div className="border-t-2 border-black bg-slate-900 px-2.5 py-1.5 sm:px-6 sm:py-2">
+          <div className="max-w-5xl mx-auto grid grid-cols-2 gap-1.5 sm:gap-3 rounded-xl bg-slate-950 p-1 sm:p-1.5 border-2 border-black shadow-[3px_3px_0px_#000]">
             <button
               type="button"
               onClick={() => setActiveMainTab('study')}
-              className={`flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs sm:text-sm font-black transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1.5 sm:gap-2.5 rounded-lg h-10 sm:h-12 px-2 sm:px-3 text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap select-none ${
                 activeMainTab === 'study'
                   ? 'bg-cyan-400 text-slate-950 border-2 border-black shadow-[2px_2px_0px_#000]'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800'
               }`}
             >
               <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-              <div className="text-left">
-                <div className="leading-tight font-mono">[📖 予習・例文ノート]</div>
+              <div className="text-left min-w-0 whitespace-nowrap">
+                <div className="leading-tight font-mono font-black whitespace-nowrap">
+                  <span className="sm:hidden">📖 予習・例文</span>
+                  <span className="hidden sm:inline">[📖 予習・例文ノート]</span>
+                </div>
                 <div
-                  className={`text-[10px] font-semibold hidden sm:block ${
+                  className={`text-[10px] font-semibold hidden md:block whitespace-nowrap ${
                     activeMainTab === 'study' ? 'text-slate-900 font-bold' : 'text-slate-400'
                   }`}
                 >
-                  文法解説・音声読み上げ・赤シート暗記
+                  文法解説・音声・赤シート
                 </div>
               </div>
             </button>
@@ -219,32 +222,33 @@ export default function StudyPage() {
             <button
               type="button"
               onClick={() => setActiveMainTab('test')}
-              className={`flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs sm:text-sm font-black transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1.5 sm:gap-2.5 rounded-lg h-10 sm:h-12 px-2 sm:px-3 text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap select-none ${
                 activeMainTab === 'test'
                   ? 'bg-amber-400 text-slate-950 border-2 border-black shadow-[2px_2px_0px_#000]'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800'
               }`}
             >
               <FileCheck2 className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-              <div className="text-left">
-                <div className="leading-tight flex items-center gap-1.5">
-                  <span className="font-mono">[📝 テスト作成・演習]</span>
+              <div className="text-left min-w-0 whitespace-nowrap">
+                <div className="leading-tight font-mono font-black flex items-center gap-1 whitespace-nowrap">
+                  <span className="sm:hidden">📝 テスト作成</span>
+                  <span className="hidden sm:inline">[📝 テスト作成・演習]</span>
                   <span
-                    className={`rounded px-1.5 py-0.2 text-[9px] font-black border border-black ${
+                    className={`rounded px-1 py-0 text-[9px] font-black border border-black hidden sm:inline-block whitespace-nowrap ${
                       activeMainTab === 'test'
                         ? 'bg-black text-[#39ff14]'
                         : 'bg-amber-400 text-black'
                     }`}
                   >
-                    RECOMMENDED
+                    REC
                   </span>
                 </div>
                 <div
-                  className={`text-[10px] font-semibold hidden sm:block ${
+                  className={`text-[10px] font-semibold hidden md:block whitespace-nowrap ${
                     activeMainTab === 'test' ? 'text-slate-900 font-bold' : 'text-slate-400'
                   }`}
                 >
-                  範囲別ランダムテスト・宿題プリント作成
+                  範囲別ランダムテスト・宿題
                 </div>
               </div>
             </button>
