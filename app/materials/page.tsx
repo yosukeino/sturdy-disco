@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -147,23 +147,25 @@ export default function StudentMaterialsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/20 to-slate-100 text-slate-900 pb-24">
+    <div className="min-h-screen bg-slate-900 text-slate-100 pb-24">
       {/* Header */}
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b-2 border-black bg-slate-950/95 backdrop-blur-md sticky top-0 z-40 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
         <div className="mx-auto max-w-5xl px-3 py-2.5 sm:px-6">
           <div className="flex items-center justify-between gap-2">
-            <Link href="/" className="flex items-center gap-2 min-w-0">
-              <span className="text-xl shrink-0">📂</span>
-              <div className="min-w-0">
-                <h1 className="text-sm font-black sm:text-base text-slate-900 leading-tight truncate">
-                  配布教材ストレージ
-                </h1>
-                <p className="text-[10px] text-slate-500 hidden sm:block">
-                  Class Handouts, Audio & Video Library
+            <div className="flex items-center gap-3 min-w-0">
+              <StudiscoLogo size="sm" />
+              <div className="min-w-0 border-l-2 border-slate-700 pl-3 hidden sm:block">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-sm font-black sm:text-base text-white tracking-wide truncate font-mono">
+                    [RESOURCE VAULT]
+                  </h1>
+                  <VersionBadge />
+                </div>
+                <p className="text-[10px] text-slate-400 font-mono">
+                  CLASS HANDOUTS, AUDIO & VIDEO ARCHIVES
                 </p>
               </div>
-              <VersionBadge />
-            </Link>
+            </div>
             <Nav active="materials" />
           </div>
           <div className="mt-2 sm:hidden">

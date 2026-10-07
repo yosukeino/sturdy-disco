@@ -57,7 +57,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
-import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
 
 // -----------------------------------------------------------------------------
 // 型定義
@@ -812,23 +812,21 @@ export default function ProgressPage() {
       {/* ===================================================================== */}
       {/* ゲーミングヘッダー (HUD Navigation) */}
       {/* ===================================================================== */}
-      <header className="border-b border-slate-800 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b-2 border-black bg-slate-950/95 backdrop-blur-md sticky top-0 z-40 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
         <div className="mx-auto max-w-7xl px-3 py-2.5 sm:px-4">
           <div className="flex items-center justify-between gap-2">
             {/* タイトル & プレイヤー情報 */}
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 via-orange-600 to-rose-600 text-white shadow-md shadow-amber-500/20 shrink-0 font-black text-lg">
-                ⚔️
-              </div>
-              <div className="min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <StudiscoLogo size="sm" />
+              <div className="min-w-0 border-l-2 border-slate-700 pl-3 hidden sm:block">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-sm font-black sm:text-base text-white tracking-wide truncate">
-                    QUEST STATUS
+                  <h1 className="text-sm font-black sm:text-base text-white tracking-wide truncate font-mono">
+                    [QUEST STATUS]
                   </h1>
                   <VersionBadge />
                 </div>
-                <p className="text-[10px] text-slate-400 font-mono hidden sm:block">
-                  BATTLE RECORD & LEAGUE PROGRESS
+                <p className="text-[10px] text-slate-400 font-mono">
+                  BATTLE RECORD & LEAGUE PROGRESS // STUDISCO VAULT
                 </p>
               </div>
             </div>

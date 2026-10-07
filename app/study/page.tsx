@@ -27,7 +27,7 @@ import {
   Flame,
 } from 'lucide-react';
 import { grammarData, TOTAL_SECTIONS, grammarExplanations, HARD_MODE_MAX_SECTION } from '@/lib/grammar-data';
-import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
 import { fetchMaterials, MaterialItem, MEDIA_TYPE_LABELS } from '@/lib/materials';
 import { WorksheetGenerator } from '@/components/worksheet-generator';
 
@@ -160,23 +160,23 @@ export default function StudyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 print:bg-white print:pb-0">
+    <div className="min-h-screen bg-slate-900 text-slate-100 pb-16 print:bg-white print:pb-0">
       {/* 共通ヘッダー */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-xs print:hidden">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+      <header className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b-2 border-black shadow-[0_4px_12px_rgba(0,0,0,0.5)] print:hidden">
+        <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-600 text-white shadow-xs font-bold">
-              <BookOpen className="h-5 w-5" />
-            </div>
-            <div>
+            <StudiscoLogo size="sm" />
+            <div className="hidden sm:block border-l-2 border-slate-700 pl-3">
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900">
-                  英文法 予習＆例文テスト
-                </h1>
-                <VersionBadge />
+                <span className="text-sm font-black text-white tracking-wide font-mono">
+                  [GRAMMAR VAULT]
+                </span>
+                <span className="text-[10px] bg-cyan-400 text-black px-1.5 py-0 rounded font-black border border-black">
+                  RARE TIER
+                </span>
               </div>
-              <p className="text-[11px] text-slate-500 hidden sm:block">
-                全{TOTAL_SECTIONS}セクションの予習ノート ＆ 例文テスト・宿題メーカー
+              <p className="text-[11px] text-slate-400 font-mono">
+                全{TOTAL_SECTIONS}セクション予習ノート ＆ 例文テストメーカー
               </p>
             </div>
           </div>
@@ -192,23 +192,23 @@ export default function StudyPage() {
         </div>
 
         {/* 最重要：『📖 予習・例文を見る』⇄『📝 テストを作成して解く』のメインモード切替バー */}
-        <div className="border-t border-slate-200/80 bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-amber-50/50 px-3 py-2 sm:px-6">
-          <div className="max-w-5xl mx-auto grid grid-cols-2 gap-2 rounded-2xl bg-slate-200/90 p-1.5 shadow-inner">
+        <div className="border-t-2 border-black bg-slate-900 px-3 py-2 sm:px-6">
+          <div className="max-w-5xl mx-auto grid grid-cols-2 gap-2 rounded-xl bg-slate-950 p-1.5 border-2 border-black shadow-[3px_3px_0px_#000]">
             <button
               type="button"
               onClick={() => setActiveMainTab('study')}
-              className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-black transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs sm:text-sm font-black transition-all cursor-pointer ${
                 activeMainTab === 'study'
-                  ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-300'
-                  : 'bg-white/60 text-slate-700 hover:bg-white hover:text-blue-700'
+                  ? 'bg-cyan-400 text-slate-950 border-2 border-black shadow-[2px_2px_0px_#000]'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
               }`}
             >
               <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
               <div className="text-left">
-                <div className="leading-tight">📖 予習・例文を見る</div>
+                <div className="leading-tight font-mono">[📖 予習・例文ノート]</div>
                 <div
                   className={`text-[10px] font-semibold hidden sm:block ${
-                    activeMainTab === 'study' ? 'text-blue-100' : 'text-slate-500'
+                    activeMainTab === 'study' ? 'text-slate-900 font-bold' : 'text-slate-400'
                   }`}
                 >
                   文法解説・音声読み上げ・赤シート暗記
@@ -219,29 +219,29 @@ export default function StudyPage() {
             <button
               type="button"
               onClick={() => setActiveMainTab('test')}
-              className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-xs sm:text-sm font-black transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs sm:text-sm font-black transition-all cursor-pointer ${
                 activeMainTab === 'test'
-                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md ring-2 ring-indigo-300'
-                  : 'bg-white/60 text-slate-700 hover:bg-white hover:text-indigo-700'
+                  ? 'bg-amber-400 text-slate-950 border-2 border-black shadow-[2px_2px_0px_#000]'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
               }`}
             >
               <FileCheck2 className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
               <div className="text-left">
                 <div className="leading-tight flex items-center gap-1.5">
-                  <span>📝 テストを作成して解く</span>
+                  <span className="font-mono">[📝 テスト作成・演習]</span>
                   <span
-                    className={`rounded px-1.5 py-0.2 text-[9px] font-black ${
+                    className={`rounded px-1.5 py-0.2 text-[9px] font-black border border-black ${
                       activeMainTab === 'test'
-                        ? 'bg-amber-300 text-slate-900'
-                        : 'bg-indigo-100 text-indigo-800'
+                        ? 'bg-black text-[#39ff14]'
+                        : 'bg-amber-400 text-black'
                     }`}
                   >
-                    おすすめ
+                    RECOMMENDED
                   </span>
                 </div>
                 <div
                   className={`text-[10px] font-semibold hidden sm:block ${
-                    activeMainTab === 'test' ? 'text-indigo-100' : 'text-slate-500'
+                    activeMainTab === 'test' ? 'text-slate-900 font-bold' : 'text-slate-400'
                   }`}
                 >
                   範囲別ランダムテスト・宿題プリント作成

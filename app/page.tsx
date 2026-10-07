@@ -21,6 +21,7 @@ import {
   ArrowRight,
   Flame,
   Gamepad2,
+  Brain,
 } from 'lucide-react';
 import {
   MaterialItem,
@@ -29,6 +30,7 @@ import {
   fetchMaterials,
 } from '@/lib/materials';
 import { TOTAL_SECTIONS } from '@/lib/grammar-data';
+import { StudiscoLogo, VersionBadge } from '@/components/nav';
 
 export default function GameMenuHomePage() {
   const [pinnedItems, setPinnedItems] = useState<MaterialItem[]>([]);
@@ -77,33 +79,22 @@ export default function GameMenuHomePage() {
       <div className="pointer-events-none fixed -top-40 left-1/2 -translate-x-1/2 h-96 w-[700px] rounded-full bg-blue-600/20 blur-3xl" />
 
       {/* Top Header */}
-      <header className="relative z-10 border-b border-slate-800/80 bg-slate-900/85 backdrop-blur-md">
+      <header className="relative z-10 border-b-2 border-slate-800 bg-slate-900/95 backdrop-blur-md bl-comic-border">
         <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/20">
-              <BookOpen className="h-5 w-5" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-black text-base sm:text-lg tracking-wider text-white">
-                ENGLISH PORTAL
-              </span>
-              <span className="rounded bg-blue-500/20 border border-blue-400/30 px-1.5 py-0.5 font-mono text-[10px] font-black text-blue-300">
-                v10.2
-              </span>
-            </div>
-          </div>
+          <StudiscoLogo subtitle="STUDY × DISCO VAULT STATION" />
 
           <div className="flex items-center gap-2">
+            <VersionBadge />
             <Link
               href="/share"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 px-2.5 py-1.5 text-xs font-bold text-slate-300 hover:text-white transition-all"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 px-2.5 py-1.5 text-xs font-black text-slate-300 hover:text-white bl-comic-border transition-all"
             >
-              <QrCode className="h-3.5 w-3.5 text-blue-400" />
+              <QrCode className="h-3.5 w-3.5 text-amber-400" />
               <span>QR共有</span>
             </Link>
             <Link
               href="/admin"
-              className="flex items-center gap-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 text-xs font-black text-slate-300 hover:text-white transition-all active:scale-95"
+              className="flex items-center gap-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 px-3 py-1.5 text-xs font-black text-slate-200 hover:text-white bl-comic-border transition-all active:scale-95 shadow-md"
             >
               <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
               <span>先生用</span>
@@ -115,20 +106,23 @@ export default function GameMenuHomePage() {
       {/* Main Content */}
       <main className="relative z-10 mx-auto w-full max-w-5xl px-4 py-6 sm:py-10 flex-1 flex flex-col justify-center space-y-5 sm:space-y-6">
         {/* ===================================================================== */}
-        {/* ★ 主役セクション: 英文法 予習＆例文（シンプル＆直感的） */}
+        {/* ★ 主役セクション: 英文法 予習＆例文（Borderlands Rare Mission Card） */}
         {/* ===================================================================== */}
-        <section className="relative rounded-3xl border-2 border-blue-400/60 bg-gradient-to-br from-blue-950/90 via-slate-900/95 to-indigo-950/90 p-5 sm:p-7 shadow-2xl shadow-blue-950/50 overflow-hidden">
-          <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-blue-500/15 blur-2xl" />
+        <section className="relative rounded-3xl border-2 border-cyan-400/80 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950/90 p-5 sm:p-7 shadow-2xl bl-card bl-rare relative overflow-hidden">
+          <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-cyan-500/15 blur-2xl" />
 
           <div className="relative z-10 space-y-5">
             {/* シンプルな見出し */}
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400 text-slate-950 font-black text-xs shrink-0 bl-comic-border">
+                  ★
+                </span>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-mono uppercase">
                   英文法 予習＆例文
                 </h1>
-                <span className="rounded-full bg-blue-500/20 border border-blue-400/40 px-2.5 py-0.5 text-xs font-bold text-blue-200">
-                  全{TOTAL_SECTIONS}セクション
+                <span className="rounded bg-cyan-500/20 border border-cyan-400/50 px-2.5 py-0.5 text-xs font-mono font-black text-cyan-300">
+                  [全{TOTAL_SECTIONS}セクション // RARE TIER]
                 </span>
               </div>
             </div>
@@ -138,22 +132,22 @@ export default function GameMenuHomePage() {
               {/* Button 1: 予習・例文を見る */}
               <Link
                 href="/study"
-                className="group flex items-center justify-between rounded-2xl border-2 border-blue-400/80 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 p-5 shadow-xl shadow-blue-600/25 transition-all hover:-translate-y-0.5 active:scale-[0.99]"
+                className="group flex items-center justify-between rounded-2xl border-2 border-cyan-400 bg-gradient-to-r from-slate-900 via-blue-950/80 to-slate-900 hover:border-cyan-300 p-5 bl-comic-border shadow-xl transition-all hover:-translate-y-0.5 active:scale-[0.99]"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-700 shadow-md">
-                    <BookOpen className="h-6 w-6" />
+                  <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-cyan-400 text-slate-950 bl-comic-border shadow-md">
+                    <BookOpen className="h-6 w-6 stroke-[2.5]" />
                   </div>
                   <div>
                     <h2 className="text-lg sm:text-xl font-black text-white leading-snug">
                       📖 予習・例文を見る
                     </h2>
-                    <p className="text-xs text-blue-100/90 font-bold mt-0.5">
-                      文法解説・音声・赤シート
+                    <p className="text-xs text-cyan-300/90 font-mono font-bold mt-0.5">
+                      文法解説・音声・赤シート [ACC: 100%]
                     </p>
                   </div>
                 </div>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white group-hover:translate-x-1 transition-transform">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300 group-hover:translate-x-1 transition-transform">
                   <ArrowRight className="h-5 w-5" />
                 </div>
               </Link>
@@ -161,119 +155,158 @@ export default function GameMenuHomePage() {
               {/* Button 2: 例文テストを作る */}
               <Link
                 href="/study?tab=test"
-                className="group flex items-center justify-between rounded-2xl border-2 border-amber-400/80 bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-600 hover:from-amber-400 hover:via-orange-500 hover:to-indigo-500 p-5 shadow-xl shadow-amber-500/20 transition-all hover:-translate-y-0.5 active:scale-[0.99]"
+                className="group flex items-center justify-between rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-slate-900 via-amber-950/80 to-slate-900 hover:border-amber-300 p-5 bl-comic-border bl-legendary shadow-xl transition-all hover:-translate-y-0.5 active:scale-[0.99]"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-white text-amber-600 shadow-md">
-                    <FileCheck2 className="h-6 w-6" />
+                  <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 bl-comic-border shadow-md">
+                    <FileCheck2 className="h-6 w-6 stroke-[2.5]" />
                   </div>
                   <div>
                     <h2 className="text-lg sm:text-xl font-black text-white leading-snug">
                       🚀 例文テストを作る
                     </h2>
-                    <p className="text-xs text-amber-50/95 font-bold mt-0.5">
-                      ランダム小テスト・宿題プリント
+                    <p className="text-xs text-amber-300/90 font-mono font-bold mt-0.5">
+                      ランダム小テスト・宿題 [EXP BOOST]
                     </p>
                   </div>
                 </div>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white group-hover:translate-x-1 transition-transform">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 group-hover:translate-x-1 transition-transform">
                   <ArrowRight className="h-5 w-5" />
                 </div>
               </Link>
             </div>
 
             {/* ミニショートカット */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs font-black">
               <Link
                 href="/study?start=1"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800/85 hover:bg-emerald-600 border border-slate-700 hover:border-emerald-400 px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white transition-all"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-emerald-600/90 border-2 border-emerald-500/60 hover:border-emerald-400 px-3 py-1.5 text-emerald-300 hover:text-white transition-all bl-comic-border"
               >
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                <span>S1〜13</span>
+                <span>[S1〜13]</span>
               </Link>
               <Link
                 href="/study?start=14"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800/85 hover:bg-blue-600 border border-slate-700 hover:border-blue-400 px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white transition-all"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-blue-600/90 border-2 border-blue-500/60 hover:border-blue-400 px-3 py-1.5 text-blue-300 hover:text-white transition-all bl-comic-border"
               >
                 <span className="h-2 w-2 rounded-full bg-blue-400" />
-                <span>S14〜26</span>
+                <span>[S14〜26]</span>
               </Link>
               <Link
                 href="/study?start=27"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800/85 hover:bg-purple-600 border border-slate-700 hover:border-purple-400 px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white transition-all"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-purple-600/90 border-2 border-purple-500/60 hover:border-purple-400 px-3 py-1.5 text-purple-300 hover:text-white transition-all bl-comic-border"
               >
                 <span className="h-2 w-2 rounded-full bg-purple-400" />
-                <span>S27〜{TOTAL_SECTIONS}</span>
+                <span>[S27〜{TOTAL_SECTIONS}]</span>
               </Link>
               <Link
                 href="/study?tab=test&category=hard&boss=true"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-red-600/30 hover:bg-red-600 border border-red-500/50 hover:border-red-400 px-3 py-1.5 text-xs font-black text-rose-200 hover:text-white transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-red-950/80 hover:bg-red-600 border-2 border-red-500 hover:border-red-400 px-3 py-1.5 text-rose-300 hover:text-white transition-all shadow-md bl-comic-border"
               >
-                <Flame className="h-3.5 w-3.5 text-orange-400 fill-orange-400" />
-                <span>🔥 S1-10 大ボス</span>
+                <Flame className="h-3.5 w-3.5 text-orange-400 fill-orange-400 animate-bounce" />
+                <span>[🔥 S1-10 大ボス]</span>
               </Link>
               <Link
                 href="/study?tab=test&type=homework"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 border border-amber-400/40 hover:border-amber-300 px-3 py-1.5 text-xs font-black text-amber-200 hover:text-slate-950 transition-all ml-auto"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-400 border-2 border-amber-400/60 hover:border-amber-300 px-3 py-1.5 text-amber-300 hover:text-slate-950 transition-all ml-auto bl-comic-border"
               >
                 <PenTool className="h-3.5 w-3.5" />
-                <span>宿題プリント作成</span>
+                <span>[宿題プリント作成]</span>
               </Link>
             </div>
           </div>
         </section>
 
         {/* ===================================================================== */}
-        {/* ★ NEW: 4択英単語スピードバトル バナー */}
+        {/* ★ LEGENDARY BOUNTY: 4択英単語スピードバトル バナー */}
         {/* ===================================================================== */}
         <Link
           href="/words"
-          className="group relative overflow-hidden rounded-2xl border-2 border-amber-400/80 bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-indigo-950/80 hover:border-amber-300 p-4 sm:p-5 transition-all shadow-xl hover:-translate-y-0.5 active:scale-[0.99] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          className="group relative overflow-hidden rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-950/70 via-slate-900 to-orange-950/70 hover:border-amber-300 p-4 sm:p-5 transition-all bl-comic-border-lg bl-legendary animate-bl-pulse-gold shadow-2xl hover:-translate-y-0.5 active:scale-[0.99] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-md group-hover:scale-105 transition-transform">
-              <Gamepad2 className="h-6 w-6 fill-slate-950" />
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-500/20 blur-2xl" />
+          <div className="flex items-center gap-3.5 relative z-10">
+            <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-slate-950 shadow-md bl-comic-border group-hover:scale-105 transition-transform">
+              <Gamepad2 className="h-7 w-7 fill-slate-950" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-amber-400 text-slate-950 text-[10px] font-black px-1.5 py-0.5">
-                  NEW GAME
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="rounded bg-amber-400 text-slate-950 text-[10px] font-mono font-black px-1.5 py-0.5 bl-comic-border">
+                  ★ LEGENDARY MISSION
+                </span>
+                <span className="rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 text-[10px] font-mono font-black px-1.5 py-0.5">
+                  [SEASON 1 LADDER]
                 </span>
                 <h3 className="text-base sm:text-lg font-black text-white group-hover:text-amber-300 transition-colors">
                   4択英単語 スピードバトル
                 </h3>
               </div>
               <p className="text-xs text-slate-300 font-medium mt-1">
-                中1〜中3・高校入試の英単語300語！10問タイムアタック＆全国ランキング掲載
+                中1〜中3・高校入試300語！10問タイムアタック ＆ 全国自己ベスト・リーダーボード集計中！
               </p>
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 rounded-xl bg-amber-400 group-hover:bg-amber-300 text-slate-950 px-4 py-2 text-xs font-black self-start sm:self-auto transition-all shadow-md shrink-0">
-            <span>今すぐ挑戦</span>
+          <div className="inline-flex items-center gap-1.5 rounded-xl bg-amber-400 group-hover:bg-amber-300 text-slate-950 px-4 py-2.5 text-xs font-black self-start sm:self-auto transition-all bl-comic-border shadow-md shrink-0 relative z-10">
+            <span>出撃する (DEPLOY)</span>
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>
 
         {/* ===================================================================== */}
-        {/* サブメニュー 3カード（説明文を省いてスッキリ配置） */}
+        {/* ★ EPIC MOD: 中学社会 暗記マスター バナー */}
+        {/* ===================================================================== */}
+        <Link
+          href="/social"
+          className="group relative overflow-hidden rounded-2xl border-2 border-indigo-400 bg-gradient-to-r from-indigo-950/70 via-slate-900 to-purple-950/70 hover:border-indigo-300 p-4 sm:p-5 transition-all bl-comic-border bl-epic shadow-xl hover:-translate-y-0.5 active:scale-[0.99] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md bl-comic-border group-hover:scale-105 transition-transform">
+              <Brain className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="rounded bg-indigo-500 text-white text-[10px] font-mono font-black px-1.5 py-0.5 bl-comic-border">
+                  ◆ EPIC CLASS MOD
+                </span>
+                <span className="rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold px-1.5 py-0.5">
+                  [スマホ×紙×ペン]
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-white group-hover:text-indigo-300 transition-colors">
+                  中学社会 暗記マスター（一問一答）
+                </h3>
+              </div>
+              <p className="text-xs text-slate-300 font-medium mt-1">
+                日本国憲法・人権・民主政治の全70問！間違えた問題を自動反復するiKnow式エンジン搭載
+              </p>
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 group-hover:bg-indigo-500 text-white px-4 py-2 text-xs font-black self-start sm:self-auto transition-all bl-comic-border shadow-md shrink-0">
+            <span>学習スタート</span>
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+
+        {/* ===================================================================== */}
+        {/* サブメニュー 3カード（Borderlands Tactical Modules） */}
         {/* ===================================================================== */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Sub Card 1: 瞬間英作文＆並び替え道場 */}
           <Link
             href="/lab/flash"
-            className="group rounded-2xl border border-slate-800 bg-slate-900/80 hover:bg-slate-900 hover:border-amber-500/50 p-4 sm:p-5 transition-all flex items-center justify-between shadow-lg"
+            className="group rounded-2xl border-2 border-slate-800 bg-slate-900/90 hover:bg-slate-900 hover:border-amber-400 p-4 sm:p-5 transition-all bl-comic-border flex items-center justify-between shadow-lg"
           >
             <div className="flex items-center gap-3.5">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 border border-amber-400/30 text-amber-400 group-hover:scale-105 transition-transform">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-400 group-hover:scale-105 transition-transform bl-comic-border">
                 <Zap className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors">
                   瞬間英作文＆並び替え
                 </h3>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">
-                  語順整序クイズ
+                <p className="text-xs text-slate-400 font-mono font-medium mt-0.5">
+                  語順整序クイズ [DOJO]
                 </p>
               </div>
             </div>
@@ -283,18 +316,18 @@ export default function GameMenuHomePage() {
           {/* Sub Card 2: クエスト進捗＆ランク */}
           <Link
             href="/progress"
-            className="group rounded-2xl border border-slate-800 bg-slate-900/80 hover:bg-slate-900 hover:border-emerald-500/50 p-4 sm:p-5 transition-all flex items-center justify-between shadow-lg"
+            className="group rounded-2xl border-2 border-slate-800 bg-slate-900/90 hover:bg-slate-900 hover:border-emerald-400 p-4 sm:p-5 transition-all bl-comic-border flex items-center justify-between shadow-lg"
           >
             <div className="flex items-center gap-3.5">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 group-hover:scale-105 transition-transform">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 group-hover:scale-105 transition-transform bl-comic-border">
                 <Trophy className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="text-base font-black text-white group-hover:text-emerald-300 transition-colors">
                   クエスト進捗＆ランク
                 </h3>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">
-                  合格スタンプ・称号
+                <p className="text-xs text-slate-400 font-mono font-medium mt-0.5">
+                  合格スタンプ・称号 [VAULT]
                 </p>
               </div>
             </div>
@@ -302,37 +335,37 @@ export default function GameMenuHomePage() {
           </Link>
 
           {/* Sub Card 3: 配布教材ストレージ */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 hover:border-indigo-500/50 p-4 sm:p-5 transition-all flex flex-col justify-center shadow-lg space-y-2.5">
+          <div className="rounded-2xl border-2 border-slate-800 bg-slate-900/90 hover:border-cyan-400 p-4 sm:p-5 transition-all bl-comic-border flex flex-col justify-center shadow-lg space-y-2.5">
             <Link href="/materials" className="group flex items-center justify-between">
               <div className="flex items-center gap-3.5">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-400 group-hover:scale-105 transition-transform">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-400 group-hover:scale-105 transition-transform bl-comic-border">
                   <FolderOpen className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white group-hover:text-indigo-300 transition-colors">
+                  <h3 className="text-base font-black text-white group-hover:text-cyan-300 transition-colors">
                     配布教材ストレージ
                   </h3>
-                  <p className="text-xs text-slate-400 font-medium mt-0.5">
-                    PDFプリント・音声・動画
+                  <p className="text-xs text-slate-400 font-mono font-medium mt-0.5">
+                    PDFプリント・音声・動画 [LOOT]
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-slate-500 group-hover:translate-x-1 group-hover:text-indigo-300 transition-all shrink-0" />
+              <ChevronRight className="h-5 w-5 text-slate-500 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all shrink-0" />
             </Link>
 
             {pinnedItems.length > 0 && (
-              <div className="pt-2 border-t border-slate-800/80 space-y-1">
+              <div className="pt-2 border-t border-slate-800 space-y-1">
                 {pinnedItems.slice(0, 1).map((item) => {
                   const gradeInfo = GRADE_LABELS[item.grade] || GRADE_LABELS.all;
                   return (
                     <Link
                       key={item.id}
                       href="/materials"
-                      className="flex items-center justify-between gap-2 rounded-xl bg-slate-800/70 hover:bg-indigo-600/80 px-2.5 py-1.5 text-xs transition-colors"
+                      className="flex items-center justify-between gap-2 rounded-xl bg-slate-800/80 hover:bg-cyan-600/80 px-2.5 py-1.5 text-xs transition-colors bl-comic-border"
                     >
                       <div className="flex items-center gap-1.5 min-w-0">
                         {renderMediaIcon(item.media_type)}
-                        <span className="text-[10px] font-bold text-slate-300 shrink-0">
+                        <span className="text-[10px] font-bold text-slate-300 shrink-0 font-mono">
                           [{gradeInfo.short}]
                         </span>
                         <span className="font-bold text-slate-100 truncate">

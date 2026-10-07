@@ -1,8 +1,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
 export const metadata: Metadata = {
-  title: '英語学習ポータル ＆ 教材ストレージ | Web Learning Tool Lab',
-  description: '中学生向けWeb学習ツールLab（英文法予習・瞬間英作文・クエスト進捗）および授業配布教材（PDF・音声・解説動画）統合ポータル',
+  title: 'Studisco | 勉強でトリップする英単語＆英語学習ステーション',
+  description: 'Studisco（ステューディスコ）- 4択英単語スピードバトル・英文法予習・瞬間英作文・クエスト進捗統合ポータル',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },

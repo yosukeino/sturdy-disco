@@ -397,4 +397,127 @@
   animation: disgaeaRankBoxPulse 0.5s ease-out forwards;
 }
 
+/* ========================================================================= */
+/* STUDISCO × BORDERLANDS UI DESIGN TOKENS                                   */
+/* ========================================================================= */
+
+/* 1. Comic Ink Outlines (アメコミ調・骨太インクフレーム) */
+.bl-comic-border {
+  border: 2px solid #000;
+  box-shadow: 3px 3px 0px #000;
+}
+
+.bl-comic-border-lg {
+  border: 3px solid #000;
+  box-shadow: 4px 4px 0px #000;
+}
+
+.bl-card {
+  border: 2.5px solid #0b1120;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.85), 4px 4px 0px rgba(0, 0, 0, 0.9);
+}
+
+/* 2. Loot Rarity Neon Glows (戦利品レアリティ・ネオン光彩) */
+.bl-legendary {
+  border-color: #ffaa00 !important;
+  box-shadow: 0 0 0 2px #000, 0 0 18px rgba(255, 170, 0, 0.5), inset 0 0 12px rgba(255, 170, 0, 0.2) !important;
+}
+
+.bl-epic {
+  border-color: #c800ff !important;
+  box-shadow: 0 0 0 2px #000, 0 0 18px rgba(200, 0, 255, 0.5), inset 0 0 12px rgba(200, 0, 255, 0.2) !important;
+}
+
+.bl-rare {
+  border-color: #00d4ff !important;
+  box-shadow: 0 0 0 2px #000, 0 0 18px rgba(0, 212, 255, 0.5), inset 0 0 12px rgba(0, 212, 255, 0.2) !important;
+}
+
+.bl-uncommon {
+  border-color: #39ff14 !important;
+  box-shadow: 0 0 0 2px #000, 0 0 18px rgba(57, 255, 20, 0.5), inset 0 0 12px rgba(57, 255, 20, 0.2) !important;
+}
+
+.bl-fire {
+  border-color: #ff3300 !important;
+  box-shadow: 0 0 0 2px #000, 0 0 18px rgba(255, 51, 0, 0.55), inset 0 0 12px rgba(255, 51, 0, 0.25) !important;
+}
+
+/* 3. Text Glows */
+.bl-text-gold {
+  color: #ffaa00;
+  text-shadow: 0 0 12px rgba(255, 170, 0, 0.7);
+}
+
+.bl-text-cyan {
+  color: #00d4ff;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.7);
+}
+
+.bl-text-magenta {
+  color: #ff007f;
+  text-shadow: 0 0 12px rgba(255, 0, 127, 0.7);
+}
+
+.bl-text-green {
+  color: #39ff14;
+  text-shadow: 0 0 12px rgba(57, 255, 20, 0.7);
+}
+
+/* 4. CRT / Holographic HUD Scanlines Overlay */
+.bl-scanlines {
+  background: linear-gradient(
+    rgba(15, 23, 42, 0) 50%, 
+    rgba(0, 0, 0, 0.35) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.015),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 4px 100%;
+}
+
+/* 5. Animations: Loot Pulse & Beacon Beam */
+@keyframes lootPulseGold {
+  0%, 100% {
+    box-shadow: 0 0 0 2px #000, 0 0 12px rgba(255, 170, 0, 0.4), inset 0 0 8px rgba(255, 170, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 2px #000, 0 0 26px rgba(255, 170, 0, 0.85), inset 0 0 18px rgba(255, 170, 0, 0.4);
+  }
+}
+
+.animate-bl-pulse-gold {
+  animation: lootPulseGold 2.2s infinite ease-in-out;
+}
+
+@keyframes lootPulseCyan {
+  0%, 100% {
+    box-shadow: 0 0 0 2px #000, 0 0 12px rgba(0, 212, 255, 0.4), inset 0 0 8px rgba(0, 212, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 2px #000, 0 0 26px rgba(0, 212, 255, 0.85), inset 0 0 18px rgba(0, 212, 255, 0.4);
+  }
+}
+
+.animate-bl-pulse-cyan {
+  animation: lootPulseCyan 2.2s infinite ease-in-out;
+}
+
+@keyframes statArrowBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-stat-bounce {
+  display: inline-block;
+  animation: statArrowBounce 1s infinite ease-in-out;
+}
+
+
 

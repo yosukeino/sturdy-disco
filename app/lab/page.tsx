@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Nav, MobileNavTabs, VersionBadge } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,22 +21,24 @@ import { TOTAL_SECTIONS } from '@/lib/grammar-data';
 
 export default function LabCatalogPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/20 to-slate-100 text-slate-900 pb-24">
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-40">
+    <div className="min-h-screen bg-slate-900 text-slate-100 pb-24">
+      <header className="border-b-2 border-black bg-slate-950/95 backdrop-blur-md sticky top-0 z-40 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
         <div className="mx-auto max-w-5xl px-3 py-2.5 sm:px-6">
           <div className="flex items-center justify-between gap-2">
-            <Link href="/" className="flex items-center gap-2 min-w-0">
-              <span className="text-xl shrink-0">🧪</span>
-              <div className="min-w-0">
-                <h1 className="text-sm font-black sm:text-base text-slate-900 leading-tight truncate">
-                  Web学習ツール Lab
-                </h1>
-                <p className="text-[10px] text-slate-500 hidden sm:block">
-                  Interactive English Learning Apps
+            <div className="flex items-center gap-3 min-w-0">
+              <StudiscoLogo size="sm" />
+              <div className="min-w-0 border-l-2 border-slate-700 pl-3 hidden sm:block">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-sm font-black sm:text-base text-white tracking-wide truncate font-mono">
+                    [EXPERIMENT LAB]
+                  </h1>
+                  <VersionBadge />
+                </div>
+                <p className="text-[10px] text-slate-400 font-mono">
+                  INTERACTIVE ENGLISH & SOCIAL SCIENCE APPS
                 </p>
               </div>
-              <VersionBadge />
-            </Link>
+            </div>
             <Nav active="lab" />
           </div>
           <div className="mt-2 sm:hidden">
