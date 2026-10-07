@@ -25,6 +25,7 @@ import {
   PenTool,
   Shuffle,
   Flame,
+  Trophy,
 } from 'lucide-react';
 import { grammarData, TOTAL_SECTIONS, grammarExplanations, HARD_MODE_MAX_SECTION } from '@/lib/grammar-data';
 import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
@@ -191,13 +192,13 @@ export default function StudyPage() {
           <MobileNavTabs active="study" />
         </div>
 
-        {/* 最重要：『📖 予習・例文を見る』⇄『📝 テストを作成して解く』のメインモード切替バー */}
-        <div className="border-t-2 border-black bg-slate-900 px-2.5 py-1.5 sm:px-6 sm:py-2">
-          <div className="max-w-5xl mx-auto grid grid-cols-2 gap-1.5 sm:gap-3 rounded-xl bg-slate-950 p-1 sm:p-1.5 border-2 border-black shadow-[3px_3px_0px_#000]">
+        {/* 最重要：『📖 予習・例文を見る』⇄『📝 テストを作成して解く』⇄『🏆 合格ランク＆進捗』のメインモード切替バー */}
+        <div className="border-t-2 border-black bg-slate-900 px-2 py-1.5 sm:px-6 sm:py-2">
+          <div className="max-w-5xl mx-auto grid grid-cols-3 gap-1 sm:gap-2.5 rounded-xl bg-slate-950 p-1 sm:p-1.5 border-2 border-black shadow-[3px_3px_0px_#000]">
             <button
               type="button"
               onClick={() => setActiveMainTab('study')}
-              className={`flex items-center justify-center gap-1.5 sm:gap-2.5 rounded-lg h-10 sm:h-12 px-2 sm:px-3 text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap select-none ${
+              className={`flex items-center justify-center gap-1 sm:gap-2 rounded-lg h-10 sm:h-12 px-1.5 sm:px-3 text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap select-none ${
                 activeMainTab === 'study'
                   ? 'bg-cyan-400 text-slate-950 border-2 border-black shadow-[2px_2px_0px_#000]'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800'
@@ -222,7 +223,7 @@ export default function StudyPage() {
             <button
               type="button"
               onClick={() => setActiveMainTab('test')}
-              className={`flex items-center justify-center gap-1.5 sm:gap-2.5 rounded-lg h-10 sm:h-12 px-2 sm:px-3 text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap select-none ${
+              className={`flex items-center justify-center gap-1 sm:gap-2 rounded-lg h-10 sm:h-12 px-1.5 sm:px-3 text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap select-none ${
                 activeMainTab === 'test'
                   ? 'bg-amber-400 text-slate-950 border-2 border-black shadow-[2px_2px_0px_#000]'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800'
@@ -252,6 +253,22 @@ export default function StudyPage() {
                 </div>
               </div>
             </button>
+
+            <Link
+              href="/progress"
+              className="flex items-center justify-center gap-1 sm:gap-2 rounded-lg h-10 sm:h-12 px-1.5 sm:px-3 text-xs sm:text-sm font-black transition-all cursor-pointer whitespace-nowrap select-none bg-slate-900 text-amber-400 hover:bg-amber-400 hover:text-slate-950 border-2 border-amber-400/80 hover:border-black active:scale-95 shadow-[2px_2px_0px_#000]"
+            >
+              <Trophy className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              <div className="text-left min-w-0 whitespace-nowrap">
+                <div className="leading-tight font-mono font-black flex items-center gap-1 whitespace-nowrap">
+                  <span className="sm:hidden">🏆 合格ランク</span>
+                  <span className="hidden sm:inline">[🏆 合格ランク＆進捗]</span>
+                </div>
+                <div className="text-[10px] font-semibold hidden md:block whitespace-nowrap text-slate-400">
+                  学年リーグ・進捗管理
+                </div>
+              </div>
+            </Link>
           </div>
         </div>
       </header>

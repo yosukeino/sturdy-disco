@@ -39,6 +39,7 @@ import {
   Pencil,
   Trash2,
   ArrowRight,
+  ArrowLeft,
   TrendingUp,
   QrCode,
   Search,
@@ -833,6 +834,16 @@ export default function ProgressPage() {
 
             {/* 右側: プレイヤー切り替え・先生モード・ナビ */}
             <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href="/study"
+                className="flex items-center gap-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border-2 border-cyan-400/80 px-2.5 py-1.5 text-xs font-black text-cyan-300 hover:text-white bl-comic-border transition-all shrink-0 active:scale-95"
+                title="例文で覚える中学英単語＆英文法へ戻る"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">例文・予習へ戻る</span>
+                <span className="sm:hidden">戻る</span>
+              </Link>
+
               {/* 効果音トグル */}
               <button
                 type="button"

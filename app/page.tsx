@@ -152,7 +152,7 @@ export default function GameMenuHomePage() {
                     STAGE 01
                   </span>
                   <span className="rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-[10px] sm:text-xs font-black px-2 py-0.5 shadow-[1px_1px_0px_#000]">
-                    [全{TOTAL_SECTIONS}セクション // RARE TIER]
+                    [全{TOTAL_SECTIONS}セクション // 🏆合格ランク連動]
                   </span>
                 </div>
 
@@ -202,7 +202,7 @@ export default function GameMenuHomePage() {
                     STAGE 02
                   </span>
                   <span className="rounded bg-amber-400 text-slate-950 text-[10px] sm:text-xs font-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_#000]">
-                    ★ LEGENDARY MISSION // SEASON 1
+                    ★ LEGENDARY // 🏆週間ランキング開催中
                   </span>
                 </div>
 
@@ -252,7 +252,7 @@ export default function GameMenuHomePage() {
                     STAGE 03
                   </span>
                   <span className="rounded bg-purple-600 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_#000]">
-                    ◆ EPIC CLASS MOD // スマホ×紙×ペン
+                    ◆ EPIC CLASS MOD // 🏆暗記段位認定
                   </span>
                 </div>
 
@@ -330,7 +330,7 @@ export default function GameMenuHomePage() {
         {/* EXTRA MISSIONS: 2カラム (進捗 & 配布教材) */}
         {/* ===================================================================== */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 pt-1">
-          {/* Extra Card 1: クエスト進捗＆ランク */}
+          {/* Extra Card 1: STAGE 01 合格クエスト＆学年リーグ */}
           <Link
             href="/progress"
             className="group relative overflow-hidden rounded-2xl border-2 border-slate-800 bg-slate-900/90 hover:border-emerald-400 p-4 sm:p-5 transition-all bl-comic-border shadow-[3px_3px_0px_#000] hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-between"
@@ -341,13 +341,13 @@ export default function GameMenuHomePage() {
               </div>
               <div>
                 <span className="text-[10px] font-mono text-emerald-400 font-bold">
-                  [EXTRA 01 // LEAGUE LOG]
+                  [STAGE 01 // LEAGUE LOG]
                 </span>
                 <h3 className="text-base font-black text-white group-hover:text-emerald-300 transition-colors">
-                  クエスト進捗＆全国ランク
+                  英文法 合格クエスト＆学年リーグ
                 </h3>
                 <p className="text-xs text-slate-400 font-mono font-medium mt-0.5">
-                  合格スタンプ・称号・ランキング集計
+                  全80セクション合格スタンプ・称号・進捗集計
                 </p>
               </div>
             </div>

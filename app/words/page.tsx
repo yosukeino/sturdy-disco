@@ -1207,6 +1207,19 @@ export default function WordsQuizPage() {
                 </div>
               </button>
 
+              {/* ランキング閲覧ボタン (アプリメニューからの導線) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('leaderboard');
+                  playSound('click');
+                }}
+                className="w-full flex items-center justify-center gap-2.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border-2 border-amber-400/90 py-2.5 sm:py-3 px-4 text-xs sm:text-sm font-black text-amber-400 hover:text-amber-300 bl-comic-border transition-all active:scale-[0.99] shadow-lg"
+              >
+                <Trophy className="h-4 w-4 text-amber-400 shrink-0" />
+                <span>🏆 単語バトル ランキングを見る [LEADERBOARD]</span>
+              </button>
+
               {/* Bottom Info Tips */}
               <div className="flex items-center justify-center gap-3 text-[10px] text-slate-400 font-mono font-bold pb-0.5">
                 <span>[木曜更新]</span>

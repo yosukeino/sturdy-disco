@@ -29,7 +29,17 @@ import {
   ArrowLeft,
   Check,
   Zap,
+  Trophy,
+  Crown,
+  Medal,
+  Star,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   SOCIAL_QUESTIONS,
   SOCIAL_UNITS,
@@ -59,6 +69,7 @@ export default function SocialStudyPage() {
   });
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isRankingModalOpen, setIsRankingModalOpen] = useState(false);
 
   // 現在のセッション（学習中・リザルト・メニュー）
   const [session, setSession] = useState<SessionState | null>(null);
@@ -92,6 +103,75 @@ export default function SocialStudyPage() {
 
   // 進捗統計
   const stats = useMemo(() => calculateStudyStats(progress), [progress]);
+
+  // 暗記マスター段位・ランク判定
+  const rankTier = useMemo(() => {
+    const m = stats.masteredCount;
+    if (m >= 60) {
+      return {
+        rank: 'SS',
+        title: '全知全能の公民神',
+        badge: '👑 LEGENDARY SS',
+        color: 'text-amber-400',
+        bg: 'bg-amber-400/20 border-amber-400/80',
+        description: '全70問中60問以上を完全マスター！全国上位1%の圧倒的実力者。',
+        percentile: '全国推定 TOP 1%',
+      };
+    }
+    if (m >= 45) {
+      return {
+        rank: 'S',
+        title: '憲法・公民マスター',
+        badge: '★ MASTER S',
+        color: 'text-purple-400',
+        bg: 'bg-purple-500/20 border-purple-400/80',
+        description: '主要条文と人権・政治の重要語句を網羅。難関高校入試も視野に！',
+        percentile: '全国推定 TOP 5%',
+      };
+    }
+    if (m >= 30) {
+      return {
+        rank: 'A',
+        title: '公民エキスパート',
+        badge: '◆ EXPERT A',
+        color: 'text-blue-400',
+        bg: 'bg-blue-500/20 border-blue-400/80',
+        description: '基礎基本を完全に固めた実力派。定期テスト80点台ペース！',
+        percentile: '全国推定 TOP 20%',
+      };
+    }
+    if (m >= 15) {
+      return {
+        rank: 'B',
+        title: '暗記ファイター',
+        badge: '● FIGHTER B',
+        color: 'text-emerald-400',
+        bg: 'bg-emerald-500/20 border-emerald-400/80',
+        description: '順調にマスター問題を蓄積中。日々の反復で一気にAランクへ！',
+        percentile: '全国推定 TOP 45%',
+      };
+    }
+    if (m >= 5) {
+      return {
+        rank: 'C',
+        title: '暗記ルーキー',
+        badge: '▲ ROOKIE C',
+        color: 'text-amber-300',
+        bg: 'bg-amber-500/20 border-amber-400/60',
+        description: '学習エンジン起動！今日復習をこなして記憶を定着させよう。',
+        percentile: '全国推定 TOP 70%',
+      };
+    }
+    return {
+      rank: 'D',
+      title: '公民ビギナー',
+      badge: '▽ BEGINNER D',
+      color: 'text-slate-400',
+      bg: 'bg-slate-800 border-slate-700',
+      description: 'まずは「ランダム10問」または「基本的人権」からスタート！',
+      percentile: 'エントリー段階',
+    };
+  }, [stats.masteredCount]);
 
   // 現在の問題オブジェクト
   const currentQuestion: SocialQuestion | null = useMemo(() => {
@@ -684,6 +764,37 @@ export default function SocialStudyPage() {
           </div>
         </Card>
 
+        {/* ランキング閲覧ボタン (アプリメニューからの導線) */}
+        <button
+          type="button"
+          onClick={() => {
+            playSocialSound('click', isMuted);
+            setIsRankingModalOpen(true);
+          }}
+          className="w-full flex items-center justify-between gap-3 rounded-2xl bg-slate-900/90 hover:bg-slate-850 border-2 border-purple-400/80 p-3.5 sm:p-4 text-left transition-all active:scale-[0.99] shadow-lg bl-comic-border group"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-600/30 border border-purple-400/60 text-purple-300 group-hover:scale-105 transition-transform bl-comic-border">
+              <Trophy className="h-5 w-5 text-amber-400" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                <span className="rounded bg-purple-500/30 text-purple-200 border border-purple-400/40 px-1.5 py-0.5 font-black">
+                  {rankTier.badge}
+                </span>
+                <span className="text-amber-400 font-bold">{rankTier.percentile}</span>
+              </div>
+              <div className="text-sm sm:text-base font-black text-white group-hover:text-purple-300 transition-colors truncate">
+                🏆 社会暗記マスター ランキング＆段位スコアを見る
+              </div>
+              <div className="text-xs text-slate-400 truncate">
+                称号: <span className="text-slate-200 font-bold">[{rankTier.title}]</span> • マスター {stats.masteredCount}/{stats.totalQuestions}問
+              </div>
+            </div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-purple-400 group-hover:translate-x-1 transition-transform shrink-0" />
+        </button>
+
         {/* クイックスタートボタン */}
         <div className="space-y-2">
           {stats.dueReviewCount > 0 ? (
@@ -908,6 +1019,108 @@ export default function SocialStudyPage() {
           </button>
         </div>
       </main>
+
+      {/* ランキング＆段位スコア詳細モーダル */}
+      <Dialog open={isRankingModalOpen} onOpenChange={setIsRankingModalOpen}>
+        <DialogContent className="max-w-md bg-slate-950 border-2 border-purple-400 text-white bl-comic-border p-5">
+          <DialogHeader className="pb-3 border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-600 text-white font-black text-sm bl-comic-border">
+                🏆
+              </span>
+              <DialogTitle className="text-base font-black text-white font-mono uppercase">
+                暗記マスター 段位 ＆ ランキング判定
+              </DialogTitle>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            {/* 現在のプレイヤー段位カード */}
+            <div className={`p-4 rounded-2xl border-2 ${rankTier.bg} space-y-2 bl-comic-border`}>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono font-black text-slate-300">
+                  CURRENT TIER // 現在の段位
+                </span>
+                <span className={`text-xs font-mono font-black ${rankTier.color}`}>
+                  {rankTier.percentile}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-white">
+                  {rankTier.badge}
+                </div>
+              </div>
+              <div className="text-base sm:text-lg font-black text-white">
+                称号: <span className="text-amber-400">「{rankTier.title}」</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                {rankTier.description}
+              </p>
+            </div>
+
+            {/* 個人スタッツサマリー */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5">
+                <div className="text-[10px] text-slate-400 font-mono">完全マスター</div>
+                <div className="text-lg font-black text-emerald-400 font-mono mt-0.5">
+                  {stats.masteredCount}
+                  <span className="text-[10px] text-slate-400">/{stats.totalQuestions}</span>
+                </div>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5">
+                <div className="text-[10px] text-slate-400 font-mono">学習セッション</div>
+                <div className="text-lg font-black text-blue-400 font-mono mt-0.5">
+                  {stats.totalSessionsCompleted}
+                  <span className="text-[10px] text-slate-400">回</span>
+                </div>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5">
+                <div className="text-[10px] text-slate-400 font-mono">連続日数</div>
+                <div className="text-lg font-black text-amber-400 font-mono mt-0.5">
+                  {progress.currentStreakDays}
+                  <span className="text-[10px] text-slate-400">日</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 段位ランキング基準一覧 */}
+            <div className="space-y-1.5 pt-1">
+              <div className="text-[11px] font-mono font-black text-slate-400 flex items-center gap-1">
+                <span>暗記段位ランク基準表 (TIER LIST)</span>
+              </div>
+              <div className="space-y-1 text-xs font-mono">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
+                  <span className="text-amber-400 font-black">👑 SS: 全知全能の公民神</span>
+                  <span className="text-[11px] text-slate-400">マスター 60問〜</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
+                  <span className="text-purple-400 font-black">★ S: 憲法・公民マスター</span>
+                  <span className="text-[11px] text-slate-400">マスター 45問〜</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
+                  <span className="text-blue-400 font-black">◆ A: 公民エキスパート</span>
+                  <span className="text-[11px] text-slate-400">マスター 30問〜</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
+                  <span className="text-emerald-400 font-black">● B: 暗記ファイター</span>
+                  <span className="text-[11px] text-slate-400">マスター 15問〜</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
+                  <span className="text-amber-300 font-black">▲ C: 暗記ルーキー</span>
+                  <span className="text-[11px] text-slate-400">マスター 5問〜</span>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => setIsRankingModalOpen(false)}
+              className="w-full bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl py-2.5 mt-2 bl-comic-border"
+            >
+              閉じる
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <MobileNavTabs active="social" />
     </div>

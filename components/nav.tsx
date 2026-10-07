@@ -101,17 +101,6 @@ export function Nav({ active }: { active?: NavActiveTab }) {
           <FolderOpen className="h-3.5 w-3.5" />
           <span>配布教材</span>
         </Link>
-        <Link
-          href="/progress"
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
-            active === 'progress'
-              ? 'bg-amber-500 text-slate-950 border border-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.7)] font-black'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Trophy className="h-3.5 w-3.5" />
-          <span>進捗ランク</span>
-        </Link>
       </nav>
 
       <Link
@@ -130,7 +119,7 @@ export function MobileNavTabs({ active }: { active?: NavActiveTab }) {
   const isStudyActive = active === 'study' || active === 'worksheet';
 
   return (
-    <nav className="sm:hidden grid grid-cols-7 gap-1 rounded-xl bg-slate-950/95 p-1 text-[9px] font-bold shadow-lg border-2 border-slate-800 bl-comic-border">
+    <nav className="sm:hidden grid grid-cols-6 gap-1 rounded-xl bg-slate-950/95 p-1 text-[9px] font-bold shadow-lg border-2 border-slate-800 bl-comic-border">
       <Link
         href="/"
         className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 transition-all whitespace-nowrap ${
@@ -196,17 +185,6 @@ export function MobileNavTabs({ active }: { active?: NavActiveTab }) {
       >
         <FolderOpen className="h-3.5 w-3.5" />
         <span>教材</span>
-      </Link>
-      <Link
-        href="/progress"
-        className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 transition-all whitespace-nowrap ${
-          active === 'progress'
-            ? 'bg-amber-500 text-slate-950 border border-amber-300 font-black shadow-xs'
-            : 'text-slate-400 hover:text-slate-200'
-        }`}
-      >
-        <Trophy className="h-3.5 w-3.5" />
-        <span>進捗</span>
       </Link>
     </nav>
   );
