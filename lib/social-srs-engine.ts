@@ -23,7 +23,7 @@ export interface SocialUserProgress {
 }
 
 export type StudyMode =
-  | { type: 'stage'; unitId: UnitId; stage: 1 | 2; shuffle?: boolean }
+  | { type: 'stage'; unitId: UnitId; stage: number; shuffle?: boolean }
   | { type: 'review_today' }
   | { type: 'weak_points' }
   | { type: 'random10' };
@@ -116,6 +116,7 @@ export function resetAllUserProgress(): void {
 
 export interface StudyStats {
   totalQuestions: number;
+  clearedCount: number; // Level >= 1 (1回以上クリアした問題数)
   masteredCount: number; // Level 3 or 4
   learningCount: number; // Level 1 or 2
   unlearnedCount: number; // Level 0
@@ -156,8 +157,11 @@ export function calculateStudyStats(progress: SocialUserProgress): StudyStats {
     }
   }
 
+  const clearedCount = masteredCount + learningCount;
+
   return {
     totalQuestions,
+    clearedCount,
     masteredCount,
     learningCount,
     unlearnedCount,

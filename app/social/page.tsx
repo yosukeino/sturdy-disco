@@ -64,64 +64,83 @@ import {
 } from '@/lib/social-srs-engine';
 import { playSocialSound } from '@/lib/social-audio';
 
-const UNIT_STAGE_INFO: Record<
-  UnitId,
-  {
-    badgeClass: string;
-    borderClass: string;
-    stage1: { title: string; range: string; count: number };
-    stage2: { title: string; range: string; count: number };
-    hoverClass: string;
-    textHoverClass: string;
-  }
-> = {
+interface StageConfig {
+  stage: number;
+  title: string;
+  range: string;
+  count: number;
+}
+
+interface UnitConfig {
+  badgeClass: string;
+  borderClass: string;
+  hoverClass: string;
+  textHoverClass: string;
+  stages: StageConfig[];
+}
+
+const UNIT_STAGE_INFO: Record<UnitId, UnitConfig> = {
   constitution: {
     badgeClass: 'bg-blue-600 text-white border border-blue-400/60 shadow-[1px_1px_0px_#000]',
     borderClass: 'hover:border-blue-500/80',
-    stage1: { title: '基本的人権の基礎・三大義務', range: '問28〜54', count: 27 },
-    stage2: { title: '個別の自由権・社会権・新しい人権', range: '問55〜81', count: 27 },
     hoverClass: 'hover:bg-blue-950/40',
     textHoverClass: 'group-hover:text-blue-300',
+    stages: [
+      { stage: 1, title: '大日本帝国憲法と日本国憲法・三大原則', range: '問28〜40', count: 13 },
+      { stage: 2, title: '平等権と各種の自由権（精神・身体・経済）', range: '問41〜54', count: 14 },
+      { stage: 3, title: '国民の義務と社会権・労働基本権', range: '問55〜68', count: 14 },
+      { stage: 4, title: '参政権・請求権・新しい人権', range: '問69〜81', count: 13 },
+    ],
   },
   politics: {
     badgeClass: 'bg-emerald-600 text-white border border-emerald-400/60 shadow-[1px_1px_0px_#000]',
     borderClass: 'hover:border-emerald-500/80',
-    stage1: { title: '民主政治・選挙制度・政党', range: '問82〜95', count: 14 },
-    stage2: { title: '直接民主制・選挙原則・マスメディア', range: '問96〜109', count: 14 },
     hoverClass: 'hover:bg-emerald-950/40',
     textHoverClass: 'group-hover:text-emerald-300',
+    stages: [
+      { stage: 1, title: '民主政治・選挙制度・政党', range: '問82〜95', count: 14 },
+      { stage: 2, title: '直接民主制・選挙原則・マスメディア', range: '問96〜109', count: 14 },
+    ],
   },
   diet: {
     badgeClass: 'bg-purple-600 text-white border border-purple-400/60 shadow-[1px_1px_0px_#000]',
     borderClass: 'hover:border-purple-500/80',
-    stage1: { title: '立法権・二院制・国会の種類', range: '問110〜119', count: 10 },
-    stage2: { title: '国会の審議・衆議院の優越', range: '問120〜129', count: 10 },
     hoverClass: 'hover:bg-purple-950/40',
     textHoverClass: 'group-hover:text-purple-300',
+    stages: [
+      { stage: 1, title: '立法権・二院制・国会の種類', range: '問110〜119', count: 10 },
+      { stage: 2, title: '国会の審議・衆議院の優越', range: '問120〜129', count: 10 },
+    ],
   },
   cabinet: {
     badgeClass: 'bg-amber-600 text-white border border-amber-400/60 shadow-[1px_1px_0px_#000]',
     borderClass: 'hover:border-amber-500/80',
-    stage1: { title: '行政権・内閣総理大臣・議院内閣制', range: '問130〜138', count: 9 },
-    stage2: { title: '閣議・公務員・行政改革', range: '問139〜147', count: 9 },
     hoverClass: 'hover:bg-amber-950/40',
     textHoverClass: 'group-hover:text-amber-300',
+    stages: [
+      { stage: 1, title: '行政権・内閣総理大臣・議院内閣制', range: '問130〜138', count: 9 },
+      { stage: 2, title: '閣議・公務員・行政改革', range: '問139〜147', count: 9 },
+    ],
   },
   judiciary: {
     badgeClass: 'bg-rose-600 text-white border border-rose-400/60 shadow-[1px_1px_0px_#000]',
     borderClass: 'hover:border-rose-500/80',
-    stage1: { title: '司法権・最高裁判所・三審制', range: '問148〜158', count: 11 },
-    stage2: { title: '地方裁判所・民事刑事・裁判員制度', range: '問159〜170', count: 12 },
     hoverClass: 'hover:bg-rose-950/40',
     textHoverClass: 'group-hover:text-rose-300',
+    stages: [
+      { stage: 1, title: '司法権・最高裁判所・三審制', range: '問148〜158', count: 11 },
+      { stage: 2, title: '地方裁判所・民事刑事・裁判員制度', range: '問159〜170', count: 12 },
+    ],
   },
   local: {
     badgeClass: 'bg-cyan-600 text-white border border-cyan-400/60 shadow-[1px_1px_0px_#000]',
     borderClass: 'hover:border-cyan-500/80',
-    stage1: { title: '地方自治の本旨・地方財政', range: '問171〜178', count: 8 },
-    stage2: { title: '首長・二元代表制・直接請求権', range: '問179〜184', count: 6 },
     hoverClass: 'hover:bg-cyan-950/40',
     textHoverClass: 'group-hover:text-cyan-300',
+    stages: [
+      { stage: 1, title: '地方自治の本旨・地方財政', range: '問171〜178', count: 8 },
+      { stage: 2, title: '首長・二元代表制・直接請求権', range: '問179〜184', count: 6 },
+    ],
   },
 };
 
@@ -191,21 +210,22 @@ export default function SocialStudyPage() {
   // 進捗統計
   const stats = useMemo(() => calculateStudyStats(progress), [progress]);
 
-  // 暗記マスター段位・ランク判定（全157問対応）
+  // 暗記マスター段位・ランク判定（全157問対応：クリア問題数とマスター定着数）
   const rankTier = useMemo(() => {
+    const c = stats.clearedCount;
     const m = stats.masteredCount;
-    if (m >= 130) {
+    if (c >= 150 || m >= 120) {
       return {
         rank: 'SS',
         title: '全知全能の公民神',
         badge: '👑 LEGENDARY SS',
         color: 'text-amber-400',
         bg: 'bg-amber-400/20 border-amber-400/80',
-        description: `全${stats.totalQuestions}問中130問以上を完全マスター！全国上位1%の圧倒的実力者。`,
+        description: `全${stats.totalQuestions}問中150問以上をクリア！全国上位1%の圧倒的実力者。`,
         percentile: '全国推定 TOP 1%',
       };
     }
-    if (m >= 90) {
+    if (c >= 100 || m >= 80) {
       return {
         rank: 'S',
         title: '憲法・政治マスター',
@@ -216,7 +236,7 @@ export default function SocialStudyPage() {
         percentile: '全国推定 TOP 5%',
       };
     }
-    if (m >= 60) {
+    if (c >= 60 || m >= 50) {
       return {
         rank: 'A',
         title: '公民エキスパート',
@@ -227,18 +247,18 @@ export default function SocialStudyPage() {
         percentile: '全国推定 TOP 20%',
       };
     }
-    if (m >= 30) {
+    if (c >= 30 || m >= 25) {
       return {
         rank: 'B',
         title: '暗記ファイター',
         badge: '● FIGHTER B',
         color: 'text-emerald-400',
         bg: 'bg-emerald-500/20 border-emerald-400/80',
-        description: '順調にマスター問題を蓄積中。日々の反復で一気にAランクへ！',
+        description: '順調にクリア問題を蓄積中。日々の反復で一気にAランクへ！',
         percentile: '全国推定 TOP 45%',
       };
     }
-    if (m >= 10) {
+    if (c >= 10 || m >= 8) {
       return {
         rank: 'C',
         title: '暗記ルーキー',
@@ -255,10 +275,10 @@ export default function SocialStudyPage() {
       badge: '▽ BEGINNER D',
       color: 'text-slate-400',
       bg: 'bg-slate-800 border-slate-700',
-      description: 'まずは「ランダム10問」または「日本国憲法」からスタート！',
+      description: 'まずは「ランダム10問」または「第3単元 Stage 1」からスタート！',
       percentile: 'エントリー段階',
     };
-  }, [stats.masteredCount, stats.totalQuestions]);
+  }, [stats.clearedCount, stats.masteredCount, stats.totalQuestions]);
 
   // 現在の問題オブジェクト
   const currentQuestion: SocialQuestion | null = useMemo(() => {
@@ -875,11 +895,11 @@ export default function SocialStudyPage() {
             <div className="flex justify-between text-xs font-mono font-bold">
               <span className="text-emerald-400 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
-                習得 {stats.masteredCount}問
+                クリア {stats.clearedCount}問
               </span>
-              <span className="text-amber-400 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
-                学習中 {stats.learningCount}問
+              <span className="text-purple-400 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-purple-400 inline-block"></span>
+                完全定着 {stats.masteredCount}問
               </span>
               <span className="text-slate-500 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-slate-600 inline-block"></span>
@@ -891,13 +911,15 @@ export default function SocialStudyPage() {
                 style={{
                   width: `${(stats.masteredCount / stats.totalQuestions) * 100}%`,
                 }}
-                className="bg-emerald-500 transition-all duration-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                className="bg-purple-500 transition-all duration-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"
+                title={`完全定着: ${stats.masteredCount}問`}
               />
               <div
                 style={{
                   width: `${(stats.learningCount / stats.totalQuestions) * 100}%`,
                 }}
-                className="bg-amber-400 transition-all duration-500 shadow-[0_0_8px_rgba(251,191,36,0.5)]"
+                className="bg-emerald-500 transition-all duration-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                title={`クリア・学習中: ${stats.learningCount}問`}
               />
             </div>
           </div>
@@ -961,7 +983,7 @@ export default function SocialStudyPage() {
                 🏆 暗記段位・ランキングを見る
               </div>
               <div className="text-xs font-mono text-slate-400 truncate">
-                称号: <span className="text-slate-200 font-bold">[{rankTier.title}]</span> • 習得 {stats.masteredCount}/{stats.totalQuestions}問
+                称号: <span className="text-slate-200 font-bold">[{rankTier.title}]</span> • クリア {stats.clearedCount}/{stats.totalQuestions}問
               </div>
             </div>
           </div>
@@ -1074,14 +1096,17 @@ export default function SocialStudyPage() {
           {SOCIAL_UNITS.map((unit) => {
             const conf = UNIT_STAGE_INFO[unit.id];
             const unitQuestions = SOCIAL_QUESTIONS.filter((q) => q.unitId === unit.id);
-            const unitMastered = unitQuestions.filter(
-              (q) => (progress.questions[q.id]?.level ?? 0) >= 3
+            const unitCleared = unitQuestions.filter(
+              (q) => (progress.questions[q.id]?.level ?? 0) >= 1
             ).length;
+            const isAllCleared = unitCleared === unit.totalQuestions && unit.totalQuestions > 0;
 
             return (
               <Card
                 key={unit.id}
-                className="border-2 border-slate-800 rounded-2xl bg-slate-900/90 bl-card overflow-hidden transition-all"
+                className={`border-2 ${
+                  isAllCleared ? 'border-emerald-500/60 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'border-slate-800'
+                } rounded-2xl bg-slate-900/90 bl-card overflow-hidden transition-all`}
               >
                 <div className="bg-slate-950/70 border-b border-slate-800 p-3 flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
@@ -1092,69 +1117,83 @@ export default function SocialStudyPage() {
                       {unit.title}
                     </h4>
                   </div>
-                  <span className="text-xs font-mono font-bold text-slate-400 shrink-0 ml-2">
-                    {unitMastered}/{unit.totalQuestions}問
-                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                    {isAllCleared ? (
+                      <span className="text-[11px] font-mono font-black text-emerald-400 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>{unitCleared}/{unit.totalQuestions}問</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs font-mono font-bold text-slate-300">
+                        <span className={unitCleared > 0 ? 'text-cyan-400 font-black' : 'text-slate-400'}>
+                          {unitCleared}
+                        </span>
+                        <span className="text-slate-500">/{unit.totalQuestions}問</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="p-2.5 space-y-2">
-                  {/* Stage 1 */}
-                  <button
-                    onClick={() =>
-                      startSession({
-                        type: 'stage',
-                        unitId: unit.id,
-                        stage: 1,
-                        shuffle: isStageShuffle,
-                      })
-                    }
-                    className={`w-full bg-slate-950/80 hover:bg-slate-850 border border-slate-800 ${conf.borderClass} rounded-xl p-3 flex items-center justify-between text-left transition-all group`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="font-mono font-black text-[10px] bg-slate-900 border border-slate-700 text-slate-300 flex items-center gap-1">
-                          {isStageShuffle && <Shuffle className="w-2.5 h-2.5 text-amber-400" />}
-                          <span>STAGE 1</span>
-                        </Badge>
-                        <span className={`font-bold text-xs text-white ${conf.textHoverClass}`}>
-                          {conf.stage1.title}
-                        </span>
-                      </div>
-                      <div className="text-[11px] font-mono text-slate-400 mt-1">
-                        {conf.stage1.range} • {conf.stage1.count}問
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
-                  </button>
+                  {conf.stages.map((stageItem) => {
+                    const stageQuestions = unitQuestions.filter((q) => q.stage === stageItem.stage);
+                    const stageCleared = stageQuestions.filter(
+                      (q) => (progress.questions[q.id]?.level ?? 0) >= 1
+                    ).length;
+                    const isStageComplete = stageCleared === stageQuestions.length && stageQuestions.length > 0;
 
-                  {/* Stage 2 */}
-                  <button
-                    onClick={() =>
-                      startSession({
-                        type: 'stage',
-                        unitId: unit.id,
-                        stage: 2,
-                        shuffle: isStageShuffle,
-                      })
-                    }
-                    className={`w-full bg-slate-950/80 hover:bg-slate-850 border border-slate-800 ${conf.borderClass} rounded-xl p-3 flex items-center justify-between text-left transition-all group`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="font-mono font-black text-[10px] bg-slate-900 border border-slate-700 text-slate-300 flex items-center gap-1">
-                          {isStageShuffle && <Shuffle className="w-2.5 h-2.5 text-amber-400" />}
-                          <span>STAGE 2</span>
-                        </Badge>
-                        <span className={`font-bold text-xs text-white ${conf.textHoverClass}`}>
-                          {conf.stage2.title}
-                        </span>
-                      </div>
-                      <div className="text-[11px] font-mono text-slate-400 mt-1">
-                        {conf.stage2.range} • {conf.stage2.count}問
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
-                  </button>
+                    return (
+                      <button
+                        key={stageItem.stage}
+                        onClick={() =>
+                          startSession({
+                            type: 'stage',
+                            unitId: unit.id,
+                            stage: stageItem.stage,
+                            shuffle: isStageShuffle,
+                          })
+                        }
+                        className={`w-full bg-slate-950/80 hover:bg-slate-850 border ${
+                          isStageComplete ? 'border-emerald-500/50' : 'border-slate-800'
+                        } ${conf.borderClass} rounded-xl p-3 flex items-center justify-between text-left transition-all group`}
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              className={`font-mono font-black text-[10px] ${
+                                isStageComplete
+                                  ? 'bg-emerald-950/90 border border-emerald-500/60 text-emerald-300'
+                                  : 'bg-slate-900 border border-slate-700 text-slate-300'
+                              } flex items-center gap-1 shrink-0`}
+                            >
+                              {isStageShuffle && <Shuffle className="w-2.5 h-2.5 text-amber-400" />}
+                              <span>STAGE {stageItem.stage}</span>
+                              {isStageComplete && <Check className="w-2.5 h-2.5 text-emerald-400 ml-0.5" />}
+                            </Badge>
+                            <span className={`font-bold text-xs text-white ${conf.textHoverClass} truncate`}>
+                              {stageItem.title}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400 mt-1">
+                            <span>{stageItem.range}</span>
+                            <span>•</span>
+                            <span
+                              className={
+                                stageCleared > 0
+                                  ? isStageComplete
+                                    ? 'text-emerald-400 font-bold'
+                                    : 'text-cyan-400 font-bold'
+                                  : 'text-slate-400'
+                              }
+                            >
+                              {stageCleared}/{stageItem.count}問クリア
+                            </span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                      </button>
+                    );
+                  })}
                 </div>
               </Card>
             );
@@ -1214,17 +1253,17 @@ export default function SocialStudyPage() {
             {/* 個人スタッツサマリー */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5">
-                <div className="text-[10px] text-slate-400 font-mono">完全マスター</div>
+                <div className="text-[10px] text-slate-400 font-mono">クリア問題数</div>
                 <div className="text-lg font-black text-emerald-400 font-mono mt-0.5">
-                  {stats.masteredCount}
+                  {stats.clearedCount}
                   <span className="text-[10px] text-slate-400">/{stats.totalQuestions}</span>
                 </div>
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5">
-                <div className="text-[10px] text-slate-400 font-mono">学習セッション</div>
-                <div className="text-lg font-black text-blue-400 font-mono mt-0.5">
-                  {stats.totalSessionsCompleted}
-                  <span className="text-[10px] text-slate-400">回</span>
+                <div className="text-[10px] text-slate-400 font-mono">完全定着(Lv3+)</div>
+                <div className="text-lg font-black text-purple-400 font-mono mt-0.5">
+                  {stats.masteredCount}
+                  <span className="text-[10px] text-slate-400">問</span>
                 </div>
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5">
@@ -1238,31 +1277,35 @@ export default function SocialStudyPage() {
 
             {/* 段位ランキング基準一覧 */}
             <div className="space-y-1.5 pt-1">
-              <div className="text-[11px] font-mono font-black text-slate-400 flex items-center gap-1">
+              <div className="text-[11px] font-mono font-black text-slate-400 flex items-center justify-between">
                 <span>暗記段位ランク基準表 (TIER LIST)</span>
+                <span className="text-[10px] text-slate-500">クリア数で即昇格</span>
               </div>
               <div className="space-y-1 text-xs font-mono">
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
                   <span className="text-amber-400 font-black">👑 SS: 全知全能の公民神</span>
-                  <span className="text-[11px] text-slate-400">マスター 130問〜</span>
+                  <span className="text-[11px] text-slate-400">150問クリア〜</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
                   <span className="text-purple-400 font-black">★ S: 憲法・政治マスター</span>
-                  <span className="text-[11px] text-slate-400">マスター 90問〜</span>
+                  <span className="text-[11px] text-slate-400">100問クリア〜</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
                   <span className="text-blue-400 font-black">◆ A: 公民エキスパート</span>
-                  <span className="text-[11px] text-slate-400">マスター 60問〜</span>
+                  <span className="text-[11px] text-slate-400">60問クリア〜</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
                   <span className="text-emerald-400 font-black">● B: 暗記ファイター</span>
-                  <span className="text-[11px] text-slate-400">マスター 30問〜</span>
+                  <span className="text-[11px] text-slate-400">30問クリア〜</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
                   <span className="text-amber-300 font-black">▲ C: 暗記ルーキー</span>
-                  <span className="text-[11px] text-slate-400">マスター 10問〜</span>
+                  <span className="text-[11px] text-slate-400">10問クリア〜</span>
                 </div>
               </div>
+              <p className="text-[10px] text-slate-400 leading-relaxed pt-1">
+                ※問題を解いてクリアすると即座にカウント＆ランクアップ。忘却曲線に基づく日々の復習をこなすと「完全定着」へと深化します。
+              </p>
             </div>
 
             <Button
