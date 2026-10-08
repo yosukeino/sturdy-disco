@@ -23,7 +23,7 @@ export interface SocialUserProgress {
 }
 
 export type StudyMode =
-  | { type: 'stage'; unitId: UnitId; stage: 1 | 2 }
+  | { type: 'stage'; unitId: UnitId; stage: 1 | 2; shuffle?: boolean }
   | { type: 'review_today' }
   | { type: 'weak_points' }
   | { type: 'random10' };
@@ -194,7 +194,7 @@ export function buildSession(
     );
     const unit = SOCIAL_UNITS.find((u) => u.id === mode.unitId);
     const unitName = unit ? `${unit.number}. ${unit.title}` : mode.unitId;
-    modeTitle = `${unitName} - Stage ${mode.stage}`;
+    modeTitle = `${unitName} - Stage ${mode.stage}${mode.shuffle ? ' 🔀' : ''}`;
   } else if (mode.type === 'review_today') {
     modeTitle = '本日の復習（間隔反復）';
     candidateQuestions = SOCIAL_QUESTIONS.filter((q) => {
@@ -229,10 +229,14 @@ export function buildSession(
     return null;
   }
 
-  // 出題順序（ステージ学習時は番号順、復習やテストはシャッフル）
+  // 出題順序（ステージ学習時は shuffle が true ならシャッフル、そうでなければ番号順）
   let questionList: SocialQuestion[];
   if (mode.type === 'stage') {
-    questionList = [...candidateQuestions].sort((a, b) => a.id - b.id);
+    if (mode.shuffle) {
+      questionList = shuffleArray(candidateQuestions);
+    } else {
+      questionList = [...candidateQuestions].sort((a, b) => a.id - b.id);
+    }
   } else {
     questionList = shuffleArray(candidateQuestions).slice(0, 15);
   }

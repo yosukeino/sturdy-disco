@@ -34,8 +34,9 @@ import {
   Medal,
   Star,
   Smartphone,
-  Target,
   Clock,
+  Shuffle,
+  ListOrdered,
 } from 'lucide-react';
 import {
   Dialog,
@@ -148,15 +149,18 @@ export default function SocialStudyPage() {
     type: 'correct' | 'requeued';
   } | null>(null);
 
-  // 正解アニメーション演出中フラグ
-  const [isSuccessAnimating, setIsSuccessAnimating] = useState(false);
-  const successTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // カードトランジション演出ステート ('idle' | 'success-exit' | 'wrong-exit' | 'enter')
+  const [cardAnimState, setCardAnimState] = useState<'idle' | 'success-exit' | 'wrong-exit' | 'enter'>('idle');
+  const animTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 単元別ステージ問題のシャッフル出題フラグ
+  const [isStageShuffle, setIsStageShuffle] = useState(false);
 
   // アンマウント時のタイマークリア
   useEffect(() => {
     return () => {
-      if (successTimerRef.current) {
-        clearTimeout(successTimerRef.current);
+      if (animTimerRef.current) {
+        clearTimeout(animTimerRef.current);
       }
     };
   }, []);
@@ -170,6 +174,11 @@ export default function SocialStudyPage() {
     const savedMute = localStorage.getItem('social_study_muted');
     if (savedMute !== null) {
       setIsMuted(savedMute === 'true');
+    }
+
+    const savedShuffle = localStorage.getItem('social_study_stage_shuffle');
+    if (savedShuffle !== null) {
+      setIsStageShuffle(savedShuffle === 'true');
     }
   }, []);
 
@@ -280,7 +289,12 @@ export default function SocialStudyPage() {
 
   // 自己採点ボタン（◯ 正解 / ✕ 不正解）
   const handleAnswer = (isCorrect: boolean) => {
-    if (!session || !currentQuestion || isSuccessAnimating) return;
+    if (!session || !currentQuestion || cardAnimState !== 'idle') return;
+
+    if (animTimerRef.current) {
+      clearTimeout(animTimerRef.current);
+      animTimerRef.current = null;
+    }
 
     if (isCorrect) {
       playSocialSound('correct', isMuted);
@@ -288,69 +302,86 @@ export default function SocialStudyPage() {
         text: '正解！クリア！',
         type: 'correct',
       });
-      setIsSuccessAnimating(true);
+      // 1. カードがエメラルド色に発光しながら右上へ勢いよくスワイプアウト (280ms)
+      setCardAnimState('success-exit');
 
-      // 0.5秒（500ms）達成演出を表示してから次の問題へ進む
-      successTimerRef.current = setTimeout(() => {
-        setIsSuccessAnimating(false);
+      animTimerRef.current = setTimeout(() => {
         const { updatedSession, isSessionFinished } = handleAnswerSubmit(
           session,
           true
         );
 
         if (isSessionFinished) {
-          // セッション完了
           const updatedProgress = finalizeSessionProgress(updatedSession, progress);
           setProgress(updatedProgress);
           setSession(updatedSession);
           setIsAnswerRevealed(false);
           setShowHint(false);
+          setCardAnimState('idle');
           setViewState('result');
           playSocialSound('complete', isMuted);
         } else {
-          // 次の問題へ
+          // 2. 次の問題を読み込み、カードを下側に瞬時配置
           setSession(updatedSession);
           setIsAnswerRevealed(false);
           setShowHint(false);
+          setCardAnimState('enter');
+
+          // 3. 次フレームで下から滑り込ませて定位置へ
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              setCardAnimState('idle');
+            });
+          });
         }
-      }, 500);
+      }, 280);
     } else {
       playSocialSound('wrong', isMuted);
       setLastFeedback({
         text: 'あとでもう一度出題されます（反復キュー入り）',
         type: 'requeued',
       });
+      // ミス時はカードが下へ吸い込まれるようにスライドアウト (200ms)
+      setCardAnimState('wrong-exit');
 
-      const { updatedSession, isSessionFinished } = handleAnswerSubmit(
-        session,
-        false
-      );
+      animTimerRef.current = setTimeout(() => {
+        const { updatedSession, isSessionFinished } = handleAnswerSubmit(
+          session,
+          false
+        );
 
-      if (isSessionFinished) {
-        // セッション完了
-        const updatedProgress = finalizeSessionProgress(updatedSession, progress);
-        setProgress(updatedProgress);
-        setSession(updatedSession);
-        setIsAnswerRevealed(false);
-        setShowHint(false);
-        setViewState('result');
-        playSocialSound('complete', isMuted);
-      } else {
-        // 次の問題へ
-        setSession(updatedSession);
-        setIsAnswerRevealed(false);
-        setShowHint(false);
-      }
+        if (isSessionFinished) {
+          const updatedProgress = finalizeSessionProgress(updatedSession, progress);
+          setProgress(updatedProgress);
+          setSession(updatedSession);
+          setIsAnswerRevealed(false);
+          setShowHint(false);
+          setCardAnimState('idle');
+          setViewState('result');
+          playSocialSound('complete', isMuted);
+        } else {
+          setSession(updatedSession);
+          setIsAnswerRevealed(false);
+          setShowHint(false);
+          setCardAnimState('enter');
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              setCardAnimState('idle');
+            });
+          });
+        }
+      }, 200);
     }
   };
 
   // メニューに戻る
   const handleBackToMenu = () => {
-    if (successTimerRef.current) {
-      clearTimeout(successTimerRef.current);
-      successTimerRef.current = null;
+    if (animTimerRef.current) {
+      clearTimeout(animTimerRef.current);
+      animTimerRef.current = null;
     }
-    setIsSuccessAnimating(false);
+    setCardAnimState('idle');
 
     if (viewState === 'studying') {
       const confirmLeave = window.confirm(
@@ -476,48 +507,18 @@ export default function SocialStudyPage() {
             </div>
           )}
 
-          {/* 問題カード */}
+          {/* 問題カード（トランジション自体が達成感エフェクトになるカード送りアニメーション） */}
           <Card
-            className={`border-2 border-slate-800 bg-slate-900/90 shadow-2xl rounded-3xl bl-card overflow-hidden relative transition-all duration-300 ${
-              isSuccessAnimating
-                ? 'ring-4 ring-emerald-400/90 shadow-[0_0_40px_rgba(16,185,129,0.5)] scale-[1.01]'
-                : ''
+            className={`border-2 border-slate-800 bg-slate-900/90 shadow-2xl rounded-3xl bl-card overflow-hidden relative transform transition-all ${
+              cardAnimState === 'success-exit'
+                ? '-translate-y-12 translate-x-16 rotate-6 opacity-0 scale-95 ring-4 ring-emerald-400/90 shadow-[0_0_50px_rgba(16,185,129,0.7)] duration-300 ease-in pointer-events-none'
+                : cardAnimState === 'wrong-exit'
+                ? 'translate-y-10 opacity-0 scale-95 ring-2 ring-rose-500/80 duration-200 ease-in pointer-events-none'
+                : cardAnimState === 'enter'
+                ? 'translate-y-8 opacity-0 scale-98 transition-none pointer-events-none'
+                : 'translate-x-0 translate-y-0 rotate-0 opacity-100 scale-100 duration-200 ease-out'
             }`}
           >
-            {/* 正解達成演出オーバーレイ (約0.5秒) */}
-            {isSuccessAnimating && (
-              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/75 backdrop-blur-[2px] rounded-3xl animate-in fade-in duration-150 pointer-events-none select-none">
-                {/* グロー光彩 */}
-                <div className="absolute w-56 h-56 bg-emerald-500/25 rounded-full blur-3xl animate-pulse" />
-
-                {/* 達成スタンプバッジ */}
-                <div className="relative flex flex-col items-center gap-2 px-6 py-4 rounded-2xl bg-slate-900 border-3 border-emerald-400 shadow-[0_0_35px_rgba(16,185,129,0.7),4px_4px_0px_#000] bl-comic-border transform animate-in zoom-in-75 duration-200">
-                  <div className="flex items-center gap-2">
-                    <Sparkles
-                      className="w-5 h-5 text-amber-400 fill-amber-400 animate-spin"
-                      style={{ animationDuration: '3s' }}
-                    />
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
-                      <CheckCircle2 className="w-8 h-8 text-emerald-300" />
-                    </div>
-                    <Sparkles
-                      className="w-5 h-5 text-amber-400 fill-amber-400 animate-spin"
-                      style={{ animationDuration: '3s' }}
-                    />
-                  </div>
-
-                  <div className="text-2xl sm:text-3xl font-black font-mono tracking-wider text-emerald-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] flex items-center gap-2">
-                    <span>CLEAR!</span>
-                    <span className="text-white text-lg font-sans">書けた！</span>
-                  </div>
-
-                  <div className="font-mono text-xs font-black text-amber-300 bg-amber-500/10 border border-amber-400/40 px-3 py-0.5 rounded-full shadow-xs">
-                    ★ 記憶定着度 UP!
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* カードヘッダー */}
             <div className="border-b-2 border-slate-800/80 bg-slate-950/70 px-4 py-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
@@ -632,20 +633,24 @@ export default function SocialStudyPage() {
                   <div className="pt-2">
                     <div className="grid grid-cols-2 gap-3">
                       <Button
-                        disabled={isSuccessAnimating}
+                        disabled={cardAnimState !== 'idle'}
                         onClick={() => handleAnswer(false)}
-                        className="h-15 flex items-center justify-center gap-2 bg-rose-950/80 hover:bg-rose-900 border-2 border-rose-500/80 text-rose-200 rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md disabled:opacity-40"
+                        className={`h-15 flex items-center justify-center gap-2 border-2 border-rose-500/80 rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md disabled:opacity-50 ${
+                          cardAnimState === 'wrong-exit'
+                            ? 'bg-rose-600 text-white scale-95'
+                            : 'bg-rose-950/80 hover:bg-rose-900 text-rose-200'
+                        }`}
                       >
                         <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
                         <span>✕ ミス（再出題）</span>
                       </Button>
 
                       <Button
-                        disabled={isSuccessAnimating}
+                        disabled={cardAnimState !== 'idle'}
                         onClick={() => handleAnswer(true)}
-                        className={`h-15 flex items-center justify-center gap-2 border-2 border-black rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md ${
-                          isSuccessAnimating
-                            ? 'bg-emerald-400 text-slate-950 scale-105 shadow-[0_0_25px_rgba(16,185,129,0.9)]'
+                        className={`h-15 flex items-center justify-center gap-2 border-2 border-black rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md disabled:opacity-50 ${
+                          cardAnimState === 'success-exit'
+                            ? 'bg-emerald-400 text-slate-950 scale-95 shadow-[0_0_30px_rgba(16,185,129,0.9)]'
                             : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                         }`}
                       >
@@ -1023,6 +1028,46 @@ export default function SocialStudyPage() {
               <Layers className="w-4 h-4 text-purple-400" />
               <span>STAGE SELECT // 単元別ステージ</span>
             </h3>
+
+            {/* 出題順序トグル（順番 vs シャッフル）アイコンのみで表現 */}
+            <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl shadow-inner">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isStageShuffle) {
+                    playSocialSound('click', isMuted);
+                    setIsStageShuffle(false);
+                    localStorage.setItem('social_study_stage_shuffle', 'false');
+                  }
+                }}
+                className={`p-1.5 rounded-lg transition-all flex items-center justify-center ${
+                  !isStageShuffle
+                    ? 'bg-slate-800 text-cyan-400 border border-cyan-500/50 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+                title="順番通りに出題"
+              >
+                <ListOrdered className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isStageShuffle) {
+                    playSocialSound('click', isMuted);
+                    setIsStageShuffle(true);
+                    localStorage.setItem('social_study_stage_shuffle', 'true');
+                  }
+                }}
+                className={`p-1.5 rounded-lg transition-all flex items-center justify-center ${
+                  isStageShuffle
+                    ? 'bg-amber-500/20 text-amber-400 border border-amber-400/60 shadow-[0_0_10px_rgba(251,191,36,0.3)]'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+                title="ランダム（シャッフル）出題"
+              >
+                <Shuffle className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* 単元・ステージ別カード（全6単元） */}
@@ -1060,14 +1105,16 @@ export default function SocialStudyPage() {
                         type: 'stage',
                         unitId: unit.id,
                         stage: 1,
+                        shuffle: isStageShuffle,
                       })
                     }
                     className={`w-full bg-slate-950/80 hover:bg-slate-850 border border-slate-800 ${conf.borderClass} rounded-xl p-3 flex items-center justify-between text-left transition-all group`}
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <Badge className="font-mono font-black text-[10px] bg-slate-900 border border-slate-700 text-slate-300">
-                          STAGE 1
+                        <Badge className="font-mono font-black text-[10px] bg-slate-900 border border-slate-700 text-slate-300 flex items-center gap-1">
+                          {isStageShuffle && <Shuffle className="w-2.5 h-2.5 text-amber-400" />}
+                          <span>STAGE 1</span>
                         </Badge>
                         <span className={`font-bold text-xs text-white ${conf.textHoverClass}`}>
                           {conf.stage1.title}
@@ -1087,14 +1134,16 @@ export default function SocialStudyPage() {
                         type: 'stage',
                         unitId: unit.id,
                         stage: 2,
+                        shuffle: isStageShuffle,
                       })
                     }
                     className={`w-full bg-slate-950/80 hover:bg-slate-850 border border-slate-800 ${conf.borderClass} rounded-xl p-3 flex items-center justify-between text-left transition-all group`}
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <Badge className="font-mono font-black text-[10px] bg-slate-900 border border-slate-700 text-slate-300">
-                          STAGE 2
+                        <Badge className="font-mono font-black text-[10px] bg-slate-900 border border-slate-700 text-slate-300 flex items-center gap-1">
+                          {isStageShuffle && <Shuffle className="w-2.5 h-2.5 text-amber-400" />}
+                          <span>STAGE 2</span>
                         </Badge>
                         <span className={`font-bold text-xs text-white ${conf.textHoverClass}`}>
                           {conf.stage2.title}
