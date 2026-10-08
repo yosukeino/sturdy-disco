@@ -58,7 +58,7 @@ export const SOCIAL_UNITS: UnitInfo[] = [
     number: 6,
     title: '行政のはたらきと内閣',
     description: '行政権、内閣総理大臣・国務大臣、閣議、議院内閣制、内閣不信任と衆議院解散、行政改革・規制緩和',
-    color: 'amber',
+    color: 'cyan',
     totalQuestions: 18, // 問130〜問147
   },
   {
@@ -66,7 +66,7 @@ export const SOCIAL_UNITS: UnitInfo[] = [
     number: 7,
     title: '司法権の独立と裁判所',
     description: '司法権、最高裁判所・下級裁判所、三審制（控訴・上告）、民事裁判・刑事裁判、裁判員制度、違憲立法審査権',
-    color: 'rose',
+    color: 'cyan',
     totalQuestions: 23, // 問148〜問170
   },
   {

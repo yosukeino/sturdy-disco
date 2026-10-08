@@ -79,12 +79,58 @@ interface UnitConfig {
   stages: StageConfig[];
 }
 
+// 穴埋め形式（「（ ）」「( )」）の強調表示ヘルパー
+function renderQuestionText(
+  questionText: string,
+  answerText: string,
+  isRevealed: boolean
+) {
+  const blankRegex = /（\s*）|\(\s*\)/g;
+  if (!blankRegex.test(questionText)) {
+    return <span className="text-white">{questionText}</span>;
+  }
+
+  const parts = questionText.split(blankRegex);
+
+  return (
+    <span className="text-white">
+      {parts.map((part, index) => (
+        <React.Fragment key={index}>
+          <span>{part}</span>
+          {index < parts.length - 1 && (
+            <span
+              className={`inline-flex items-center justify-center min-w-[5rem] sm:min-w-[6rem] px-2.5 py-0.5 mx-1.5 my-0.5 rounded-xl border-2 font-mono align-baseline transition-all duration-300 shadow-md ${
+                isRevealed
+                  ? 'border-cyan-400 bg-cyan-950/90 text-white shadow-[0_0_14px_rgba(6,182,212,0.45)]'
+                  : 'border-dashed border-cyan-400 bg-cyan-950/80 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)] animate-pulse'
+              }`}
+            >
+              {isRevealed ? (
+                <span className="font-sans font-black text-white text-base tracking-wide">
+                  （ {answerText} ）
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 font-black text-cyan-300 text-sm">
+                  <span className="text-cyan-400/60 font-sans">（</span>
+                  <HelpCircle className="w-3.5 h-3.5 text-cyan-400 shrink-0 inline" />
+                  <span className="font-mono tracking-widest text-xs">？</span>
+                  <span className="text-cyan-400/60 font-sans">）</span>
+                </span>
+              )}
+            </span>
+          )}
+        </React.Fragment>
+      ))}
+    </span>
+  );
+}
+
 const UNIT_STAGE_INFO: Record<UnitId, UnitConfig> = {
   constitution: {
-    badgeClass: 'bg-blue-600 text-white border border-blue-400/60 shadow-[1px_1px_0px_#000]',
-    borderClass: 'hover:border-blue-500/80',
-    hoverClass: 'hover:bg-blue-950/40',
-    textHoverClass: 'group-hover:text-blue-300',
+    badgeClass: 'bg-slate-950 text-cyan-400 border border-cyan-500/50 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-cyan-500/80',
+    hoverClass: 'hover:bg-cyan-950/40',
+    textHoverClass: 'group-hover:text-cyan-300',
     stages: [
       { stage: 1, title: '大日本帝国憲法と日本国憲法・三大原則', range: '問28〜40', count: 13 },
       { stage: 2, title: '平等権と各種の自由権（精神・身体・経済）', range: '問41〜54', count: 14 },
@@ -93,47 +139,47 @@ const UNIT_STAGE_INFO: Record<UnitId, UnitConfig> = {
     ],
   },
   politics: {
-    badgeClass: 'bg-emerald-600 text-white border border-emerald-400/60 shadow-[1px_1px_0px_#000]',
-    borderClass: 'hover:border-emerald-500/80',
-    hoverClass: 'hover:bg-emerald-950/40',
-    textHoverClass: 'group-hover:text-emerald-300',
+    badgeClass: 'bg-slate-950 text-cyan-400 border border-cyan-500/50 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-cyan-500/80',
+    hoverClass: 'hover:bg-cyan-950/40',
+    textHoverClass: 'group-hover:text-cyan-300',
     stages: [
       { stage: 1, title: '民主政治・選挙制度・政党', range: '問82〜95', count: 14 },
       { stage: 2, title: '直接民主制・選挙原則・マスメディア', range: '問96〜109', count: 14 },
     ],
   },
   diet: {
-    badgeClass: 'bg-purple-600 text-white border border-purple-400/60 shadow-[1px_1px_0px_#000]',
-    borderClass: 'hover:border-purple-500/80',
-    hoverClass: 'hover:bg-purple-950/40',
-    textHoverClass: 'group-hover:text-purple-300',
+    badgeClass: 'bg-slate-950 text-cyan-400 border border-cyan-500/50 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-cyan-500/80',
+    hoverClass: 'hover:bg-cyan-950/40',
+    textHoverClass: 'group-hover:text-cyan-300',
     stages: [
       { stage: 1, title: '立法権・二院制・国会の種類', range: '問110〜119', count: 10 },
       { stage: 2, title: '国会の審議・衆議院の優越', range: '問120〜129', count: 10 },
     ],
   },
   cabinet: {
-    badgeClass: 'bg-amber-600 text-white border border-amber-400/60 shadow-[1px_1px_0px_#000]',
-    borderClass: 'hover:border-amber-500/80',
-    hoverClass: 'hover:bg-amber-950/40',
-    textHoverClass: 'group-hover:text-amber-300',
+    badgeClass: 'bg-slate-950 text-cyan-400 border border-cyan-500/50 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-cyan-500/80',
+    hoverClass: 'hover:bg-cyan-950/40',
+    textHoverClass: 'group-hover:text-cyan-300',
     stages: [
       { stage: 1, title: '行政権・内閣総理大臣・議院内閣制', range: '問130〜138', count: 9 },
       { stage: 2, title: '閣議・公務員・行政改革', range: '問139〜147', count: 9 },
     ],
   },
   judiciary: {
-    badgeClass: 'bg-rose-600 text-white border border-rose-400/60 shadow-[1px_1px_0px_#000]',
-    borderClass: 'hover:border-rose-500/80',
-    hoverClass: 'hover:bg-rose-950/40',
-    textHoverClass: 'group-hover:text-rose-300',
+    badgeClass: 'bg-slate-950 text-cyan-400 border border-cyan-500/50 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-cyan-500/80',
+    hoverClass: 'hover:bg-cyan-950/40',
+    textHoverClass: 'group-hover:text-cyan-300',
     stages: [
       { stage: 1, title: '司法権・最高裁判所・三審制', range: '問148〜158', count: 11 },
       { stage: 2, title: '地方裁判所・民事刑事・裁判員制度', range: '問159〜170', count: 12 },
     ],
   },
   local: {
-    badgeClass: 'bg-cyan-600 text-white border border-cyan-400/60 shadow-[1px_1px_0px_#000]',
+    badgeClass: 'bg-slate-950 text-cyan-400 border border-cyan-500/50 shadow-[1px_1px_0px_#000]',
     borderClass: 'hover:border-cyan-500/80',
     hoverClass: 'hover:bg-cyan-950/40',
     textHoverClass: 'group-hover:text-cyan-300',
@@ -263,8 +309,8 @@ export default function SocialStudyPage() {
         rank: 'C',
         title: '暗記ルーキー',
         badge: '▲ ROOKIE C',
-        color: 'text-amber-300',
-        bg: 'bg-amber-500/20 border-amber-400/60',
+        color: 'text-cyan-300',
+        bg: 'bg-cyan-950/40 border-cyan-500/50',
         description: '学習エンジン起動！今日復習をこなして記憶を定着させよう。',
         percentile: '全国推定 TOP 70%',
       };
@@ -551,7 +597,7 @@ export default function SocialStudyPage() {
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0">
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-amber-500/15 border border-amber-400/40 text-amber-300 px-2 py-0.5 rounded-lg">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 px-2 py-0.5 rounded-lg">
                   <PenTool className="w-3 h-3" />
                   <span>紙に手書き</span>
                 </span>
@@ -563,9 +609,13 @@ export default function SocialStudyPage() {
                 {qProgress && qProgress.level > 0 && (
                   <span
                     className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded border border-black ${
-                      qProgress.level >= 3
-                        ? 'bg-emerald-500/30 text-emerald-300 border-emerald-400/50'
-                        : 'bg-purple-500/30 text-purple-200 border-purple-400/50'
+                      qProgress.level >= 4
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-400/80 shadow-[0_0_8px_rgba(251,191,36,0.4)]'
+                        : qProgress.level === 3
+                        ? 'bg-purple-500/20 text-purple-200 border-purple-400/60'
+                        : qProgress.level === 2
+                        ? 'bg-blue-500/20 text-blue-200 border-blue-400/60'
+                        : 'bg-emerald-500/20 text-emerald-200 border-emerald-400/60'
                     }`}
                   >
                     Lv.{qProgress.level}
@@ -575,17 +625,17 @@ export default function SocialStudyPage() {
             </div>
 
             <CardContent className="pt-5 pb-6 px-4 sm:px-5 space-y-4">
-              {/* 問題文 */}
-              <div className="text-base sm:text-lg font-black text-white leading-relaxed tracking-wide">
-                {currentQuestion.question}
+              {/* 問題文（穴埋め形式の（ ）をアクセント強調） */}
+              <div className="text-base sm:text-lg font-black leading-relaxed tracking-wide">
+                {renderQuestionText(currentQuestion.question, currentQuestion.answer, isAnswerRevealed)}
               </div>
 
               {/* ヒントアコーディオン */}
               {currentQuestion.hint && (
                 <div>
                   {showHint ? (
-                    <div className="bg-slate-950 border border-sky-500/40 rounded-xl p-3 text-xs text-sky-200 space-y-1">
-                      <div className="font-black flex items-center gap-1.5 text-sky-400 font-mono text-[11px]">
+                    <div className="bg-slate-950 border border-cyan-500/40 rounded-xl p-3 text-xs text-cyan-200 space-y-1">
+                      <div className="font-black flex items-center gap-1.5 text-cyan-400 font-mono text-[11px]">
                         <Sparkles className="w-3.5 h-3.5" />
                         <span>HINT // 条文・ポイント</span>
                       </div>
@@ -596,7 +646,7 @@ export default function SocialStudyPage() {
                   ) : (
                     <button
                       onClick={() => setShowHint(true)}
-                      className="text-xs font-mono font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1 py-1 transition-colors"
+                      className="text-xs font-mono font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 py-1 transition-colors"
                     >
                       <HelpCircle className="w-3.5 h-3.5" />
                       <span>[ 💡 HINT を表示 ]</span>
@@ -611,23 +661,23 @@ export default function SocialStudyPage() {
                   <Button
                     onClick={revealAnswer}
                     size="lg"
-                    className="w-full h-14 text-base font-black bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-2 border-black bl-comic-border rounded-2xl shadow-xl active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                    className="w-full h-14 text-base font-black bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 hover:from-blue-600 hover:to-purple-600 text-white border-2 border-black bl-comic-border rounded-2xl shadow-xl active:translate-x-0.5 active:translate-y-0.5 transition-all"
                   >
                     <span>答えを見る (REVEAL) ▼</span>
                   </Button>
                 </div>
               ) : (
                 <div className="pt-2 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                  {/* 正解ボックス */}
-                  <div className="bg-slate-950 border-2 border-amber-400/80 rounded-2xl p-4 sm:p-5 text-center relative overflow-hidden bl-card bl-scanlines shadow-[0_0_20px_rgba(251,191,36,0.15)]">
-                    <div className="text-[10px] font-mono font-black text-amber-400 tracking-widest uppercase mb-1">
+                  {/* 正解ボックス（ライトブルーアクセント＆白テキスト） */}
+                  <div className="bg-slate-950 border-2 border-cyan-500/50 rounded-2xl p-4 sm:p-5 text-center relative overflow-hidden bl-card bl-comic-border shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                    <div className="text-[10px] font-mono font-black text-cyan-400 tracking-widest uppercase mb-1">
                       CORRECT ANSWER // 正解
                     </div>
-                    <div className="text-2xl sm:text-3xl font-black text-amber-300 tracking-wider bl-text-gold">
+                    <div className="text-2xl sm:text-3xl font-black text-white tracking-wider">
                       {currentQuestion.answer}
                     </div>
                     {currentQuestion.reading && (
-                      <div className="text-xs text-slate-300 font-mono mt-1">
+                      <div className="text-xs text-cyan-200/90 font-mono mt-1">
                         （{currentQuestion.reading}）
                       </div>
                     )}
@@ -701,6 +751,42 @@ export default function SocialStudyPage() {
       .map((id) => SOCIAL_QUESTIONS.find((q) => q.id === id))
       .filter(Boolean) as SocialQuestion[];
 
+    const isPerfect = firstTryCorrectCount === totalQuestions;
+    const isExcellent = totalQuestions > 0 && firstTryCorrectCount / totalQuestions >= 0.8;
+    const isGood = totalQuestions > 0 && firstTryCorrectCount / totalQuestions >= 0.6;
+
+    const sessionTier = isPerfect
+      ? {
+          border: 'border-3 border-amber-400',
+          badgeBg: 'bg-amber-500 text-slate-950',
+          tagText: 'text-amber-400',
+          tagLabel: '👑 LEGENDARY // パーフェクト全問一発クリア！',
+          glow: 'bl-legendary',
+        }
+      : isExcellent
+      ? {
+          border: 'border-2 border-purple-400/90',
+          badgeBg: 'bg-purple-600 text-white',
+          tagText: 'text-purple-300',
+          tagLabel: '★ EPIC // エクセレント達成！',
+          glow: 'bl-epic',
+        }
+      : isGood
+      ? {
+          border: 'border-2 border-blue-400/90',
+          badgeBg: 'bg-blue-600 text-white',
+          tagText: 'text-blue-300',
+          tagLabel: '◆ RARE // グッドクリア達成！',
+          glow: 'bl-rare',
+        }
+      : {
+          border: 'border-2 border-emerald-500/80',
+          badgeBg: 'bg-emerald-600 text-white',
+          tagText: 'text-emerald-300',
+          tagLabel: '● UNCOMMON // 反復リトライで完全制覇！',
+          glow: 'bl-uncommon',
+        };
+
     return (
       <div className="min-h-screen bg-slate-950 text-white pb-20 relative overflow-hidden">
         {/* Background Decor */}
@@ -711,11 +797,15 @@ export default function SocialStudyPage() {
             backgroundSize: '24px 24px',
           }}
         />
-        <div className="pointer-events-none fixed -top-32 left-1/2 -translate-x-1/2 h-80 w-[600px] rounded-full bg-amber-500/15 blur-3xl" />
+        <div
+          className={`pointer-events-none fixed -top-32 left-1/2 -translate-x-1/2 h-80 w-[600px] rounded-full blur-3xl ${
+            isPerfect ? 'bg-amber-500/15' : 'bg-cyan-600/10'
+          }`}
+        />
 
         <header className="bg-slate-900/90 border-b-2 border-slate-800 px-4 py-3 relative z-10 bl-comic-border">
           <div className="max-w-xl mx-auto flex items-center justify-between">
-            <h1 className="text-sm font-mono font-black text-amber-400">
+            <h1 className="text-sm font-mono font-black text-cyan-400">
               MISSION REPORT // 学習リザルト
             </h1>
             <Button
@@ -730,14 +820,18 @@ export default function SocialStudyPage() {
         </header>
 
         <main className="max-w-xl mx-auto p-4 space-y-4 relative z-10">
-          <Card className="border-3 border-amber-400 bg-slate-900/95 bl-card bl-comic-border-lg bl-legendary shadow-2xl rounded-3xl p-6 text-center space-y-4 bl-scanlines">
-            <div className="inline-flex p-3 bg-amber-500 text-slate-950 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000]">
+          <Card
+            className={`${sessionTier.border} bg-slate-900/95 bl-card bl-comic-border-lg ${sessionTier.glow} shadow-2xl rounded-3xl p-6 text-center space-y-4 bl-scanlines`}
+          >
+            <div
+              className={`inline-flex p-3 ${sessionTier.badgeBg} rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000]`}
+            >
               <Award className="w-8 h-8" />
             </div>
 
             <div>
-              <div className="font-mono font-black text-xs text-amber-400 tracking-wider">
-                SESSION COMPLETED!
+              <div className={`font-mono font-black text-xs ${sessionTier.tagText} tracking-wider`}>
+                {sessionTier.tagLabel}
               </div>
               <h2 className="text-2xl font-black text-white mt-0.5">
                 全問クリア！ 🎉
@@ -865,7 +959,7 @@ export default function SocialStudyPage() {
               {isMuted ? (
                 <VolumeX className="w-4 h-4 text-slate-500" />
               ) : (
-                <Volume2 className="w-4 h-4 text-amber-400" />
+                <Volume2 className="w-4 h-4 text-cyan-400" />
               )}
             </button>
           </div>
@@ -947,11 +1041,11 @@ export default function SocialStudyPage() {
               </div>
             </div>
             <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-2">
-              <div className="text-[10px] font-bold text-amber-400 flex items-center justify-center gap-1">
+              <div className="text-[10px] font-bold text-cyan-400 flex items-center justify-center gap-1">
                 <Flame className="w-3 h-3" />
                 連続日数
               </div>
-              <div className="text-lg font-black text-amber-400 mt-0.5">
+              <div className="text-lg font-black text-cyan-300 mt-0.5">
                 {progress.currentStreakDays}
                 <span className="text-[10px] text-slate-500 ml-0.5">日</span>
               </div>
@@ -970,14 +1064,14 @@ export default function SocialStudyPage() {
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-600/30 border border-purple-400/60 text-purple-300 group-hover:scale-105 transition-transform bl-comic-border">
-              <Trophy className="h-5 w-5 text-amber-400" />
+              <Trophy className={`h-5 w-5 ${rankTier.rank === 'SS' ? 'text-amber-400' : 'text-purple-300'}`} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 font-mono text-[10px]">
                 <span className="rounded bg-purple-500/30 text-purple-200 border border-purple-400/40 px-1.5 py-0.5 font-black">
                   {rankTier.badge}
                 </span>
-                <span className="text-amber-400 font-bold">{rankTier.percentile}</span>
+                <span className={`${rankTier.color} font-bold`}>{rankTier.percentile}</span>
               </div>
               <div className="text-sm sm:text-base font-black text-white group-hover:text-purple-300 transition-colors truncate">
                 🏆 暗記段位・ランキングを見る
@@ -999,7 +1093,7 @@ export default function SocialStudyPage() {
               className="w-full h-14 font-black bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl bl-card shadow-lg flex items-center justify-between px-5 active:translate-x-0.5 active:translate-y-0.5 transition-all"
             >
               <div className="flex items-center gap-3">
-                <Flame className="w-5 h-5 text-amber-300 shrink-0" />
+                <Flame className="w-5 h-5 text-cyan-300 shrink-0" />
                 <div className="text-left">
                   <div className="text-sm font-black">本日の復習スタート</div>
                   <div className="text-[11px] font-mono text-cyan-200">
@@ -1016,7 +1110,7 @@ export default function SocialStudyPage() {
               className="w-full h-14 font-black bg-purple-600 hover:bg-purple-500 text-white rounded-2xl bl-card shadow-lg flex items-center justify-between px-5 active:translate-x-0.5 active:translate-y-0.5 transition-all"
             >
               <div className="flex items-center gap-3">
-                <Zap className="w-5 h-5 text-amber-300 shrink-0" />
+                <Zap className="w-5 h-5 text-purple-200 shrink-0" />
                 <div className="text-left">
                   <div className="text-sm font-black">ランダム10問 実力テスト</div>
                   <div className="text-[11px] font-mono text-purple-200">
@@ -1047,7 +1141,7 @@ export default function SocialStudyPage() {
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-mono font-black text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
-              <Layers className="w-4 h-4 text-purple-400" />
+              <Layers className="w-4 h-4 text-cyan-400" />
               <span>STAGE SELECT // 単元別ステージ</span>
             </h3>
 
@@ -1082,7 +1176,7 @@ export default function SocialStudyPage() {
                 }}
                 className={`p-1.5 rounded-lg transition-all flex items-center justify-center ${
                   isStageShuffle
-                    ? 'bg-amber-500/20 text-amber-400 border border-amber-400/60 shadow-[0_0_10px_rgba(251,191,36,0.3)]'
+                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-400/60 shadow-[0_0_10px_rgba(6,182,212,0.3)]'
                     : 'text-slate-500 hover:text-slate-300'
                 }`}
                 title="ランダム（シャッフル）出題"
@@ -1166,7 +1260,7 @@ export default function SocialStudyPage() {
                                   : 'bg-slate-900 border border-slate-700 text-slate-300'
                               } flex items-center gap-1 shrink-0`}
                             >
-                              {isStageShuffle && <Shuffle className="w-2.5 h-2.5 text-amber-400" />}
+                              {isStageShuffle && <Shuffle className="w-2.5 h-2.5 text-cyan-400" />}
                               <span>STAGE {stageItem.stage}</span>
                               {isStageComplete && <Check className="w-2.5 h-2.5 text-emerald-400 ml-0.5" />}
                             </Badge>
@@ -1243,7 +1337,7 @@ export default function SocialStudyPage() {
                 </div>
               </div>
               <div className="text-base sm:text-lg font-black text-white">
-                称号: <span className="text-amber-400">「{rankTier.title}」</span>
+                称号: <span className={rankTier.color}>「{rankTier.title}」</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed font-medium">
                 {rankTier.description}
@@ -1268,7 +1362,7 @@ export default function SocialStudyPage() {
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5">
                 <div className="text-[10px] text-slate-400 font-mono">連続日数</div>
-                <div className="text-lg font-black text-amber-400 font-mono mt-0.5">
+                <div className="text-lg font-black text-cyan-400 font-mono mt-0.5">
                   {progress.currentStreakDays}
                   <span className="text-[10px] text-slate-400">日</span>
                 </div>
@@ -1299,7 +1393,7 @@ export default function SocialStudyPage() {
                   <span className="text-[11px] text-slate-400">30問クリア〜</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
-                  <span className="text-amber-300 font-black">▲ C: 暗記ルーキー</span>
+                  <span className="text-cyan-300 font-black">▲ C: 暗記ルーキー</span>
                   <span className="text-[11px] text-slate-400">10問クリア〜</span>
                 </div>
               </div>
