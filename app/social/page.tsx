@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { Nav, MobileNavTabs, StudiscoLogo } from '@/components/nav';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -148,6 +148,19 @@ export default function SocialStudyPage() {
     type: 'correct' | 'requeued';
   } | null>(null);
 
+  // 正解アニメーション演出中フラグ
+  const [isSuccessAnimating, setIsSuccessAnimating] = useState(false);
+  const successTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // アンマウント時のタイマークリア
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) {
+        clearTimeout(successTimerRef.current);
+      }
+    };
+  }, []);
+
   // 初回マウント時にLocalStorageから読み込み
   useEffect(() => {
     const loaded = loadUserProgress();
@@ -267,7 +280,7 @@ export default function SocialStudyPage() {
 
   // 自己採点ボタン（◯ 正解 / ✕ 不正解）
   const handleAnswer = (isCorrect: boolean) => {
-    if (!session || !currentQuestion) return;
+    if (!session || !currentQuestion || isSuccessAnimating) return;
 
     if (isCorrect) {
       playSocialSound('correct', isMuted);
@@ -275,38 +288,70 @@ export default function SocialStudyPage() {
         text: '正解！クリア！',
         type: 'correct',
       });
+      setIsSuccessAnimating(true);
+
+      // 0.5秒（500ms）達成演出を表示してから次の問題へ進む
+      successTimerRef.current = setTimeout(() => {
+        setIsSuccessAnimating(false);
+        const { updatedSession, isSessionFinished } = handleAnswerSubmit(
+          session,
+          true
+        );
+
+        if (isSessionFinished) {
+          // セッション完了
+          const updatedProgress = finalizeSessionProgress(updatedSession, progress);
+          setProgress(updatedProgress);
+          setSession(updatedSession);
+          setIsAnswerRevealed(false);
+          setShowHint(false);
+          setViewState('result');
+          playSocialSound('complete', isMuted);
+        } else {
+          // 次の問題へ
+          setSession(updatedSession);
+          setIsAnswerRevealed(false);
+          setShowHint(false);
+        }
+      }, 500);
     } else {
       playSocialSound('wrong', isMuted);
       setLastFeedback({
         text: 'あとでもう一度出題されます（反復キュー入り）',
         type: 'requeued',
       });
-    }
 
-    const { updatedSession, isSessionFinished } = handleAnswerSubmit(
-      session,
-      isCorrect
-    );
+      const { updatedSession, isSessionFinished } = handleAnswerSubmit(
+        session,
+        false
+      );
 
-    if (isSessionFinished) {
-      // セッション完了
-      const updatedProgress = finalizeSessionProgress(updatedSession, progress);
-      setProgress(updatedProgress);
-      setSession(updatedSession);
-      setIsAnswerRevealed(false);
-      setShowHint(false);
-      setViewState('result');
-      playSocialSound('complete', isMuted);
-    } else {
-      // 次の問題へ
-      setSession(updatedSession);
-      setIsAnswerRevealed(false);
-      setShowHint(false);
+      if (isSessionFinished) {
+        // セッション完了
+        const updatedProgress = finalizeSessionProgress(updatedSession, progress);
+        setProgress(updatedProgress);
+        setSession(updatedSession);
+        setIsAnswerRevealed(false);
+        setShowHint(false);
+        setViewState('result');
+        playSocialSound('complete', isMuted);
+      } else {
+        // 次の問題へ
+        setSession(updatedSession);
+        setIsAnswerRevealed(false);
+        setShowHint(false);
+      }
     }
   };
 
   // メニューに戻る
   const handleBackToMenu = () => {
+    if (successTimerRef.current) {
+      clearTimeout(successTimerRef.current);
+      successTimerRef.current = null;
+    }
+    setIsSuccessAnimating(false);
+
     if (viewState === 'studying') {
       const confirmLeave = window.confirm(
         '学習を中断してメニューに戻りますか？（今回の進捗は保存されません）'
@@ -432,7 +477,47 @@ export default function SocialStudyPage() {
           )}
 
           {/* 問題カード */}
-          <Card className="border-2 border-slate-800 bg-slate-900/90 shadow-2xl rounded-3xl bl-card overflow-hidden">
+          <Card
+            className={`border-2 border-slate-800 bg-slate-900/90 shadow-2xl rounded-3xl bl-card overflow-hidden relative transition-all duration-300 ${
+              isSuccessAnimating
+                ? 'ring-4 ring-emerald-400/90 shadow-[0_0_40px_rgba(16,185,129,0.5)] scale-[1.01]'
+                : ''
+            }`}
+          >
+            {/* 正解達成演出オーバーレイ (約0.5秒) */}
+            {isSuccessAnimating && (
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/75 backdrop-blur-[2px] rounded-3xl animate-in fade-in duration-150 pointer-events-none select-none">
+                {/* グロー光彩 */}
+                <div className="absolute w-56 h-56 bg-emerald-500/25 rounded-full blur-3xl animate-pulse" />
+
+                {/* 達成スタンプバッジ */}
+                <div className="relative flex flex-col items-center gap-2 px-6 py-4 rounded-2xl bg-slate-900 border-3 border-emerald-400 shadow-[0_0_35px_rgba(16,185,129,0.7),4px_4px_0px_#000] bl-comic-border transform animate-in zoom-in-75 duration-200">
+                  <div className="flex items-center gap-2">
+                    <Sparkles
+                      className="w-5 h-5 text-amber-400 fill-amber-400 animate-spin"
+                      style={{ animationDuration: '3s' }}
+                    />
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-300" />
+                    </div>
+                    <Sparkles
+                      className="w-5 h-5 text-amber-400 fill-amber-400 animate-spin"
+                      style={{ animationDuration: '3s' }}
+                    />
+                  </div>
+
+                  <div className="text-2xl sm:text-3xl font-black font-mono tracking-wider text-emerald-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] flex items-center gap-2">
+                    <span>CLEAR!</span>
+                    <span className="text-white text-lg font-sans">書けた！</span>
+                  </div>
+
+                  <div className="font-mono text-xs font-black text-amber-300 bg-amber-500/10 border border-amber-400/40 px-3 py-0.5 rounded-full shadow-xs">
+                    ★ 記憶定着度 UP!
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* カードヘッダー */}
             <div className="border-b-2 border-slate-800/80 bg-slate-950/70 px-4 py-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
@@ -547,18 +632,24 @@ export default function SocialStudyPage() {
                   <div className="pt-2">
                     <div className="grid grid-cols-2 gap-3">
                       <Button
+                        disabled={isSuccessAnimating}
                         onClick={() => handleAnswer(false)}
-                        className="h-15 flex items-center justify-center gap-2 bg-rose-950/80 hover:bg-rose-900 border-2 border-rose-500/80 text-rose-200 rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md"
+                        className="h-15 flex items-center justify-center gap-2 bg-rose-950/80 hover:bg-rose-900 border-2 border-rose-500/80 text-rose-200 rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md disabled:opacity-40"
                       >
                         <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
                         <span>✕ ミス（再出題）</span>
                       </Button>
 
                       <Button
+                        disabled={isSuccessAnimating}
                         onClick={() => handleAnswer(true)}
-                        className="h-15 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 border-2 border-black text-white rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md"
+                        className={`h-15 flex items-center justify-center gap-2 border-2 border-black rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md ${
+                          isSuccessAnimating
+                            ? 'bg-emerald-400 text-slate-950 scale-105 shadow-[0_0_25px_rgba(16,185,129,0.9)]'
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                        }`}
                       >
-                        <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
+                        <CheckCircle2 className="w-5 h-5 shrink-0" />
                         <span>◯ 書けた！</span>
                       </Button>
                     </div>
@@ -762,24 +853,6 @@ export default function SocialStudyPage() {
       </header>
 
       <main className="max-w-xl mx-auto p-4 space-y-4">
-        {/* 3ステップ学習スタイル ピクトグラムHUD */}
-        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-900/90 border-2 border-slate-800 text-xs font-mono bl-card">
-          <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-cyan-400 shrink-0" />
-            <span className="font-black text-slate-200">① 出題</span>
-          </div>
-          <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-          <div className="flex items-center gap-2">
-            <PenTool className="w-4 h-4 text-amber-400 shrink-0" />
-            <span className="font-black text-amber-300">② 手書き</span>
-          </div>
-          <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="font-black text-slate-200">③ 判定</span>
-          </div>
-        </div>
-
         {/* 進捗・ステータスダッシュボード */}
         <Card className="bl-card bg-slate-900/90 border-2 border-slate-800 rounded-2xl p-4 text-slate-100">
           <div className="flex items-center justify-between mb-3">
