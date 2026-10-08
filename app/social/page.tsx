@@ -99,10 +99,10 @@ function renderQuestionText(
           <span>{part}</span>
           {index < parts.length - 1 && (
             <span
-              className={`inline-flex items-center justify-center min-w-[5rem] sm:min-w-[6rem] px-2.5 py-0.5 mx-1.5 my-0.5 rounded-xl border-2 font-mono align-baseline transition-all duration-300 shadow-md ${
+              className={`inline-flex items-center justify-center min-w-[4.5rem] sm:min-w-[5.5rem] px-2 py-0.5 mx-1.5 my-0.5 rounded-xl border-2 font-mono align-baseline transition-all duration-500 shadow-md ${
                 isRevealed
                   ? 'border-cyan-400 bg-cyan-950/90 text-white shadow-[0_0_14px_rgba(6,182,212,0.45)]'
-                  : 'border-dashed border-cyan-400 bg-cyan-950/80 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)] animate-pulse'
+                  : 'border-dashed border-cyan-400/90 bg-cyan-950/60 text-cyan-300 animate-bl-glow-slow'
               }`}
             >
               {isRevealed ? (
@@ -110,11 +110,8 @@ function renderQuestionText(
                   （ {answerText} ）
                 </span>
               ) : (
-                <span className="flex items-center gap-1 font-black text-cyan-300 text-sm">
-                  <span className="text-cyan-400/60 font-sans">（</span>
-                  <HelpCircle className="w-3.5 h-3.5 text-cyan-400 shrink-0 inline" />
-                  <span className="font-mono tracking-widest text-xs">？</span>
-                  <span className="text-cyan-400/60 font-sans">）</span>
+                <span className="font-sans font-bold text-cyan-300/80 tracking-widest px-1.5 select-none text-sm sm:text-base">
+                  （&nbsp;&nbsp;&nbsp;&nbsp;）
                 </span>
               )}
             </span>
