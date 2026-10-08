@@ -89,60 +89,100 @@
 /* Hide screen-only elements when printing */
 @media print {
   @page {
-    size: A4;
-    margin: 15mm;
+    size: A4 portrait;
+    margin: 10mm 12mm;
   }
 
   html, body {
     background: white !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset all parent wrappers that cause mobile padding / 100vh stretch */
+  .min-h-screen,
+  body > div,
+  main {
+    min-height: 0 !important;
+    height: auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
   }
 
   .no-print {
     display: none !important;
   }
 
-  .worksheet-page,
-  .worksheet-answer-page {
-    box-shadow: none !important;
-  }
-
-  /* Show print-only answer lines */
+  /* Show print-only elements */
   .print-only {
     display: block !important;
   }
 
-  /* Student worksheet fills the full A4 page height */
+  /* Student worksheet strictly sized to fit on a single A4 page */
   .worksheet-page {
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: calc(100vh - 30mm) !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
   .worksheet-page .ws-header {
-    flex-shrink: 0 !important;
+    margin-bottom: 5mm !important;
+    padding-bottom: 2mm !important;
+    border-bottom: 1.5pt solid #0f172a !important;
   }
 
-  /* Distribute questions evenly to fill the page */
+  /* Compact and uniform spacing between questions */
   .worksheet-page .ws-questions {
-    flex-grow: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
+    gap: 3mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
   }
 
-  /* Enlarge answer lines for print */
-  .worksheet-page .print-only {
-    min-height: 2.5rem !important;
-    margin-top: 0.5rem !important;
+  .worksheet-page .ws-questions > li {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 10.5pt !important;
+    line-height: 1.4 !important;
   }
 
-  /* Prevent awkward page breaks within a single question */
+  /* Answer handwriting line: comfortable 7.5mm (~28px) height */
+  .worksheet-page .print-answer-line {
+    display: block !important;
+    border-bottom: 1pt solid #64748b !important;
+    min-height: 7.5mm !important;
+    margin-top: 1.5mm !important;
+  }
+
+  /* Prevent awkward page breaks */
   .worksheet-page li,
   .worksheet-answer-page > div,
   .homework-item,
   .homework-section-header {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .homework-page {
@@ -152,10 +192,16 @@
     margin: 0 !important;
   }
 
-  /* Page break before answer sheet */
+  /* Page break before answer sheet (when enabled) */
   .worksheet-answer-page {
-    page-break-before: always;
-    break-before: page;
+    page-break-before: always !important;
+    break-before: page !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding-top: 4mm !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
   }
 }
 

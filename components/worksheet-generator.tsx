@@ -1072,10 +1072,10 @@ export function WorksheetGenerator({
           {/* 印刷用レイアウト（print-only） */}
           <div className="print-only">
             <div className="worksheet-page">
-              <div className="ws-header mb-4 border-b-2 border-slate-800 pb-2">
+              <div className="ws-header mb-3 border-b-2 border-slate-900 pb-1.5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900">
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900">
                       中学英語例文テスト {isHardMode ? '【🔥 ハードモード】' : ''}
                     </h2>
                     <p className="text-xs text-slate-600">
@@ -1088,25 +1088,25 @@ export function WorksheetGenerator({
                     </p>
                   </div>
                 </div>
-                <div className="mt-2 flex items-center justify-between text-xs">
+                <div className="mt-1.5 flex items-center justify-between text-xs">
                   <span className="text-slate-800 font-medium">
                     Name: ____________________________________
                   </span>
-                  <span className="text-slate-600 font-bold">
+                  <span className="text-slate-700 font-bold">
                     得点: ________ / {quiz.length} 点
                   </span>
                 </div>
               </div>
 
-              <ol className="ws-questions space-y-4">
+              <ol className="ws-questions">
                 {quiz.map((item) => (
-                  <li key={item.id} className="flex items-start gap-3 text-sm leading-relaxed">
-                    <span className="min-w-[1.75rem] font-bold text-slate-800">
+                  <li key={item.id} className="flex items-start gap-2.5 text-xs sm:text-sm leading-normal">
+                    <span className="min-w-[1.5rem] font-bold text-slate-800 shrink-0">
                       {item.id}.
                     </span>
-                    <div className="flex-1">
-                      <p className="text-slate-900 font-medium">{item.question}</p>
-                      <div className="print-only mt-2 border-b border-slate-400 min-h-[2.5rem]" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-slate-900 font-medium leading-snug">{item.question}</p>
+                      <div className="print-only print-answer-line mt-1 border-b border-slate-400 min-h-[1.75rem]" />
                     </div>
                   </li>
                 ))}
@@ -1114,11 +1114,11 @@ export function WorksheetGenerator({
             </div>
 
             {printAnswers && (
-              <div className="worksheet-answer-page page-break-before mt-8">
-                <div className="mb-4 border-b-2 border-slate-800 pb-2">
+              <div className="worksheet-answer-page">
+                <div className="ws-header mb-3 border-b-2 border-slate-900 pb-1.5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h2 className="text-lg font-bold text-slate-900">
+                      <h2 className="text-base sm:text-lg font-bold text-slate-900">
                         【模範解答】中学英語例文テスト
                       </h2>
                       <p className="text-xs text-slate-600">
@@ -1133,15 +1133,15 @@ export function WorksheetGenerator({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
                   {quiz.map((item) => (
-                    <div key={item.id} className="flex items-start gap-3 text-xs leading-normal border-b border-slate-100 pb-1.5">
-                      <span className="min-w-[1.75rem] font-bold text-slate-800">
+                    <div key={item.id} className="flex items-start gap-2 text-xs leading-normal border-b border-slate-100 pb-1.5">
+                      <span className="min-w-[1.5rem] font-bold text-slate-800 shrink-0">
                         {item.id}.
                       </span>
-                      <div className="flex-1">
-                        <p className="text-slate-500">{item.question}</p>
-                        <p className="text-slate-900 font-bold mt-0.5">{item.answer}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-slate-500 text-[11px] truncate">{item.question}</p>
+                        <p className="text-slate-900 font-bold font-mono mt-0.5">{item.answer}</p>
                       </div>
                     </div>
                   ))}
