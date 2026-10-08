@@ -100,6 +100,30 @@ const DEFAULT_SCORES: ScoreRecord[] = [
   },
 ];
 
+/**
+ * プレイヤー名の正規化（前後の空白・全角半角のブレを解消）
+ */
+export function normalizePlayerName(name: string): string {
+  if (!name) return '';
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '') // 空白除去
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xfee0)); // 全角英数を半角化
+}
+
+/**
+ * 2つのスコアを比較し、a が b より優れているか（自己ベストか）判定
+ * 1. 正解数 (score) が多い方
+ * 2. 総合ポイント (game_points) が高い方
+ * 3. クリアタイム (time_ms) が速い方
+ */
+function isScoreBetter(a: ScoreRecord, b: ScoreRecord): boolean {
+  if (a.score !== b.score) return a.score > b.score;
+  if (a.game_points !== b.game_points) return a.game_points > b.game_points;
+  return a.time_ms < b.time_ms;
+}
+
 function getLocalScores(): ScoreRecord[] {
   if (typeof window === 'undefined') return DEFAULT_SCORES;
   try {
@@ -116,45 +140,75 @@ function saveLocalScore(item: ScoreRecord) {
   if (typeof window === 'undefined') return;
   try {
     const current = getLocalScores();
-    const updated = [item, ...current].slice(0, 200);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+    // 既存レコードの中から同一プレイヤー（UUID一致 または 名前一致）かつ同一コースのものを探す
+    const rNameNorm = normalizePlayerName(item.player_name);
+    const rUuid = (item.player_uuid || '').trim();
+
+    let replaced = false;
+    const updated = current.map((existing) => {
+      if (existing.course !== item.course) return existing;
+      const eNameNorm = normalizePlayerName(existing.player_name);
+      const eUuid = (existing.player_uuid || '').trim();
+      const isSameUser = (rUuid !== '' && eUuid !== '' && rUuid === eUuid) || (rNameNorm !== '' && eNameNorm !== '' && rNameNorm === eNameNorm);
+
+      if (isSameUser) {
+        replaced = true;
+        // 自己ベスト更新なら新しいレコードを採用
+        return isScoreBetter(item, existing) ? item : existing;
+      }
+      return existing;
+    });
+
+    if (!replaced) {
+      updated.unshift(item);
+    }
+
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated.slice(0, 200)));
   } catch {
     // ignore
   }
 }
 
 /**
- * プレイヤーごとに最高記録（1人につき最も良かった1件）のみを抽出
- * 優先順位:
- * 1. 正解数 (score) 降順
- * 2. クリアタイム (time_ms) 昇順
+ * プレイヤーごとに最高記録（1人/1デバイスにつき最も良かった1件）のみを厳格に抽出
+ * - player_uuid の一致 または player_name の一致 で同一プレイヤーと判定
+ * - 優先順位: 1.正解数 ➔ 2.総合PTS ➔ 3.クリアタイム最速
  */
 export function deduplicateBestScores(records: ScoreRecord[]): ScoreRecord[] {
-  const map = new Map<string, ScoreRecord>();
+  const result: ScoreRecord[] = [];
 
   for (const r of records) {
-    // 識別キー: player_uuid または 名前(トリム小文字)
-    const key =
-      r.player_uuid && r.player_uuid.trim() !== ''
-        ? `uuid:${r.player_uuid}`
-        : `name:${r.player_name.trim().toLowerCase()}`;
+    const rNameNorm = normalizePlayerName(r.player_name);
+    const rUuid = (r.player_uuid || '').trim();
 
-    const existing = map.get(key);
-    if (!existing) {
-      map.set(key, r);
+    // 既存レコードの中で同一ユーザー（UUID一致 または 正規化名一致）を探す
+    const existingIndex = result.findIndex((existing) => {
+      // コースが異なる場合は別コースの自己ベストとして扱う
+      if (existing.course && r.course && existing.course !== r.course) return false;
+
+      const eNameNorm = normalizePlayerName(existing.player_name);
+      const eUuid = (existing.player_uuid || '').trim();
+
+      const uuidMatch = rUuid !== '' && eUuid !== '' && rUuid === eUuid;
+      const nameMatch = rNameNorm !== '' && eNameNorm !== '' && rNameNorm === eNameNorm;
+
+      return uuidMatch || nameMatch;
+    });
+
+    if (existingIndex === -1) {
+      result.push(r);
     } else {
-      // 既存記録と比較: 正解数が多い、または正解数が同じでタイムが速い場合に自己ベスト更新
-      const isBetter =
-        r.score > existing.score ||
-        (r.score === existing.score && r.time_ms < existing.time_ms);
-      if (isBetter) {
-        map.set(key, r);
+      const existing = result[existingIndex];
+      if (isScoreBetter(r, existing)) {
+        // 自己ベスト更新: より優秀なレコードを採用
+        result[existingIndex] = r;
       }
     }
   }
 
-  return Array.from(map.values()).sort((a, b) => {
+  return result.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
+    if (b.game_points !== a.game_points) return b.game_points - a.game_points;
     return a.time_ms - b.time_ms;
   });
 }
@@ -257,30 +311,49 @@ export async function fetchQuizRankings(
     console.warn('Supabase fetch failed, using local fallback:', err);
   }
 
-  // Supabaseから取得できなかった場合はローカルから抽出
-  if (list.length === 0) {
-    list = getLocalScores();
+  // Supabase取得データとローカルデータを合算してオフライン/オンライン双方の自己ベストを反映
+  const localScores = getLocalScores();
+  let merged = [...list, ...localScores];
 
-    if (courseFilter && courseFilter !== 'all') {
-      list = list.filter((item) => item.course === courseFilter);
-    }
-
-    if (period === 'today') {
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      list = list.filter((item) => new Date(item.created_at) >= todayStart);
-    }
+  if (courseFilter && courseFilter !== 'all') {
+    merged = merged.filter((item) => item.course === courseFilter);
   }
 
-  // 自己ベストのみ抽出（同一プレイヤーは最高記録1件のみ）
+  if (period === 'today') {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    merged = merged.filter((item) => new Date(item.created_at) >= todayStart);
+  }
+
+  // 自己ベストのみ抽出（同一プレイヤーは最高記録1件のみ厳格に判定）
   if (onlyBest) {
-    list = deduplicateBestScores(list);
+    merged = deduplicateBestScores(merged);
   } else {
-    list.sort((a, b) => {
+    merged.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
+      if (b.game_points !== a.game_points) return b.game_points - a.game_points;
       return a.time_ms - b.time_ms;
     });
   }
 
-  return list.slice(0, 50);
+  return merged.slice(0, 50);
+}
+
+/**
+ * 登録済み生徒一覧を取得（名前入力の補助用）
+ */
+export async function fetchRegisteredStudents(): Promise<{ id: string; name: string }[]> {
+  try {
+    const { data, error } = await supabase
+      .from('students')
+      .select('id, name')
+      .order('created_at', { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      return data;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch registered students:', err);
+  }
+  return [];
 }

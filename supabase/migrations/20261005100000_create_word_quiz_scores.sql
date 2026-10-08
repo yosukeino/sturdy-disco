@@ -19,19 +19,20 @@
 
 CREATE TABLE IF NOT EXISTS word_quiz_scores (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  player_uuid text NOT NULL DEFAULT '',
   player_name text NOT NULL,
   score int NOT NULL,
   total_questions int NOT NULL DEFAULT 10,
   time_ms int NOT NULL,
   game_points int NOT NULL DEFAULT 0,
   max_combo int NOT NULL DEFAULT 0,
-  course text NOT NULL DEFAULT 'all',
+  course text NOT NULL DEFAULT 'season1',
   created_at timestamptz DEFAULT now()
 );
 
 -- Index for leaderboard queries
-CREATE INDEX IF NOT EXISTS idx_word_scores_ranking ON word_quiz_scores (score DESC, time_ms ASC);
-CREATE INDEX IF NOT EXISTS idx_word_scores_course ON word_quiz_scores (course, score DESC, time_ms ASC);
+CREATE INDEX IF NOT EXISTS idx_word_scores_ranking ON word_quiz_scores (course, score DESC, time_ms ASC);
+CREATE INDEX IF NOT EXISTS idx_word_scores_uuid ON word_quiz_scores (player_uuid);
 CREATE INDEX IF NOT EXISTS idx_word_scores_created ON word_quiz_scores (created_at DESC);
 
 -- Enable RLS

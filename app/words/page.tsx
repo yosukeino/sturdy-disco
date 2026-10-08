@@ -30,6 +30,8 @@ import {
   Check,
   Clock,
   AlertCircle,
+  Lock,
+  Pencil,
 } from 'lucide-react';
 import {
   WORD_DATABASE,
@@ -43,6 +45,7 @@ import {
   submitQuizScore,
   fetchQuizRankings,
   getOrCreatePlayerUuid,
+  fetchRegisteredStudents,
   ScoreRecord,
   ScoreSubmission,
 } from '@/lib/word-quiz-service';
@@ -490,9 +493,11 @@ export default function WordsQuizPage() {
     'lobby'
   );
 
-  // プレイヤー設定
+  // プレイヤー設定（1デバイス1ユーザー固定）
   const [playerName, setPlayerName] = useState<string>('');
+  const [isNameLocked, setIsNameLocked] = useState<boolean>(false);
   const [deviceUuid, setDeviceUuid] = useState<string>('');
+  const [registeredStudents, setRegisteredStudents] = useState<{ id: string; name: string }[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string>('season1');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
@@ -565,11 +570,14 @@ export default function WordsQuizPage() {
     [soundEnabled]
   );
 
-  // 初回マウント: 名前復元 & 端末UUID取得
+  // 初回マウント: 名前復元 & 端末UUID取得（1デバイス1ユーザー固定）
   useEffect(() => {
     try {
       const savedName = localStorage.getItem('word_quiz_player_name');
-      if (savedName) setPlayerName(savedName);
+      if (savedName && savedName.trim() !== '') {
+        setPlayerName(savedName.trim());
+        setIsNameLocked(true); // 登録済みの名前があれば「デバイス固定モード」をデフォルトON
+      }
 
       const savedSound = localStorage.getItem('word_quiz_sound');
       if (savedSound !== null) setSoundEnabled(savedSound === 'true');
@@ -578,7 +586,32 @@ export default function WordsQuizPage() {
       setDeviceUuid(uuid);
     } catch {
     }
+
+    // 登録済み生徒リストを非同期取得（名前入力の補助用）
+    fetchRegisteredStudents().then((list) => {
+      if (list && list.length > 0) {
+        setRegisteredStudents(list);
+      }
+    });
   }, []);
+
+  // プレイヤー名をこのデバイスに固定
+  const handleLockPlayerName = (nameToLock: string) => {
+    const trimmed = nameToLock.trim();
+    if (!trimmed) return;
+    setPlayerName(trimmed);
+    setIsNameLocked(true);
+    try {
+      localStorage.setItem('word_quiz_player_name', trimmed);
+    } catch {}
+    playSound('click');
+  };
+
+  // プレイヤー名の固定を解除して変更モードにする
+  const handleUnlockPlayerName = () => {
+    setIsNameLocked(false);
+    playSound('click');
+  };
 
   // サウンド設定の保存
   const toggleSound = () => {
@@ -597,6 +630,7 @@ export default function WordsQuizPage() {
   const handleStartGame = () => {
     const trimmedName = playerName.trim() || 'ゲスト冒険者';
     setPlayerName(trimmedName);
+    setIsNameLocked(true);
     try {
       localStorage.setItem('word_quiz_player_name', trimmedName);
     } catch {
@@ -1103,29 +1137,97 @@ export default function WordsQuizPage() {
                 </button>
               </div>
 
-              {/* Input Card: プレイヤーネーム */}
-              <div className="rounded-2xl border-2 border-slate-700 bg-slate-950/80 p-2.5 sm:p-3 shadow-inner space-y-1.5 bl-comic-border">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                  <span className="flex items-center gap-1.5 text-slate-300 font-mono">
-                    <User className="h-3.5 w-3.5 text-amber-400" />
-                    <span className="text-[11px] sm:text-xs font-black uppercase">[OPERATOR ID // プレイヤーネーム]</span>
-                  </span>
-                  <span className="text-[10px] text-amber-400 font-mono font-bold">
-                    *自己ベストのみ掲載
-                  </span>
+              {/* Input Card: プレイヤーネーム（1デバイス1ユーザー固定） */}
+              {isNameLocked && playerName.trim() ? (
+                /* 固定モード表示 */
+                <div className="rounded-2xl border-2 border-amber-500/80 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 p-2.5 sm:p-3 shadow-inner bl-comic-border">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-400 text-slate-950 font-black shrink-0 shadow-sm">
+                        <Lock className="h-4 w-4 stroke-[2.5]" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider">
+                          <span>OPERATOR [端末固定]</span>
+                          <span className="text-[9px] text-slate-400 hidden sm:inline">• 自己ベストのみ集計</span>
+                        </div>
+                        <div className="text-base sm:text-lg font-black text-white font-mono truncate tracking-wide">
+                          {playerName}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleUnlockPlayerName}
+                      className="flex items-center gap-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1.5 text-[11px] font-black text-slate-300 hover:text-white transition-all active:scale-95 shrink-0"
+                    >
+                      <Pencil className="h-3 w-3 text-amber-400" />
+                      <span>変更</span>
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                /* 未固定・入力/選択モード表示 */
+                <div className="rounded-2xl border-2 border-slate-700 bg-slate-950/90 p-2.5 sm:p-3 shadow-inner space-y-2 bl-comic-border">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                    <span className="flex items-center gap-1.5 text-slate-300 font-mono">
+                      <User className="h-3.5 w-3.5 text-amber-400" />
+                      <span className="text-[11px] sm:text-xs font-black uppercase">[この端末のプレイヤーを登録]</span>
+                    </span>
+                    <span className="text-[10px] text-amber-400 font-mono font-bold">
+                      *1端末1ユーザー固定
+                    </span>
+                  </div>
 
-                <div className="relative">
-                  <input
-                    type="text"
-                    maxLength={12}
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value)}
-                    placeholder="なまえを入力 (例: いのまた)"
-                    className="w-full rounded-xl bg-slate-900 border-2 border-slate-750 px-3.5 py-2 sm:py-2.5 text-sm sm:text-base font-black text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all shadow-inner font-mono"
-                  />
+                  <div className="flex items-center gap-1.5">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        maxLength={12}
+                        value={playerName}
+                        onChange={(e) => setPlayerName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && playerName.trim()) {
+                            handleLockPlayerName(playerName);
+                          }
+                        }}
+                        placeholder="名前を入力 (例: まひる)"
+                        className="w-full rounded-xl bg-slate-900 border-2 border-slate-700 px-3 py-2 text-sm sm:text-base font-black text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-mono"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      disabled={!playerName.trim()}
+                      onClick={() => handleLockPlayerName(playerName)}
+                      className="rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 text-xs sm:text-sm flex items-center gap-1 shrink-0 bl-comic-border transition-all active:scale-95"
+                    >
+                      <Check className="h-3.5 w-3.5 stroke-[3]" />
+                      <span>固定する</span>
+                    </button>
+                  </div>
+
+                  {/* 登録済み生徒のワンタップ選択 */}
+                  {registeredStudents.length > 0 && (
+                    <div className="pt-1.5 border-t border-slate-800/80 space-y-1">
+                      <div className="text-[10px] text-slate-400 font-mono font-bold flex items-center justify-between">
+                        <span>▼ 登録生徒からワンタップで選択:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
+                        {registeredStudents.map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => handleLockPlayerName(s.name)}
+                            className="rounded-lg bg-slate-900 hover:bg-amber-400 hover:text-slate-950 border border-slate-700 px-2 py-0.5 text-[11px] font-bold text-slate-300 transition-colors"
+                          >
+                            {s.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* MIDDLE BLOCK: モード選択（Borderlands Loot Tier Cards） */}
