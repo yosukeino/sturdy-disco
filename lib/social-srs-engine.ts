@@ -1,4 +1,4 @@
-import { SOCIAL_QUESTIONS, SocialQuestion } from './social-data';
+import { SOCIAL_QUESTIONS, SOCIAL_UNITS, SocialQuestion, UnitId } from './social-data';
 
 // =============================================================================
 // 型定義
@@ -23,7 +23,7 @@ export interface SocialUserProgress {
 }
 
 export type StudyMode =
-  | { type: 'stage'; unitId: 'constitution' | 'politics'; stage: 1 | 2 }
+  | { type: 'stage'; unitId: UnitId; stage: 1 | 2 }
   | { type: 'review_today' }
   | { type: 'weak_points' }
   | { type: 'random10' };
@@ -192,8 +192,8 @@ export function buildSession(
     candidateQuestions = SOCIAL_QUESTIONS.filter(
       (q) => q.unitId === mode.unitId && q.stage === mode.stage
     );
-    const unitName =
-      mode.unitId === 'constitution' ? '日本国憲法と基本的人権' : '民主政治と政治参加';
+    const unit = SOCIAL_UNITS.find((u) => u.id === mode.unitId);
+    const unitName = unit ? `${unit.number}. ${unit.title}` : mode.unitId;
     modeTitle = `${unitName} - Stage ${mode.stage}`;
   } else if (mode.type === 'review_today') {
     modeTitle = '本日の復習（間隔反復）';

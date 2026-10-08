@@ -33,6 +33,9 @@ import {
   Crown,
   Medal,
   Star,
+  Smartphone,
+  Target,
+  Clock,
 } from 'lucide-react';
 import {
   Dialog,
@@ -44,6 +47,7 @@ import {
   SOCIAL_QUESTIONS,
   SOCIAL_UNITS,
   SocialQuestion,
+  UnitId,
 } from '@/lib/social-data';
 import {
   loadUserProgress,
@@ -58,6 +62,67 @@ import {
   SessionState,
 } from '@/lib/social-srs-engine';
 import { playSocialSound } from '@/lib/social-audio';
+
+const UNIT_STAGE_INFO: Record<
+  UnitId,
+  {
+    badgeClass: string;
+    borderClass: string;
+    stage1: { title: string; range: string; count: number };
+    stage2: { title: string; range: string; count: number };
+    hoverClass: string;
+    textHoverClass: string;
+  }
+> = {
+  constitution: {
+    badgeClass: 'bg-blue-600 text-white border border-blue-400/60 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-blue-500/80',
+    stage1: { title: '基本的人権の基礎・三大義務', range: '問28〜54', count: 27 },
+    stage2: { title: '個別の自由権・社会権・新しい人権', range: '問55〜81', count: 27 },
+    hoverClass: 'hover:bg-blue-950/40',
+    textHoverClass: 'group-hover:text-blue-300',
+  },
+  politics: {
+    badgeClass: 'bg-emerald-600 text-white border border-emerald-400/60 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-emerald-500/80',
+    stage1: { title: '民主政治・選挙制度・政党', range: '問82〜95', count: 14 },
+    stage2: { title: '直接民主制・選挙原則・マスメディア', range: '問96〜109', count: 14 },
+    hoverClass: 'hover:bg-emerald-950/40',
+    textHoverClass: 'group-hover:text-emerald-300',
+  },
+  diet: {
+    badgeClass: 'bg-purple-600 text-white border border-purple-400/60 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-purple-500/80',
+    stage1: { title: '立法権・二院制・国会の種類', range: '問110〜119', count: 10 },
+    stage2: { title: '国会の審議・衆議院の優越', range: '問120〜129', count: 10 },
+    hoverClass: 'hover:bg-purple-950/40',
+    textHoverClass: 'group-hover:text-purple-300',
+  },
+  cabinet: {
+    badgeClass: 'bg-amber-600 text-white border border-amber-400/60 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-amber-500/80',
+    stage1: { title: '行政権・内閣総理大臣・議院内閣制', range: '問130〜138', count: 9 },
+    stage2: { title: '閣議・公務員・行政改革', range: '問139〜147', count: 9 },
+    hoverClass: 'hover:bg-amber-950/40',
+    textHoverClass: 'group-hover:text-amber-300',
+  },
+  judiciary: {
+    badgeClass: 'bg-rose-600 text-white border border-rose-400/60 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-rose-500/80',
+    stage1: { title: '司法権・最高裁判所・三審制', range: '問148〜158', count: 11 },
+    stage2: { title: '地方裁判所・民事刑事・裁判員制度', range: '問159〜170', count: 12 },
+    hoverClass: 'hover:bg-rose-950/40',
+    textHoverClass: 'group-hover:text-rose-300',
+  },
+  local: {
+    badgeClass: 'bg-cyan-600 text-white border border-cyan-400/60 shadow-[1px_1px_0px_#000]',
+    borderClass: 'hover:border-cyan-500/80',
+    stage1: { title: '地方自治の本旨・地方財政', range: '問171〜178', count: 8 },
+    stage2: { title: '首長・二元代表制・直接請求権', range: '問179〜184', count: 6 },
+    hoverClass: 'hover:bg-cyan-950/40',
+    textHoverClass: 'group-hover:text-cyan-300',
+  },
+};
 
 export default function SocialStudyPage() {
   // ユーザー進捗データ
@@ -104,43 +169,43 @@ export default function SocialStudyPage() {
   // 進捗統計
   const stats = useMemo(() => calculateStudyStats(progress), [progress]);
 
-  // 暗記マスター段位・ランク判定
+  // 暗記マスター段位・ランク判定（全157問対応）
   const rankTier = useMemo(() => {
     const m = stats.masteredCount;
-    if (m >= 60) {
+    if (m >= 130) {
       return {
         rank: 'SS',
         title: '全知全能の公民神',
         badge: '👑 LEGENDARY SS',
         color: 'text-amber-400',
         bg: 'bg-amber-400/20 border-amber-400/80',
-        description: '全70問中60問以上を完全マスター！全国上位1%の圧倒的実力者。',
+        description: `全${stats.totalQuestions}問中130問以上を完全マスター！全国上位1%の圧倒的実力者。`,
         percentile: '全国推定 TOP 1%',
       };
     }
-    if (m >= 45) {
+    if (m >= 90) {
       return {
         rank: 'S',
-        title: '憲法・公民マスター',
+        title: '憲法・政治マスター',
         badge: '★ MASTER S',
         color: 'text-purple-400',
         bg: 'bg-purple-500/20 border-purple-400/80',
-        description: '主要条文と人権・政治の重要語句を網羅。難関高校入試も視野に！',
+        description: '三権分立・基本的人権・地方自治の全範囲を網羅。難関高校入試も余裕！',
         percentile: '全国推定 TOP 5%',
       };
     }
-    if (m >= 30) {
+    if (m >= 60) {
       return {
         rank: 'A',
         title: '公民エキスパート',
         badge: '◆ EXPERT A',
         color: 'text-blue-400',
         bg: 'bg-blue-500/20 border-blue-400/80',
-        description: '基礎基本を完全に固めた実力派。定期テスト80点台ペース！',
+        description: '重要単元の基礎基本を完全に固めた実力派。定期テスト80〜90点ペース！',
         percentile: '全国推定 TOP 20%',
       };
     }
-    if (m >= 15) {
+    if (m >= 30) {
       return {
         rank: 'B',
         title: '暗記ファイター',
@@ -151,7 +216,7 @@ export default function SocialStudyPage() {
         percentile: '全国推定 TOP 45%',
       };
     }
-    if (m >= 5) {
+    if (m >= 10) {
       return {
         rank: 'C',
         title: '暗記ルーキー',
@@ -168,10 +233,10 @@ export default function SocialStudyPage() {
       badge: '▽ BEGINNER D',
       color: 'text-slate-400',
       bg: 'bg-slate-800 border-slate-700',
-      description: 'まずは「ランダム10問」または「基本的人権」からスタート！',
+      description: 'まずは「ランダム10問」または「日本国憲法」からスタート！',
       percentile: 'エントリー段階',
     };
-  }, [stats.masteredCount]);
+  }, [stats.masteredCount, stats.totalQuestions]);
 
   // 現在の問題オブジェクト
   const currentQuestion: SocialQuestion | null = useMemo(() => {
@@ -269,8 +334,11 @@ export default function SocialStudyPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center text-slate-500 font-medium">読み込み中...</div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center font-mono font-bold text-slate-400 flex items-center gap-2">
+          <div className="h-4 w-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <span>LOADING SRS DATA...</span>
+        </div>
       </div>
     );
   }
@@ -281,134 +349,139 @@ export default function SocialStudyPage() {
   if (viewState === 'studying' && session && currentQuestion) {
     const queueLength = session.queue.length;
     const initialTotal = session.initialQuestionIds.length;
-    // 克服完了した問題数
     const solvedCount = initialTotal - queueLength + (session.queue.includes(currentQuestion.id) ? 0 : 1);
     const progressPercent = Math.min(100, Math.round((solvedCount / initialTotal) * 100));
 
-    // 現在の問題の現在のSRSステータス
     const qProgress = progress.questions[currentQuestion.id];
     const isRepeatedInSession = (session.wrongRepeatCounts[currentQuestion.id] || 0) > 0;
 
     return (
-      <div className="min-h-screen bg-slate-100/90 text-slate-900 pb-20">
+      <div className="min-h-screen bg-slate-950 text-white relative overflow-hidden pb-16 selection:bg-purple-500 selection:text-white">
+        {/* Background Decor */}
+        <div
+          className="fixed inset-0 pointer-events-none opacity-15"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.4) 1px, transparent 0)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+        <div className="pointer-events-none fixed -top-32 left-1/2 -translate-x-1/2 h-80 w-[600px] rounded-full bg-purple-600/15 blur-3xl" />
+
         {/* 固定トップバー */}
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-xs">
-          <div className="max-w-xl mx-auto flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-md border-b-2 border-slate-800 px-4 py-2.5 shadow-lg bl-comic-border">
+          <div className="max-w-xl mx-auto flex items-center justify-between gap-2">
             <button
               onClick={handleBackToMenu}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 px-2 py-1 rounded-md hover:bg-slate-100 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-mono font-black text-slate-300 hover:text-white px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-700 hover:border-slate-500 bl-comic-border transition-all active:scale-95"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5" />
               <span>中断</span>
             </button>
 
-            <div className="text-center flex-1 mx-2">
-              <div className="text-xs font-bold text-slate-500 truncate">
+            <div className="text-center flex-1 mx-2 min-w-0">
+              <div className="text-xs font-mono font-black text-slate-300 truncate">
                 {session.modeTitle}
               </div>
-              <div className="flex items-center justify-center gap-2 mt-0.5">
-                <span className="text-xs font-extrabold text-blue-600">
-                  残り {queueLength} 問
+              <div className="flex items-center justify-center gap-1.5 mt-0.5 text-xs font-mono">
+                <span className="font-black text-cyan-400">
+                  REMAIN: {queueLength}
                 </span>
-                <span className="text-[10px] text-slate-400">
-                  （全{initialTotal}問）
+                <span className="text-slate-500 font-bold">
+                  / {initialTotal}
                 </span>
               </div>
             </div>
 
             <button
               onClick={toggleSound}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-white bg-slate-950 border border-slate-700 bl-comic-border transition-all active:scale-95"
               title={isMuted ? 'サウンドをオン' : 'サウンドをミュート'}
             >
               {isMuted ? (
-                <VolumeX className="w-4 h-4 text-slate-400" />
+                <VolumeX className="w-4 h-4 text-slate-500" />
               ) : (
-                <Volume2 className="w-4 h-4 text-emerald-600" />
+                <Volume2 className="w-4 h-4 text-emerald-400 animate-pulse" />
               )}
             </button>
           </div>
 
           {/* プログレスバー */}
           <div className="max-w-xl mx-auto mt-2">
-            <Progress value={progressPercent} className="h-2 bg-slate-100" />
+            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+              <div
+                style={{ width: `${progressPercent}%` }}
+                className="h-full bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-400 transition-all duration-300 shadow-[0_0_8px_rgba(0,212,255,0.6)]"
+              />
+            </div>
           </div>
         </header>
 
         {/* メイン学習カードエリア */}
-        <main className="max-w-xl mx-auto p-4 space-y-4">
-          {/* 紙とペン促進バナー */}
-          <div className="bg-amber-50 border border-amber-200/80 rounded-xl px-3 py-2 flex items-center gap-2.5 text-amber-900 shadow-xs">
-            <div className="bg-amber-500 text-white p-1.5 rounded-lg">
-              <PenTool className="w-4 h-4" />
-            </div>
-            <div className="text-xs font-bold leading-tight">
-              紙とペンを用意！ 手元に漢字で答えを書いてから確認しよう
-            </div>
-          </div>
-
-          {/* フィードバック表示（直前の正誤） */}
+        <main className="max-w-xl mx-auto p-4 space-y-3 relative z-10">
+          {/* フィードバック表示（直前の正誤・コンパクト） */}
           {lastFeedback && (
             <div
-              className={`text-xs font-bold px-3 py-2 rounded-lg text-center transition-all animate-in fade-in slide-in-from-top-1 ${
+              className={`text-xs font-mono font-black px-3 py-1.5 rounded-xl text-center border-2 border-black bl-comic-border animate-in fade-in slide-in-from-top-1 ${
                 lastFeedback.type === 'correct'
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                  : 'bg-rose-100 text-rose-800 border border-rose-200'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/80 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+                  : 'bg-rose-500/20 text-rose-300 border-rose-500/80 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
               }`}
             >
-              {lastFeedback.text}
+              {lastFeedback.type === 'correct' ? '✓ CLEAR // 正解' : '↻ REQUEUED // 再出題キューに追加'}
             </div>
           )}
 
           {/* 問題カード */}
-          <Card className="border-2 border-slate-200 shadow-md bg-white rounded-2xl overflow-hidden transition-all">
-            <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/60">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="font-mono font-black text-sm bg-white border-blue-300 text-blue-700 px-2 py-0.5">
-                    Q.{currentQuestion.id}
-                  </Badge>
-                  <span className="text-xs font-bold text-slate-600 truncate">
-                    {currentQuestion.unitTitle}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  {isRepeatedInSession && (
-                    <Badge className="bg-rose-500 text-white text-[10px] font-bold">
-                      再出題中
-                    </Badge>
-                  )}
-                  {qProgress && qProgress.level > 0 && (
-                    <Badge
-                      variant="secondary"
-                      className={`text-[10px] font-bold ${
-                        qProgress.level >= 3
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-amber-100 text-amber-700'
-                      }`}
-                    >
-                      Lv.{qProgress.level}
-                    </Badge>
-                  )}
-                </div>
+          <Card className="border-2 border-slate-800 bg-slate-900/90 shadow-2xl rounded-3xl bl-card overflow-hidden">
+            {/* カードヘッダー */}
+            <div className="border-b-2 border-slate-800/80 bg-slate-950/70 px-4 py-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="font-mono font-black text-sm text-cyan-400 bg-slate-900 border border-cyan-500/40 px-2 py-0.5 rounded-lg shrink-0 shadow-xs">
+                  Q.{currentQuestion.id}
+                </span>
+                <span className="text-xs font-bold text-slate-300 truncate font-mono">
+                  {currentQuestion.unitTitle}
+                </span>
               </div>
-            </CardHeader>
 
-            <CardContent className="pt-5 pb-6 px-5 space-y-4">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-amber-500/15 border border-amber-400/40 text-amber-300 px-2 py-0.5 rounded-lg">
+                  <PenTool className="w-3 h-3" />
+                  <span>紙に手書き</span>
+                </span>
+                {isRepeatedInSession && (
+                  <Badge className="bg-rose-600 text-white text-[10px] font-mono font-black border border-black shadow-[1px_1px_0px_#000]">
+                    RETRY
+                  </Badge>
+                )}
+                {qProgress && qProgress.level > 0 && (
+                  <span
+                    className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded border border-black ${
+                      qProgress.level >= 3
+                        ? 'bg-emerald-500/30 text-emerald-300 border-emerald-400/50'
+                        : 'bg-purple-500/30 text-purple-200 border-purple-400/50'
+                    }`}
+                  >
+                    Lv.{qProgress.level}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <CardContent className="pt-5 pb-6 px-4 sm:px-5 space-y-4">
               {/* 問題文 */}
-              <div className="text-base sm:text-lg font-bold text-slate-800 leading-relaxed tracking-wide">
+              <div className="text-base sm:text-lg font-black text-white leading-relaxed tracking-wide">
                 {currentQuestion.question}
               </div>
 
               {/* ヒントアコーディオン */}
               {currentQuestion.hint && (
-                <div className="pt-2">
+                <div>
                   {showHint ? (
-                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-900 space-y-1">
-                      <div className="font-extrabold flex items-center gap-1.5 text-sky-700">
+                    <div className="bg-slate-950 border border-sky-500/40 rounded-xl p-3 text-xs text-sky-200 space-y-1">
+                      <div className="font-black flex items-center gap-1.5 text-sky-400 font-mono text-[11px]">
                         <Sparkles className="w-3.5 h-3.5" />
-                        <span>ヒント・条文</span>
+                        <span>HINT // 条文・ポイント</span>
                       </div>
                       <div className="leading-relaxed pl-5 font-medium">
                         {currentQuestion.hint}
@@ -417,10 +490,10 @@ export default function SocialStudyPage() {
                   ) : (
                     <button
                       onClick={() => setShowHint(true)}
-                      className="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 hover:underline py-1"
+                      className="text-xs font-mono font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1 py-1 transition-colors"
                     >
                       <HelpCircle className="w-3.5 h-3.5" />
-                      <span>ヒントを見る</span>
+                      <span>[ 💡 HINT を表示 ]</span>
                     </button>
                   )}
                 </div>
@@ -428,32 +501,32 @@ export default function SocialStudyPage() {
 
               {/* 答え表示エリア */}
               {!isAnswerRevealed ? (
-                <div className="pt-6">
+                <div className="pt-4">
                   <Button
                     onClick={revealAnswer}
                     size="lg"
-                    className="w-full h-14 text-base font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all rounded-xl"
+                    className="w-full h-14 text-base font-black bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-2 border-black bl-comic-border rounded-2xl shadow-xl active:translate-x-0.5 active:translate-y-0.5 transition-all"
                   >
-                    <span>答えを見る ▼</span>
+                    <span>答えを見る (REVEAL) ▼</span>
                   </Button>
                 </div>
               ) : (
-                <div className="pt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="pt-2 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                   {/* 正解ボックス */}
-                  <div className="bg-slate-900 text-white rounded-xl p-4 sm:p-5 text-center shadow-inner relative overflow-hidden">
-                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                      正解
+                  <div className="bg-slate-950 border-2 border-amber-400/80 rounded-2xl p-4 sm:p-5 text-center relative overflow-hidden bl-card bl-scanlines shadow-[0_0_20px_rgba(251,191,36,0.15)]">
+                    <div className="text-[10px] font-mono font-black text-amber-400 tracking-widest uppercase mb-1">
+                      CORRECT ANSWER // 正解
                     </div>
-                    <div className="text-2xl sm:text-3xl font-black text-amber-300 tracking-wider">
+                    <div className="text-2xl sm:text-3xl font-black text-amber-300 tracking-wider bl-text-gold">
                       {currentQuestion.answer}
                     </div>
                     {currentQuestion.reading && (
-                      <div className="text-xs text-slate-300 font-medium mt-1">
+                      <div className="text-xs text-slate-300 font-mono mt-1">
                         （{currentQuestion.reading}）
                       </div>
                     )}
                     {currentQuestion.subAnswers && currentQuestion.subAnswers.length > 0 && (
-                      <div className="text-[11px] text-slate-400 mt-1.5">
+                      <div className="text-[11px] text-slate-400 font-mono mt-1.5">
                         別解: {currentQuestion.subAnswers.join(' / ')}
                       </div>
                     )}
@@ -461,46 +534,32 @@ export default function SocialStudyPage() {
 
                   {/* 解説ボックス */}
                   {currentQuestion.explanation && (
-                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 text-xs text-slate-700 leading-relaxed font-medium">
-                      <div className="font-extrabold text-slate-900 mb-1 flex items-center gap-1.5">
-                        <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-                        <span>ポイント解説</span>
+                    <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-300 leading-relaxed font-medium">
+                      <div className="font-mono font-black text-purple-300 mb-1 flex items-center gap-1.5 text-[11px]">
+                        <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+                        <span>POINT // 解説</span>
                       </div>
                       <p>{currentQuestion.explanation}</p>
                     </div>
                   )}
 
-                  {/* 自己採点ボタン（片手操作・親指で押しやすい大きなボタン） */}
-                  <div className="pt-4 border-t border-slate-100">
-                    <div className="text-xs font-bold text-center text-slate-500 mb-3">
-                      書いた答えと見比べて自己判定してください
-                    </div>
+                  {/* 自己採点ボタン（大サイズ・高コントラスト・説明文なし） */}
+                  <div className="pt-2">
                     <div className="grid grid-cols-2 gap-3">
                       <Button
                         onClick={() => handleAnswer(false)}
-                        variant="outline"
-                        className="h-16 flex flex-col items-center justify-center gap-1 border-2 border-rose-300 bg-rose-50/70 hover:bg-rose-100 text-rose-800 rounded-xl active:scale-[0.98] transition-all"
+                        className="h-15 flex items-center justify-center gap-2 bg-rose-950/80 hover:bg-rose-900 border-2 border-rose-500/80 text-rose-200 rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md"
                       >
-                        <div className="flex items-center gap-1.5 font-black text-base">
-                          <XCircle className="w-5 h-5 text-rose-600" />
-                          <span>間違えた</span>
-                        </div>
-                        <span className="text-[10px] text-rose-600 font-bold">
-                          （あとでもう一度出題）
-                        </span>
+                        <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                        <span>✕ ミス（再出題）</span>
                       </Button>
 
                       <Button
                         onClick={() => handleAnswer(true)}
-                        className="h-16 flex flex-col items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-600/20 active:scale-[0.98] transition-all font-black text-base"
+                        className="h-15 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 border-2 border-black text-white rounded-2xl bl-comic-border font-black text-sm sm:text-base active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-md"
                       >
-                        <div className="flex items-center gap-1.5 font-black text-base">
-                          <CheckCircle2 className="w-5 h-5 text-white" />
-                          <span>書けた！</span>
-                        </div>
-                        <span className="text-[10px] text-emerald-100 font-bold">
-                          （この問題をクリア）
-                        </span>
+                        <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
+                        <span>◯ 書けた！</span>
                       </Button>
                     </div>
                   </div>
@@ -518,63 +577,76 @@ export default function SocialStudyPage() {
   // ===========================================================================
   if (viewState === 'result' && session) {
     const totalQuestions = session.initialQuestionIds.length;
-    // 1発で正解できた問題数
     const firstTryCorrectCount = Object.values(session.firstTryResults).filter(
       (r) => r === 'correct'
     ).length;
-    // 反復して克服した問題（最初は間違えたが、ループして覚えた問題）
     const repeatedOvercomeQuestions = session.initialQuestionIds
       .filter((id) => session.firstTryResults[id] === 'wrong')
       .map((id) => SOCIAL_QUESTIONS.find((q) => q.id === id))
       .filter(Boolean) as SocialQuestion[];
 
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
-        <header className="bg-white border-b border-slate-200 px-4 py-3">
+      <div className="min-h-screen bg-slate-950 text-white pb-20 relative overflow-hidden">
+        {/* Background Decor */}
+        <div
+          className="fixed inset-0 pointer-events-none opacity-15"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.4) 1px, transparent 0)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+        <div className="pointer-events-none fixed -top-32 left-1/2 -translate-x-1/2 h-80 w-[600px] rounded-full bg-amber-500/15 blur-3xl" />
+
+        <header className="bg-slate-900/90 border-b-2 border-slate-800 px-4 py-3 relative z-10 bl-comic-border">
           <div className="max-w-xl mx-auto flex items-center justify-between">
-            <h1 className="text-sm font-black text-slate-800">学習完了リザルト</h1>
+            <h1 className="text-sm font-mono font-black text-amber-400">
+              MISSION REPORT // 学習リザルト
+            </h1>
             <Button
               onClick={handleBackToMenu}
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="font-bold text-xs"
+              className="font-mono font-black text-xs bg-slate-950 text-slate-300 border-slate-700 hover:text-white bl-comic-border"
             >
               メニューへ
             </Button>
           </div>
         </header>
 
-        <main className="max-w-xl mx-auto p-4 space-y-4">
-          <Card className="border-2 border-emerald-300 bg-linear-to-b from-emerald-50/50 to-white shadow-lg rounded-2xl overflow-hidden text-center p-6 space-y-4">
-            <div className="inline-flex p-3 bg-emerald-500 text-white rounded-2xl shadow-md">
+        <main className="max-w-xl mx-auto p-4 space-y-4 relative z-10">
+          <Card className="border-3 border-amber-400 bg-slate-900/95 bl-card bl-comic-border-lg bl-legendary shadow-2xl rounded-3xl p-6 text-center space-y-4 bl-scanlines">
+            <div className="inline-flex p-3 bg-amber-500 text-slate-950 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000]">
               <Award className="w-8 h-8" />
             </div>
 
             <div>
-              <h2 className="text-2xl font-black text-slate-900">
-                セッションクリア！
+              <div className="font-mono font-black text-xs text-amber-400 tracking-wider">
+                SESSION COMPLETED!
+              </div>
+              <h2 className="text-2xl font-black text-white mt-0.5">
+                全問クリア！ 🎉
               </h2>
-              <p className="text-xs text-slate-500 mt-1 font-medium">
-                {session.modeTitle} の全問題をすべて覚えるまでやり切りました！
+              <p className="text-xs text-slate-400 font-mono mt-1">
+                {session.modeTitle}
               </p>
             </div>
 
             {/* スコアバッジ */}
             <div className="grid grid-cols-2 gap-3 pt-2">
-              <div className="bg-slate-100 rounded-xl p-3 border border-slate-200/60">
-                <div className="text-[11px] font-bold text-slate-500">
-                  1発で正解
+              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3 bl-comic-border">
+                <div className="text-[10px] font-mono font-bold text-slate-400">
+                  1発クリア
                 </div>
-                <div className="text-2xl font-black text-emerald-600 mt-0.5">
+                <div className="text-2xl font-mono font-black text-emerald-400 mt-0.5">
                   {firstTryCorrectCount} / {totalQuestions}
                 </div>
               </div>
 
-              <div className="bg-slate-100 rounded-xl p-3 border border-slate-200/60">
-                <div className="text-[11px] font-bold text-slate-500">
-                  反復で克服した問題
+              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3 bl-comic-border">
+                <div className="text-[10px] font-mono font-bold text-slate-400">
+                  反復克服
                 </div>
-                <div className="text-2xl font-black text-blue-600 mt-0.5">
+                <div className="text-2xl font-mono font-black text-cyan-400 mt-0.5">
                   {repeatedOvercomeQuestions.length} 問
                 </div>
               </div>
@@ -582,21 +654,21 @@ export default function SocialStudyPage() {
 
             {/* 克服した問題リスト */}
             {repeatedOvercomeQuestions.length > 0 && (
-              <div className="text-left pt-3 border-t border-slate-200">
-                <div className="text-xs font-black text-slate-700 mb-2 flex items-center gap-1.5">
-                  <RotateCcw className="w-3.5 h-3.5 text-rose-500" />
-                  <span>今回ループ反復で覚えた問題（次回優先復習されます）</span>
+              <div className="text-left pt-3 border-t border-slate-800">
+                <div className="text-xs font-mono font-black text-purple-300 mb-2 flex items-center gap-1.5">
+                  <RotateCcw className="w-3.5 h-3.5 text-rose-400" />
+                  <span>今回ループ反復で覚えた問題</span>
                 </div>
-                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 font-mono">
                   {repeatedOvercomeQuestions.map((q) => (
                     <div
                       key={q.id}
-                      className="bg-white border border-slate-200 rounded-lg p-2.5 text-xs flex items-center justify-between shadow-2xs"
+                      className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs flex items-center justify-between"
                     >
-                      <span className="font-bold text-slate-700 truncate mr-2">
+                      <span className="font-bold text-slate-200 truncate mr-2">
                         Q.{q.id} {q.answer}
                       </span>
-                      <Badge variant="outline" className="text-[10px] shrink-0 border-rose-300 text-rose-700 bg-rose-50">
+                      <Badge variant="outline" className="text-[10px] shrink-0 border-rose-500/60 text-rose-400 bg-rose-500/10">
                         {session.wrongRepeatCounts[q.id]}回リトライ
                       </Badge>
                     </div>
@@ -606,21 +678,21 @@ export default function SocialStudyPage() {
             )}
 
             {/* アクションボタン */}
-            <div className="pt-4 space-y-2">
+            <div className="pt-3 space-y-2">
               <Button
                 onClick={() => startSession(session.mode)}
                 size="lg"
-                className="w-full h-12 font-black bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md"
+                className="w-full h-12 font-black bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border-2 border-black bl-comic-border rounded-xl shadow-md active:translate-x-0.5 active:translate-y-0.5 transition-all"
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
-                <span>もう一度同じ範囲を復習する</span>
+                <span>もう一度同じ範囲を復習</span>
               </Button>
 
               <Button
                 onClick={handleBackToMenu}
                 variant="outline"
                 size="lg"
-                className="w-full h-12 font-bold rounded-xl"
+                className="w-full h-12 font-mono font-black bg-slate-950 text-slate-300 border-2 border-slate-700 hover:border-slate-500 hover:text-white rounded-xl bl-comic-border"
               >
                 メニューに戻る
               </Button>
@@ -635,7 +707,18 @@ export default function SocialStudyPage() {
   // 3. メニュー画面 (menu)
   // ===========================================================================
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-24">
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-24 relative overflow-hidden">
+      {/* Background Decor */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-15"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.4) 1px, transparent 0)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+      <div className="pointer-events-none fixed -top-32 left-1/2 -translate-x-1/2 h-80 w-[600px] rounded-full bg-purple-600/15 blur-3xl" />
+      <div className="pointer-events-none fixed bottom-10 right-0 h-80 w-80 rounded-full bg-cyan-600/10 blur-3xl" />
+
       {/* ナビゲーションバー */}
       <header className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b-2 border-black px-4 py-2.5 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -651,7 +734,7 @@ export default function SocialStudyPage() {
                 </span>
               </div>
               <p className="text-[11px] font-mono text-purple-300">
-                スマホ × 紙 × ペン 一問一答 SRS反復エンジン
+                一問一答 手書き暗記システム
               </p>
             </div>
           </div>
@@ -678,87 +761,99 @@ export default function SocialStudyPage() {
         </div>
       </header>
 
-      <main className="max-w-xl mx-auto p-4 space-y-5">
-        {/* 学習スタイル案内バナー */}
-        <div className="bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-4 shadow-md relative overflow-hidden">
-          <div className="flex items-start gap-3">
-            <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-xs shrink-0">
-              <PenTool className="w-5 h-5 text-amber-300" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="font-black text-sm tracking-wide">
-                「スマホ × 紙 × ペン」で確実に覚える
-              </h2>
-              <p className="text-xs text-blue-100 leading-relaxed font-medium">
-                スマホの画面を見ながら、答えを手元の紙にペンで書きます。
-                間違えた問題はiKnow式エンジンにより、正解するまでセッション内で自動反復されます！
-              </p>
-            </div>
+      <main className="max-w-xl mx-auto p-4 space-y-4">
+        {/* 3ステップ学習スタイル ピクトグラムHUD */}
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-900/90 border-2 border-slate-800 text-xs font-mono bl-card">
+          <div className="flex items-center gap-2">
+            <Smartphone className="w-4 h-4 text-cyan-400 shrink-0" />
+            <span className="font-black text-slate-200">① 出題</span>
+          </div>
+          <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+          <div className="flex items-center gap-2">
+            <PenTool className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="font-black text-amber-300">② 手書き</span>
+          </div>
+          <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="font-black text-slate-200">③ 判定</span>
           </div>
         </div>
 
         {/* 進捗・ステータスダッシュボード */}
-        <Card className="border border-slate-200/80 shadow-xs rounded-2xl bg-white p-4">
+        <Card className="bl-card bg-slate-900/90 border-2 border-slate-800 rounded-2xl p-4 text-slate-100">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-black text-slate-700 flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
-              <span>現在の学習進捗</span>
+            <h3 className="text-xs font-black text-cyan-400 flex items-center gap-1.5 font-mono tracking-wider uppercase">
+              <TrendingUp className="w-4 h-4 text-cyan-400" />
+              <span>PROGRESS // 学習進捗</span>
             </h3>
-            <span className="text-xs font-bold text-slate-500">
-              全 {stats.totalQuestions} 問
+            <span className="text-xs font-mono font-bold text-slate-400">
+              TOTAL: <span className="text-white font-black">{stats.totalQuestions}</span>問
             </span>
           </div>
 
           {/* プログレスバー */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-xs font-bold">
-              <span className="text-emerald-600">
-                マスター: {stats.masteredCount}問
+            <div className="flex justify-between text-xs font-mono font-bold">
+              <span className="text-emerald-400 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+                習得 {stats.masteredCount}問
               </span>
-              <span className="text-amber-600">
-                学習中: {stats.learningCount}問
+              <span className="text-amber-400 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+                学習中 {stats.learningCount}問
               </span>
-              <span className="text-slate-400">
-                未学習: {stats.unlearnedCount}問
+              <span className="text-slate-500 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-slate-600 inline-block"></span>
+                未着手 {stats.unlearnedCount}問
               </span>
             </div>
-            <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden flex">
+            <div className="h-2.5 w-full bg-slate-950 rounded-full border border-slate-800 overflow-hidden flex">
               <div
                 style={{
                   width: `${(stats.masteredCount / stats.totalQuestions) * 100}%`,
                 }}
-                className="bg-emerald-500 transition-all duration-500"
+                className="bg-emerald-500 transition-all duration-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
               />
               <div
                 style={{
                   width: `${(stats.learningCount / stats.totalQuestions) * 100}%`,
                 }}
-                className="bg-amber-400 transition-all duration-500"
+                className="bg-amber-400 transition-all duration-500 shadow-[0_0_8px_rgba(251,191,36,0.5)]"
               />
             </div>
           </div>
 
           {/* クイックステータス数値 */}
-          <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-center">
-            <div className="bg-slate-50 rounded-xl p-2">
-              <div className="text-[10px] font-bold text-slate-500">今日復習</div>
-              <div className="text-lg font-black text-blue-600 mt-0.5">
+          <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-800 text-center font-mono">
+            <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-2">
+              <div className="text-[10px] font-bold text-cyan-400 flex items-center justify-center gap-1">
+                <Clock className="w-3 h-3" />
+                今日復習
+              </div>
+              <div className="text-lg font-black text-white mt-0.5">
                 {stats.dueReviewCount}
-                <span className="text-[10px] font-normal text-slate-500 ml-0.5">問</span>
+                <span className="text-[10px] text-slate-500 ml-0.5">問</span>
               </div>
             </div>
-            <div className="bg-slate-50 rounded-xl p-2">
-              <div className="text-[10px] font-bold text-slate-500">苦手特訓</div>
-              <div className="text-lg font-black text-rose-600 mt-0.5">
+            <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-2">
+              <div className="text-[10px] font-bold text-rose-400 flex items-center justify-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                要復習
+              </div>
+              <div className="text-lg font-black text-rose-400 mt-0.5">
                 {stats.weakPointsCount}
-                <span className="text-[10px] font-normal text-slate-500 ml-0.5">問</span>
+                <span className="text-[10px] text-slate-500 ml-0.5">問</span>
               </div>
             </div>
-            <div className="bg-slate-50 rounded-xl p-2">
-              <div className="text-[10px] font-bold text-slate-500">学習回数</div>
-              <div className="text-lg font-black text-slate-800 mt-0.5">
-                {stats.totalSessionsCompleted}
-                <span className="text-[10px] font-normal text-slate-500 ml-0.5">回</span>
+            <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-2">
+              <div className="text-[10px] font-bold text-amber-400 flex items-center justify-center gap-1">
+                <Flame className="w-3 h-3" />
+                連続日数
+              </div>
+              <div className="text-lg font-black text-amber-400 mt-0.5">
+                {progress.currentStreakDays}
+                <span className="text-[10px] text-slate-500 ml-0.5">日</span>
               </div>
             </div>
           </div>
@@ -771,7 +866,7 @@ export default function SocialStudyPage() {
             playSocialSound('click', isMuted);
             setIsRankingModalOpen(true);
           }}
-          className="w-full flex items-center justify-between gap-3 rounded-2xl bg-slate-900/90 hover:bg-slate-850 border-2 border-purple-400/80 p-3.5 sm:p-4 text-left transition-all active:scale-[0.99] shadow-lg bl-comic-border group"
+          className="w-full flex items-center justify-between gap-3 rounded-2xl bg-slate-900/90 hover:bg-slate-850 border-2 border-purple-400/80 p-3.5 sm:p-4 text-left transition-all active:scale-[0.99] shadow-lg bl-card group"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-600/30 border border-purple-400/60 text-purple-300 group-hover:scale-105 transition-transform bl-comic-border">
@@ -785,10 +880,10 @@ export default function SocialStudyPage() {
                 <span className="text-amber-400 font-bold">{rankTier.percentile}</span>
               </div>
               <div className="text-sm sm:text-base font-black text-white group-hover:text-purple-300 transition-colors truncate">
-                🏆 社会暗記マスター ランキング＆段位スコアを見る
+                🏆 暗記段位・ランキングを見る
               </div>
-              <div className="text-xs text-slate-400 truncate">
-                称号: <span className="text-slate-200 font-bold">[{rankTier.title}]</span> • マスター {stats.masteredCount}/{stats.totalQuestions}問
+              <div className="text-xs font-mono text-slate-400 truncate">
+                称号: <span className="text-slate-200 font-bold">[{rankTier.title}]</span> • 習得 {stats.masteredCount}/{stats.totalQuestions}問
               </div>
             </div>
           </div>
@@ -796,19 +891,19 @@ export default function SocialStudyPage() {
         </button>
 
         {/* クイックスタートボタン */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {stats.dueReviewCount > 0 ? (
             <Button
               onClick={() => startSession({ type: 'review_today' })}
               size="lg"
-              className="w-full h-14 font-black bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-md shadow-blue-500/20 flex items-center justify-between px-5"
+              className="w-full h-14 font-black bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl bl-card shadow-lg flex items-center justify-between px-5 active:translate-x-0.5 active:translate-y-0.5 transition-all"
             >
-              <div className="flex items-center gap-2.5">
-                <Flame className="w-5 h-5 text-amber-300" />
+              <div className="flex items-center gap-3">
+                <Flame className="w-5 h-5 text-amber-300 shrink-0" />
                 <div className="text-left">
                   <div className="text-sm font-black">本日の復習スタート</div>
-                  <div className="text-[10px] text-blue-100 font-bold">
-                    忘却曲線に基づき出題（{stats.dueReviewCount}問）
+                  <div className="text-[11px] font-mono text-cyan-200">
+                    復習キュー: {stats.dueReviewCount}問（忘却曲線）
                   </div>
                 </div>
               </div>
@@ -818,13 +913,13 @@ export default function SocialStudyPage() {
             <Button
               onClick={() => startSession({ type: 'random10' })}
               size="lg"
-              className="w-full h-13 font-black bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl shadow-md shadow-indigo-500/20 flex items-center justify-between px-5"
+              className="w-full h-14 font-black bg-purple-600 hover:bg-purple-500 text-white rounded-2xl bl-card shadow-lg flex items-center justify-between px-5 active:translate-x-0.5 active:translate-y-0.5 transition-all"
             >
-              <div className="flex items-center gap-2.5">
-                <Zap className="w-5 h-5 text-amber-300" />
+              <div className="flex items-center gap-3">
+                <Zap className="w-5 h-5 text-amber-300 shrink-0" />
                 <div className="text-left">
-                  <div className="text-sm font-black">ランダム10問実力テスト</div>
-                  <div className="text-[10px] text-indigo-100 font-bold">
+                  <div className="text-sm font-black">ランダム10問 実力テスト</div>
+                  <div className="text-[11px] font-mono text-purple-200">
                     全範囲から10問ピックアップ
                   </div>
                 </div>
@@ -836,186 +931,122 @@ export default function SocialStudyPage() {
           {stats.weakPointsCount > 0 && (
             <Button
               onClick={() => startSession({ type: 'weak_points' })}
-              variant="outline"
               size="lg"
-              className="w-full h-12 font-bold border-rose-200 bg-rose-50/50 hover:bg-rose-100 text-rose-800 rounded-2xl flex items-center justify-between px-4"
+              className="w-full h-12 font-black border-2 border-rose-500/80 bg-rose-950/60 hover:bg-rose-900/80 text-rose-200 rounded-2xl bl-card flex items-center justify-between px-4 active:translate-x-0.5 active:translate-y-0.5 transition-all"
             >
               <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600" />
-                <span className="text-xs font-black">苦手特訓モード（間違えた{stats.weakPointsCount}問を集中的に克服）</span>
+                <AlertCircle className="w-4 h-4 text-rose-400" />
+                <span className="text-xs font-black">苦手克服特訓（ミスした{stats.weakPointsCount}問）</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-rose-500" />
+              <ChevronRight className="w-4 h-4 text-rose-400" />
             </Button>
           )}
         </div>
 
         {/* 単元・ステージ別選択リスト */}
-        <div className="space-y-4 pt-2">
+        <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
-              <Layers className="w-4 h-4 text-blue-600" />
-              <span>単元・ステージ選択</span>
+            <h3 className="text-xs font-mono font-black text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
+              <Layers className="w-4 h-4 text-purple-400" />
+              <span>STAGE SELECT // 単元別ステージ</span>
             </h3>
-            <span className="text-[11px] font-bold text-slate-400">
-              タップして学習開始
-            </span>
           </div>
 
-          {/* 単元3: 日本国憲法と基本的人権 */}
-          <Card className="border border-slate-200 shadow-xs rounded-2xl bg-white overflow-hidden">
-            <div className="bg-slate-50 border-b border-slate-100 p-3.5">
-              <div className="flex items-center gap-2">
-                <Badge className="bg-blue-600 text-white text-[10px] font-black">
-                  第3単元
-                </Badge>
-                <h4 className="font-black text-sm text-slate-900">
-                  日本国憲法と基本的人権
-                </h4>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1 font-medium">
-                平和主義、基本的人権（自由・平等・社会・参政・請求）、新しい人権
-              </p>
-            </div>
+          {/* 単元・ステージ別カード（全6単元） */}
+          {SOCIAL_UNITS.map((unit) => {
+            const conf = UNIT_STAGE_INFO[unit.id];
+            const unitQuestions = SOCIAL_QUESTIONS.filter((q) => q.unitId === unit.id);
+            const unitMastered = unitQuestions.filter(
+              (q) => (progress.questions[q.id]?.level ?? 0) >= 3
+            ).length;
 
-            <div className="p-3 space-y-2.5">
-              {/* Stage 1 */}
-              <button
-                onClick={() =>
-                  startSession({
-                    type: 'stage',
-                    unitId: 'constitution',
-                    stage: 1,
-                  })
-                }
-                className="w-full bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 hover:border-blue-300 rounded-xl p-3 flex items-center justify-between text-left transition-all group"
+            return (
+              <Card
+                key={unit.id}
+                className="border-2 border-slate-800 rounded-2xl bg-slate-900/90 bl-card overflow-hidden transition-all"
               >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-black text-xs bg-white text-blue-700 border-blue-200">
-                      Stage 1
+                <div className="bg-slate-950/70 border-b border-slate-800 p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Badge className={`${conf.badgeClass} text-[10px] font-black shrink-0`}>
+                      第{unit.number}単元
                     </Badge>
-                    <span className="font-bold text-xs text-slate-800 group-hover:text-blue-900">
-                      基本的人権の基礎・三大義務
-                    </span>
+                    <h4 className="font-black text-sm text-white truncate">
+                      {unit.title}
+                    </h4>
                   </div>
-                  <div className="text-[11px] text-slate-400 mt-1 font-medium">
-                    問28〜問54（計27問）
-                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-400 shrink-0 ml-2">
+                    {unitMastered}/{unit.totalQuestions}問
+                  </span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-              </button>
 
-              {/* Stage 2 */}
-              <button
-                onClick={() =>
-                  startSession({
-                    type: 'stage',
-                    unitId: 'constitution',
-                    stage: 2,
-                  })
-                }
-                className="w-full bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 hover:border-blue-300 rounded-xl p-3 flex items-center justify-between text-left transition-all group"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-black text-xs bg-white text-blue-700 border-blue-200">
-                      Stage 2
-                    </Badge>
-                    <span className="font-bold text-xs text-slate-800 group-hover:text-blue-900">
-                      個別の自由権・社会権・新しい人権
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-400 mt-1 font-medium">
-                    問55〜問81（計27問）
-                  </div>
+                <div className="p-2.5 space-y-2">
+                  {/* Stage 1 */}
+                  <button
+                    onClick={() =>
+                      startSession({
+                        type: 'stage',
+                        unitId: unit.id,
+                        stage: 1,
+                      })
+                    }
+                    className={`w-full bg-slate-950/80 hover:bg-slate-850 border border-slate-800 ${conf.borderClass} rounded-xl p-3 flex items-center justify-between text-left transition-all group`}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="font-mono font-black text-[10px] bg-slate-900 border border-slate-700 text-slate-300">
+                          STAGE 1
+                        </Badge>
+                        <span className={`font-bold text-xs text-white ${conf.textHoverClass}`}>
+                          {conf.stage1.title}
+                        </span>
+                      </div>
+                      <div className="text-[11px] font-mono text-slate-400 mt-1">
+                        {conf.stage1.range} • {conf.stage1.count}問
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                  </button>
+
+                  {/* Stage 2 */}
+                  <button
+                    onClick={() =>
+                      startSession({
+                        type: 'stage',
+                        unitId: unit.id,
+                        stage: 2,
+                      })
+                    }
+                    className={`w-full bg-slate-950/80 hover:bg-slate-850 border border-slate-800 ${conf.borderClass} rounded-xl p-3 flex items-center justify-between text-left transition-all group`}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="font-mono font-black text-[10px] bg-slate-900 border border-slate-700 text-slate-300">
+                          STAGE 2
+                        </Badge>
+                        <span className={`font-bold text-xs text-white ${conf.textHoverClass}`}>
+                          {conf.stage2.title}
+                        </span>
+                      </div>
+                      <div className="text-[11px] font-mono text-slate-400 mt-1">
+                        {conf.stage2.range} • {conf.stage2.count}問
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                  </button>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-              </button>
-            </div>
-          </Card>
-
-          {/* 単元4: 民主政治と政治参加 */}
-          <Card className="border border-slate-200 shadow-xs rounded-2xl bg-white overflow-hidden">
-            <div className="bg-slate-50 border-b border-slate-100 p-3.5">
-              <div className="flex items-center gap-2">
-                <Badge className="bg-emerald-600 text-white text-[10px] font-black">
-                  第4単元
-                </Badge>
-                <h4 className="font-black text-sm text-slate-900">
-                  民主政治と政治参加
-                </h4>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1 font-medium">
-                民主政治の基本、選挙制度（小選挙区比例代表並立制）、政党政治
-              </p>
-            </div>
-
-            <div className="p-3 space-y-2.5">
-              {/* Stage 1 */}
-              <button
-                onClick={() =>
-                  startSession({
-                    type: 'stage',
-                    unitId: 'politics',
-                    stage: 1,
-                  })
-                }
-                className="w-full bg-slate-50 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-emerald-300 rounded-xl p-3 flex items-center justify-between text-left transition-all group"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-black text-xs bg-white text-emerald-700 border-emerald-200">
-                      Stage 1
-                    </Badge>
-                    <span className="font-bold text-xs text-slate-800 group-hover:text-emerald-900">
-                      民主政治・選挙制度・政党
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-400 mt-1 font-medium">
-                    問82〜問95（計14問）
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
-              </button>
-
-              {/* Stage 2 */}
-              <button
-                onClick={() =>
-                  startSession({
-                    type: 'stage',
-                    unitId: 'politics',
-                    stage: 2,
-                  })
-                }
-                className="w-full bg-slate-50 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-emerald-300 rounded-xl p-3 flex items-center justify-between text-left transition-all group"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-black text-xs bg-white text-emerald-700 border-emerald-200">
-                      Stage 2
-                    </Badge>
-                    <span className="font-bold text-xs text-slate-800 group-hover:text-emerald-900">
-                      直接民主制・平等選挙の原則
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-400 mt-1 font-medium">
-                    問96〜問97（計2問）
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
-              </button>
-            </div>
-          </Card>
+              </Card>
+            );
+          })}
         </div>
 
         {/* 履歴リセット・設定 */}
-        <div className="pt-4 text-center">
+        <div className="pt-2 text-center">
           <button
             onClick={handleResetData}
-            className="text-[11px] font-bold text-slate-400 hover:text-rose-600 transition-colors inline-flex items-center gap-1"
+            className="text-xs font-mono font-bold text-slate-500 hover:text-rose-400 transition-colors inline-flex items-center gap-1.5"
           >
-            <RotateCcw className="w-3 h-3" />
-            <span>学習記録をリセットする</span>
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>RESET // 学習記録をリセット</span>
           </button>
         </div>
       </main>
@@ -1091,23 +1122,23 @@ export default function SocialStudyPage() {
               <div className="space-y-1 text-xs font-mono">
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
                   <span className="text-amber-400 font-black">👑 SS: 全知全能の公民神</span>
-                  <span className="text-[11px] text-slate-400">マスター 60問〜</span>
+                  <span className="text-[11px] text-slate-400">マスター 130問〜</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
-                  <span className="text-purple-400 font-black">★ S: 憲法・公民マスター</span>
-                  <span className="text-[11px] text-slate-400">マスター 45問〜</span>
+                  <span className="text-purple-400 font-black">★ S: 憲法・政治マスター</span>
+                  <span className="text-[11px] text-slate-400">マスター 90問〜</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
                   <span className="text-blue-400 font-black">◆ A: 公民エキスパート</span>
-                  <span className="text-[11px] text-slate-400">マスター 30問〜</span>
+                  <span className="text-[11px] text-slate-400">マスター 60問〜</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
                   <span className="text-emerald-400 font-black">● B: 暗記ファイター</span>
-                  <span className="text-[11px] text-slate-400">マスター 15問〜</span>
+                  <span className="text-[11px] text-slate-400">マスター 30問〜</span>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
                   <span className="text-amber-300 font-black">▲ C: 暗記ルーキー</span>
-                  <span className="text-[11px] text-slate-400">マスター 5問〜</span>
+                  <span className="text-[11px] text-slate-400">マスター 10問〜</span>
                 </div>
               </div>
             </div>

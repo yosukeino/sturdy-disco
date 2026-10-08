@@ -261,7 +261,7 @@ export default function GameMenuHomePage() {
                 </h3>
 
                 <p className="text-xs sm:text-sm text-slate-300 font-medium">
-                  日本国憲法・人権・民主政治の全70問！忘却曲線で自動反復するiKnow式エンジン搭載
+                  憲法・民主政治・三権分立・地方自治の全157問！忘却曲線で自動反復するiKnow式エンジン搭載
                 </p>
               </div>
             </div>
