@@ -36,69 +36,8 @@ export function getOrCreatePlayerUuid(): string {
   }
 }
 
-// 初期モックデータ（初回やSupabase未接続時でも華やかなラダーを表示）
-const DEFAULT_SCORES: ScoreRecord[] = [
-  {
-    id: 'mock-1',
-    player_name: 'ケンタ',
-    player_uuid: 'mock-user-1',
-    score: 10,
-    total_questions: 10,
-    time_ms: 12450, // 12.45s
-    game_points: 1580,
-    max_combo: 10,
-    course: 'season1',
-    created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-  },
-  {
-    id: 'mock-2',
-    player_name: 'ユイ',
-    player_uuid: 'mock-user-2',
-    score: 10,
-    total_questions: 10,
-    time_ms: 15820, // 15.82s
-    game_points: 1420,
-    max_combo: 10,
-    course: 'season1',
-    created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-  },
-  {
-    id: 'mock-3',
-    player_name: 'ソウタ',
-    player_uuid: 'mock-user-3',
-    score: 9,
-    total_questions: 10,
-    time_ms: 14200,
-    game_points: 1150,
-    max_combo: 8,
-    course: 'season1',
-    created_at: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
-  },
-  {
-    id: 'mock-4',
-    player_name: 'ハナ',
-    player_uuid: 'mock-user-4',
-    score: 9,
-    total_questions: 10,
-    time_ms: 18900,
-    game_points: 1020,
-    max_combo: 7,
-    course: 'season1',
-    created_at: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
-  },
-  {
-    id: 'mock-5',
-    player_name: 'レン',
-    player_uuid: 'mock-user-5',
-    score: 8,
-    total_questions: 10,
-    time_ms: 22100,
-    game_points: 890,
-    max_combo: 5,
-    course: 'training',
-    created_at: new Date(Date.now() - 1000 * 60 * 480).toISOString(),
-  },
-];
+// 初期モックデータは完全廃止（実際のユーザーのスコアのみを表示）
+const DEFAULT_SCORES: ScoreRecord[] = [];
 
 /**
  * プレイヤー名の正規化（前後の空白・全角半角のブレを解消）
@@ -125,14 +64,18 @@ function isScoreBetter(a: ScoreRecord, b: ScoreRecord): boolean {
 }
 
 function getLocalScores(): ScoreRecord[] {
-  if (typeof window === 'undefined') return DEFAULT_SCORES;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!raw) return DEFAULT_SCORES;
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_SCORES;
+    if (!Array.isArray(parsed)) return [];
+    // 過去のモックデータ（mock-1等）や無効なデータを完全除外
+    return parsed.filter(
+      (item: ScoreRecord) => item && item.player_name && !item.id?.startsWith('mock-')
+    );
   } catch {
-    return DEFAULT_SCORES;
+    return [];
   }
 }
 
@@ -140,18 +83,16 @@ function saveLocalScore(item: ScoreRecord) {
   if (typeof window === 'undefined') return;
   try {
     const current = getLocalScores();
-    // 既存レコードの中から同一プレイヤー（UUID一致 または 名前一致）かつ同一コースのものを探す
     const rNameNorm = normalizePlayerName(item.player_name);
-    const rUuid = (item.player_uuid || '').trim();
+    if (!rNameNorm) return;
 
+    // 既存レコードの中から「同一コース」かつ「同一プレイヤー名」のものを探す
     let replaced = false;
     const updated = current.map((existing) => {
       if (existing.course !== item.course) return existing;
       const eNameNorm = normalizePlayerName(existing.player_name);
-      const eUuid = (existing.player_uuid || '').trim();
-      const isSameUser = (rUuid !== '' && eUuid !== '' && rUuid === eUuid) || (rNameNorm !== '' && eNameNorm !== '' && rNameNorm === eNameNorm);
 
-      if (isSameUser) {
+      if (rNameNorm === eNameNorm) {
         replaced = true;
         // 自己ベスト更新なら新しいレコードを採用
         return isScoreBetter(item, existing) ? item : existing;
@@ -170,8 +111,9 @@ function saveLocalScore(item: ScoreRecord) {
 }
 
 /**
- * プレイヤーごとに最高記録（1人/1デバイスにつき最も良かった1件）のみを厳格に抽出
- * - player_uuid の一致 または player_name の一致 で同一プレイヤーと判定
+ * プレイヤーごとに最高記録（同一プレイヤー名につき最も良かった1件）のみを抽出
+ * - player_name の一致（全角半角・空白正規化）で同一プレイヤーと判定
+ * - 端末を共有しても、名前が異なれば別プレイヤーとして正しく並ぶ
  * - 優先順位: 1.正解数 ➔ 2.総合PTS ➔ 3.クリアタイム最速
  */
 export function deduplicateBestScores(records: ScoreRecord[]): ScoreRecord[] {
@@ -179,20 +121,13 @@ export function deduplicateBestScores(records: ScoreRecord[]): ScoreRecord[] {
 
   for (const r of records) {
     const rNameNorm = normalizePlayerName(r.player_name);
-    const rUuid = (r.player_uuid || '').trim();
+    if (!rNameNorm) continue;
 
-    // 既存レコードの中で同一ユーザー（UUID一致 または 正規化名一致）を探す
+    // 既存レコードの中で「同一コース」かつ「同一プレイヤー名」を探す
     const existingIndex = result.findIndex((existing) => {
-      // コースが異なる場合は別コースの自己ベストとして扱う
       if (existing.course && r.course && existing.course !== r.course) return false;
-
       const eNameNorm = normalizePlayerName(existing.player_name);
-      const eUuid = (existing.player_uuid || '').trim();
-
-      const uuidMatch = rUuid !== '' && eUuid !== '' && rUuid === eUuid;
-      const nameMatch = rNameNorm !== '' && eNameNorm !== '' && rNameNorm === eNameNorm;
-
-      return uuidMatch || nameMatch;
+      return rNameNorm === eNameNorm;
     });
 
     if (existingIndex === -1) {
@@ -218,19 +153,18 @@ export function deduplicateBestScores(records: ScoreRecord[]): ScoreRecord[] {
  */
 export async function submitQuizScore(
   submission: ScoreSubmission
-): Promise<{ success: boolean; data: ScoreRecord; error?: string }> {
+): Promise<{ success: boolean; data: ScoreRecord; isRemote: boolean; error?: string }> {
   const localRecord: ScoreRecord = {
     ...submission,
     id: 'local-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
     created_at: new Date().toISOString(),
   };
 
-  // まずローカルに保存（確実に消えないようにする）
+  // まず端末内に確実に保存（オフライン時やDB未接続でも消えないようにする）
   saveLocalScore(localRecord);
 
   // Supabaseへの送信を試みる
   try {
-    // player_uuid 列が存在する場合と存在しない場合の両方に対応
     const basePayload: Record<string, unknown> = {
       player_name: submission.player_name,
       score: submission.score,
@@ -252,7 +186,7 @@ export async function submitQuizScore(
       .single();
 
     if (!error && data) {
-      return { success: true, data: data as ScoreRecord };
+      return { success: true, data: data as ScoreRecord, isRemote: true };
     }
 
     // player_uuid列がリモートでまだ無い場合の再試行
@@ -264,15 +198,25 @@ export async function submitQuizScore(
         .select()
         .single();
       if (!retryRes.error && retryRes.data) {
-        return { success: true, data: retryRes.data as ScoreRecord };
+        return { success: true, data: retryRes.data as ScoreRecord, isRemote: true };
       }
     }
-  } catch (err) {
-    console.warn('Supabase post failed, using local storage fallback:', err);
-  }
 
-  // Supabaseテーブル未作成またはエラー時はローカルレコードを返す
-  return { success: true, data: localRecord };
+    return {
+      success: true,
+      data: localRecord,
+      isRemote: false,
+      error: error?.message || 'Database insert failed',
+    };
+  } catch (err: any) {
+    console.warn('Supabase post failed, using local storage fallback:', err);
+    return {
+      success: true,
+      data: localRecord,
+      isRemote: false,
+      error: err?.message || 'Connection failed',
+    };
+  }
 }
 
 /**

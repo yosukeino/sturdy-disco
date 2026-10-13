@@ -46,6 +46,7 @@ import {
   fetchQuizRankings,
   getOrCreatePlayerUuid,
   fetchRegisteredStudents,
+  normalizePlayerName,
   ScoreRecord,
   ScoreSubmission,
 } from '@/lib/word-quiz-service';
@@ -493,9 +494,16 @@ export default function WordsQuizPage() {
     'lobby'
   );
 
-  // プレイヤー設定（1デバイス1ユーザー固定）
+  // プレイヤー設定＆リザルト画面での登録管理
   const [playerName, setPlayerName] = useState<string>('');
-  const [isNameLocked, setIsNameLocked] = useState<boolean>(false);
+  const [resultPlayerName, setResultPlayerName] = useState<string>('');
+  const [isScoreSubmitted, setIsScoreSubmitted] = useState<boolean>(false);
+  const [lastBattleStats, setLastBattleStats] = useState<{
+    score: number;
+    maxCombo: number;
+    timeMs: number;
+    gamePoints: number;
+  } | null>(null);
   const [deviceUuid, setDeviceUuid] = useState<string>('');
   const [registeredStudents, setRegisteredStudents] = useState<{ id: string; name: string }[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string>('season1');
@@ -570,13 +578,14 @@ export default function WordsQuizPage() {
     [soundEnabled]
   );
 
-  // 初回マウント: 名前復元 & 端末UUID取得（1デバイス1ユーザー固定）
+  // 初回マウント: 名前復元 & 端末UUID取得
   useEffect(() => {
     try {
       const savedName = localStorage.getItem('word_quiz_player_name');
       if (savedName && savedName.trim() !== '') {
-        setPlayerName(savedName.trim());
-        setIsNameLocked(true); // 登録済みの名前があれば「デバイス固定モード」をデフォルトON
+        const clean = savedName.trim();
+        setPlayerName(clean);
+        setResultPlayerName(clean);
       }
 
       const savedSound = localStorage.getItem('word_quiz_sound');
@@ -595,21 +604,16 @@ export default function WordsQuizPage() {
     });
   }, []);
 
-  // プレイヤー名をこのデバイスに固定
-  const handleLockPlayerName = (nameToLock: string) => {
-    const trimmed = nameToLock.trim();
-    if (!trimmed) return;
+  // プレイヤー名の選択・変更
+  const handleSelectPlayerName = (nameToSet: string) => {
+    const trimmed = nameToSet.trim();
     setPlayerName(trimmed);
-    setIsNameLocked(true);
-    try {
-      localStorage.setItem('word_quiz_player_name', trimmed);
-    } catch {}
-    playSound('click');
-  };
-
-  // プレイヤー名の固定を解除して変更モードにする
-  const handleUnlockPlayerName = () => {
-    setIsNameLocked(false);
+    setResultPlayerName(trimmed);
+    if (trimmed) {
+      try {
+        localStorage.setItem('word_quiz_player_name', trimmed);
+      } catch {}
+    }
     playSound('click');
   };
 
@@ -628,14 +632,14 @@ export default function WordsQuizPage() {
   // ゲーム開始フロー (Lobby ➔ Countdown)
   // ---------------------------------------------------------------------------
   const handleStartGame = () => {
-    const trimmedName = playerName.trim() || 'ゲスト冒険者';
-    setPlayerName(trimmedName);
-    setIsNameLocked(true);
-    try {
-      localStorage.setItem('word_quiz_player_name', trimmedName);
-    } catch {
-      // ignore
+    const trimmedName = playerName.trim();
+    if (trimmedName) {
+      setResultPlayerName(trimmedName);
+      try {
+        localStorage.setItem('word_quiz_player_name', trimmedName);
+      } catch {}
     }
+    setIsScoreSubmitted(false);
 
     // 10問のクイズセットを生成
     const quizSet = generateQuestionSet(selectedCourse, 10);
@@ -892,7 +896,67 @@ export default function WordsQuizPage() {
   };
 
   // ---------------------------------------------------------------------------
-  // ゲーム終了＆スコア提出
+  // データベースへのスコア登録・更新
+  // ---------------------------------------------------------------------------
+  const registerScoreToDatabase = async (nameToRegister?: string) => {
+    const rawName = nameToRegister !== undefined ? nameToRegister : resultPlayerName;
+    const trimmed = rawName.trim();
+    if (!trimmed) return;
+
+    setIsSubmitting(true);
+    setPlayerName(trimmed);
+    setResultPlayerName(trimmed);
+    try {
+      localStorage.setItem('word_quiz_player_name', trimmed);
+    } catch {}
+
+    const stats = lastBattleStats || {
+      score: score,
+      maxCombo: maxCombo,
+      timeMs: finalElapsedMs || elapsedMs,
+      gamePoints: animatedPts || (score * 100),
+    };
+
+    const submission: ScoreSubmission = {
+      player_name: trimmed,
+      player_uuid: deviceUuid || getOrCreatePlayerUuid(),
+      score: stats.score,
+      total_questions: 10,
+      time_ms: Math.round(stats.timeMs),
+      game_points: stats.gamePoints,
+      max_combo: stats.maxCombo,
+      course: selectedCourse,
+    };
+
+    try {
+      const res = await submitQuizScore(submission);
+      if (res.success) {
+        setSubmittedRecord(res.data);
+        setIsScoreSubmitted(true);
+      }
+
+      // 最新ランキング（名前ごとの自己ベスト）を取得して順位を算出
+      const latestRankings = await fetchQuizRankings(selectedCourse, 'all', true);
+      setLeaderboardList(latestRankings);
+
+      const normName = normalizePlayerName(trimmed);
+      const myRank = latestRankings.findIndex(
+        (r) => normalizePlayerName(r.player_name) === normName
+      );
+      if (myRank !== -1) {
+        setUserRankPosition(myRank + 1);
+      } else {
+        setUserRankPosition(1);
+      }
+    } catch (err) {
+      console.error('Failed to submit score:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // ゲーム終了＆リザルト表示
   // ---------------------------------------------------------------------------
   const handleFinishGame = async (
     finalScore: number,
@@ -909,45 +973,63 @@ export default function WordsQuizPage() {
     const perfectBonus = finalScore === 10 ? 300 : 0;
     const totalGamePoints = basePts + speedBonus + comboBonus + perfectBonus;
 
+    const stats = {
+      score: finalScore,
+      maxCombo: highestCombo,
+      timeMs: totalTimeMs,
+      gamePoints: totalGamePoints,
+    };
+    setLastBattleStats(stats);
+
     const gradeInfo = calculateGrade(finalScore, 10, totalTimeMs);
     playSound(gradeInfo.sound);
 
-    // スコア送信
-    setIsSubmitting(true);
-    const submission: ScoreSubmission = {
-      player_name: playerName || 'ゲスト冒険者',
-      player_uuid: deviceUuid || getOrCreatePlayerUuid(),
-      score: finalScore,
-      total_questions: 10,
-      time_ms: Math.round(totalTimeMs),
-      game_points: totalGamePoints,
-      max_combo: highestCombo,
-      course: selectedCourse,
-    };
+    // テスト前に名前が入っていたら自動で登録を実行
+    const candidateName = (playerName || resultPlayerName || '').trim();
+    if (candidateName) {
+      setIsSubmitting(true);
+      const submission: ScoreSubmission = {
+        player_name: candidateName,
+        player_uuid: deviceUuid || getOrCreatePlayerUuid(),
+        score: finalScore,
+        total_questions: 10,
+        time_ms: Math.round(totalTimeMs),
+        game_points: totalGamePoints,
+        max_combo: highestCombo,
+        course: selectedCourse,
+      };
 
-    try {
-      const res = await submitQuizScore(submission);
-      if (res.success) {
-        setSubmittedRecord(res.data);
+      try {
+        const res = await submitQuizScore(submission);
+        if (res.success) {
+          setSubmittedRecord(res.data);
+          setIsScoreSubmitted(true);
+        }
+
+        const latestRankings = await fetchQuizRankings(selectedCourse, 'all', true);
+        setLeaderboardList(latestRankings);
+
+        const normName = normalizePlayerName(candidateName);
+        const myRank = latestRankings.findIndex(
+          (r) => normalizePlayerName(r.player_name) === normName
+        );
+        if (myRank !== -1) {
+          setUserRankPosition(myRank + 1);
+        }
+      } catch (err) {
+        console.error('Failed to submit score:', err);
+      } finally {
+        setIsSubmitting(false);
       }
-
-      // 最新ランキング（自己ベストのみ）を取得して順位を算出
-      const latestRankings = await fetchQuizRankings(selectedCourse, 'all', true);
-      setLeaderboardList(latestRankings);
-
-      const activeUuid = deviceUuid || submission.player_uuid;
-      const myRank = latestRankings.findIndex(
-        (r) =>
-          (activeUuid && r.player_uuid === activeUuid) ||
-          r.player_name.trim().toLowerCase() === submission.player_name.trim().toLowerCase()
-      );
-      if (myRank !== -1) {
-        setUserRankPosition(myRank + 1);
+    } else {
+      // 名前未入力の場合は最新ランキングのみ取得して待機
+      setIsSubmitting(true);
+      try {
+        const latestRankings = await fetchQuizRankings(selectedCourse, 'all', true);
+        setLeaderboardList(latestRankings);
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (err) {
-      console.error('Failed to submit score:', err);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -1137,97 +1219,57 @@ export default function WordsQuizPage() {
                 </button>
               </div>
 
-              {/* Input Card: プレイヤーネーム（1デバイス1ユーザー固定） */}
-              {isNameLocked && playerName.trim() ? (
-                /* 固定モード表示 */
-                <div className="rounded-2xl border-2 border-amber-500/80 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 p-2.5 sm:p-3 shadow-inner bl-comic-border">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-400 text-slate-950 font-black shrink-0 shadow-sm">
-                        <Lock className="h-4 w-4 stroke-[2.5]" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider">
-                          <span>OPERATOR [端末固定]</span>
-                          <span className="text-[9px] text-slate-400 hidden sm:inline">• 自己ベストのみ集計</span>
-                        </div>
-                        <div className="text-base sm:text-lg font-black text-white font-mono truncate tracking-wide">
-                          {playerName}
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleUnlockPlayerName}
-                      className="flex items-center gap-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1.5 text-[11px] font-black text-slate-300 hover:text-white transition-all active:scale-95 shrink-0"
-                    >
-                      <Pencil className="h-3 w-3 text-amber-400" />
-                      <span>変更</span>
-                    </button>
-                  </div>
+              {/* Input Card: プレイヤーネーム */}
+              <div className="rounded-2xl border-2 border-slate-750 bg-slate-950/90 p-2.5 sm:p-3 shadow-inner space-y-2 bl-comic-border">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                  <span className="flex items-center gap-1.5 text-slate-300 font-mono">
+                    <User className="h-3.5 w-3.5 text-amber-400" />
+                    <span className="text-[11px] sm:text-xs font-black uppercase">[プレイヤーネーム]</span>
+                  </span>
+                  <span className="text-[10px] text-amber-400 font-mono font-bold">
+                    *テスト後にも登録・変更可能
+                  </span>
                 </div>
-              ) : (
-                /* 未固定・入力/選択モード表示 */
-                <div className="rounded-2xl border-2 border-slate-700 bg-slate-950/90 p-2.5 sm:p-3 shadow-inner space-y-2 bl-comic-border">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                    <span className="flex items-center gap-1.5 text-slate-300 font-mono">
-                      <User className="h-3.5 w-3.5 text-amber-400" />
-                      <span className="text-[11px] sm:text-xs font-black uppercase">[この端末のプレイヤーを登録]</span>
-                    </span>
-                    <span className="text-[10px] text-amber-400 font-mono font-bold">
-                      *1端末1ユーザー固定
-                    </span>
-                  </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <div className="relative flex-1">
-                      <input
-                        type="text"
-                        maxLength={12}
-                        value={playerName}
-                        onChange={(e) => setPlayerName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && playerName.trim()) {
-                            handleLockPlayerName(playerName);
-                          }
-                        }}
-                        placeholder="名前を入力 (例: まひる)"
-                        className="w-full rounded-xl bg-slate-900 border-2 border-slate-700 px-3 py-2 text-sm sm:text-base font-black text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-mono"
-                      />
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={playerName}
+                    onChange={(e) => handleSelectPlayerName(e.target.value)}
+                    placeholder="名前を入力 (例: まひる)"
+                    className="w-full rounded-xl bg-slate-900 border-2 border-slate-700 px-3.5 py-2 text-sm sm:text-base font-black text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-mono"
+                  />
+                </div>
+
+                {/* 登録済み生徒のワンタップ選択 */}
+                {registeredStudents.length > 0 && (
+                  <div className="pt-1.5 border-t border-slate-800/80 space-y-1">
+                    <div className="text-[10px] text-slate-400 font-mono font-bold flex items-center justify-between">
+                      <span>▼ 登録生徒からワンタップで選択:</span>
                     </div>
-                    <button
-                      type="button"
-                      disabled={!playerName.trim()}
-                      onClick={() => handleLockPlayerName(playerName)}
-                      className="rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 text-xs sm:text-sm flex items-center gap-1 shrink-0 bl-comic-border transition-all active:scale-95"
-                    >
-                      <Check className="h-3.5 w-3.5 stroke-[3]" />
-                      <span>固定する</span>
-                    </button>
-                  </div>
-
-                  {/* 登録済み生徒のワンタップ選択 */}
-                  {registeredStudents.length > 0 && (
-                    <div className="pt-1.5 border-t border-slate-800/80 space-y-1">
-                      <div className="text-[10px] text-slate-400 font-mono font-bold flex items-center justify-between">
-                        <span>▼ 登録生徒からワンタップで選択:</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
-                        {registeredStudents.map((s) => (
+                    <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
+                      {registeredStudents.map((s) => {
+                        const isSelected = playerName === s.name;
+                        return (
                           <button
                             key={s.id}
                             type="button"
-                            onClick={() => handleLockPlayerName(s.name)}
-                            className="rounded-lg bg-slate-900 hover:bg-amber-400 hover:text-slate-950 border border-slate-700 px-2 py-0.5 text-[11px] font-bold text-slate-300 transition-colors"
+                            onClick={() => handleSelectPlayerName(s.name)}
+                            className={`rounded-lg border px-2 py-0.5 text-[11px] font-bold transition-colors ${
+                              isSelected
+                                ? 'bg-amber-400 text-slate-950 border-amber-400 font-black shadow-sm'
+                                : 'bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800 hover:text-white'
+                            }`}
                           >
                             {s.name}
                           </button>
-                        ))}
-                      </div>
+                        );
+                      })}
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* MIDDLE BLOCK: モード選択（Borderlands Loot Tier Cards） */}
@@ -1679,18 +1721,18 @@ export default function WordsQuizPage() {
                     </div>
                   </div>
 
-                  {/* Leaderboard Ranking Announcement (ディスガイア風スタンプ＆絶対改行ゼロ設計) */}
+                  {/* Leaderboard Registration & Ranking Announcement */}
                   <div
-                    className={`rounded-xl bg-black border-2 border-amber-400 p-2.5 sm:p-3 shadow-[3px_3px_0px_#000] space-y-1.5 text-left transition-all ${
+                    className={`rounded-2xl bg-black border-2 border-amber-400 p-3 sm:p-3.5 shadow-[3px_3px_0px_#000] space-y-2.5 text-left transition-all ${
                       isRankDone ? 'animate-rank-box' : ''
                     }`}
                   >
                     {/* 上段: ラベル ＆ ランキングボタン */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
-                        <Trophy className="h-3.5 w-3.5 text-amber-400" />
-                        <span className="text-[11px] font-black text-amber-400 font-mono">
-                          [LEADERBOARD SYNC]
+                        <Trophy className="h-4 w-4 text-amber-400" />
+                        <span className="text-[11px] sm:text-xs font-black text-amber-400 font-mono">
+                          [LEADERBOARD // ランキング登録]
                         </span>
                       </div>
                       <button
@@ -1699,18 +1741,72 @@ export default function WordsQuizPage() {
                           setPhase('leaderboard');
                           playSound('click');
                         }}
-                        className="rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-black border border-black shadow-[2px_2px_0px_#000] transition-all whitespace-nowrap active:scale-95 flex items-center gap-0.5"
+                        className="rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 px-2.5 py-1 text-[10px] sm:text-[11px] font-black border border-black shadow-[2px_2px_0px_#000] transition-all whitespace-nowrap active:scale-95 flex items-center gap-0.5"
                       >
-                        <span>ランキングを見る</span>
+                        <span>全体ランキングを見る</span>
                         <ChevronRight className="h-3 w-3" />
                       </button>
                     </div>
 
-                    {/* 下段: 「現在 第1位 にランクイン！」（幅を100%独占し、改行を完全防止） */}
-                    <div className="flex items-center justify-center py-1.5 px-2 bg-slate-950 rounded-lg border border-slate-800 whitespace-nowrap overflow-hidden">
+                    {/* 中段: 名前入力 ＆ 登録ボタン */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <div className="relative flex-1">
+                          <input
+                            type="text"
+                            maxLength={12}
+                            value={resultPlayerName}
+                            onChange={(e) => setResultPlayerName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && resultPlayerName.trim()) {
+                                registerScoreToDatabase(resultPlayerName);
+                              }
+                            }}
+                            placeholder="登録する名前を入力 (例: まひる)"
+                            className="w-full rounded-xl bg-slate-950 border-2 border-slate-700 px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-black text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono shadow-inner"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          disabled={!resultPlayerName.trim() || isSubmitting}
+                          onClick={() => registerScoreToDatabase(resultPlayerName)}
+                          className="rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-slate-950 font-black px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-black shadow-[2px_2px_0px_#000] transition-all active:scale-95 shrink-0 whitespace-nowrap flex items-center gap-1"
+                        >
+                          <Check className="h-3.5 w-3.5 stroke-[3]" />
+                          <span>{isScoreSubmitted ? '更新する' : '登録する'}</span>
+                        </button>
+                      </div>
+
+                      {/* 登録生徒のクイック選択 */}
+                      {registeredStudents.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                          <span className="text-[10px] text-slate-400 font-mono shrink-0">▼候補:</span>
+                          {registeredStudents.map((s) => (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => {
+                                setResultPlayerName(s.name);
+                                registerScoreToDatabase(s.name);
+                              }}
+                              className={`rounded-md border px-2 py-0.5 text-[10px] font-bold transition-colors ${
+                                resultPlayerName === s.name
+                                  ? 'bg-amber-400 text-slate-950 border-amber-400 font-black'
+                                  : 'bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800 hover:text-white'
+                              }`}
+                            >
+                              {s.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 下段: 順位アナウンス */}
+                    <div className="flex items-center justify-center py-1.5 px-2 bg-slate-950 rounded-xl border border-slate-800 whitespace-nowrap overflow-hidden">
                       {isSubmitting ? (
-                        <span className="text-slate-400 animate-pulse text-xs font-mono font-bold whitespace-nowrap">
-                          SYNCING VAULT DATABASE...
+                        <span className="text-amber-400 animate-pulse text-xs font-mono font-bold whitespace-nowrap">
+                          SYNCING DATABASE...
                         </span>
                       ) : animatedRank !== null ? (
                         <div className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
@@ -1729,9 +1825,13 @@ export default function WordsQuizPage() {
                             にランクイン！
                           </span>
                         </div>
+                      ) : isScoreSubmitted ? (
+                        <span className="text-xs text-emerald-400 font-bold whitespace-nowrap">
+                          ✅ スコアが正常に記録されました！
+                        </span>
                       ) : (
-                        <span className="text-xs text-slate-300 font-bold whitespace-nowrap">
-                          スコアが記録されました！
+                        <span className="text-xs text-slate-400 font-bold whitespace-nowrap">
+                          💡 お名前を入力して「登録する」を押してください
                         </span>
                       )}
                     </div>
@@ -1951,10 +2051,10 @@ export default function WordsQuizPage() {
                 <div className="divide-y divide-slate-800">
                   {leaderboardList.map((record, idx) => {
                     const rankNum = idx + 1;
+                    const currentActiveName = (playerName || resultPlayerName || '').trim();
                     const isMyRecord =
-                      (deviceUuid && record.player_uuid === deviceUuid) ||
-                      (playerName.trim() !== '' &&
-                        record.player_name.trim().toLowerCase() === playerName.trim().toLowerCase());
+                      currentActiveName !== '' &&
+                      normalizePlayerName(record.player_name) === normalizePlayerName(currentActiveName);
 
                     // Rank Styling
                     let rankBadge = (
