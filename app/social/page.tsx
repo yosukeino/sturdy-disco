@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { Nav, MobileNavTabs, StudiscoLogo } from '@/components/nav';
+import { Nav, MobileNavTabs, DopabenLogo } from '@/components/nav';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -930,7 +930,7 @@ export default function SocialStudyPage() {
       <header className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b-2 border-black px-4 py-2.5 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <StudiscoLogo size="sm" />
+            <DopabenLogo size="sm" />
             <div className="hidden sm:block border-l-2 border-slate-700 pl-3">
               <div className="flex items-center gap-1.5">
                 <span className="font-mono font-black text-sm tracking-wide text-white">

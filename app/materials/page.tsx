@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge, DopabenLogo } from '@/components/nav';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -153,7 +153,7 @@ export default function StudentMaterialsPage() {
         <div className="mx-auto max-w-5xl px-3 py-2.5 sm:px-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 min-w-0">
-              <StudiscoLogo size="sm" />
+              <DopabenLogo size="sm" />
               <div className="min-w-0 border-l-2 border-slate-700 pl-3 hidden sm:block">
                 <div className="flex items-center gap-2">
                   <h1 className="text-sm font-black sm:text-base text-white tracking-wide truncate font-mono">

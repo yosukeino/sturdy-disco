@@ -28,7 +28,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import { grammarData, TOTAL_SECTIONS, grammarExplanations, HARD_MODE_MAX_SECTION } from '@/lib/grammar-data';
-import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge, DopabenLogo } from '@/components/nav';
 import { fetchMaterials, MaterialItem, MEDIA_TYPE_LABELS } from '@/lib/materials';
 import { WorksheetGenerator } from '@/components/worksheet-generator';
 
@@ -166,7 +166,7 @@ export default function StudyPage() {
       <header className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b-2 border-black shadow-[0_4px_12px_rgba(0,0,0,0.5)] print:hidden">
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-3">
-            <StudiscoLogo size="sm" />
+            <DopabenLogo size="sm" />
             <div className="hidden sm:block border-l-2 border-slate-700 pl-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-black text-white tracking-wide font-mono">

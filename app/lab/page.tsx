@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge, DopabenLogo } from '@/components/nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ export default function LabCatalogPage() {
         <div className="mx-auto max-w-5xl px-3 py-2.5 sm:px-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 min-w-0">
-              <StudiscoLogo size="sm" />
+              <DopabenLogo size="sm" />
               <div className="min-w-0 border-l-2 border-slate-700 pl-3 hidden sm:block">
                 <div className="flex items-center gap-2">
                   <h1 className="text-sm font-black sm:text-base text-white tracking-wide truncate font-mono">

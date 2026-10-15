@@ -58,7 +58,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { grammarData, TOTAL_SECTIONS } from '@/lib/grammar-data';
-import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge, DopabenLogo } from '@/components/nav';
 
 // -----------------------------------------------------------------------------
 // 型定義
@@ -818,7 +818,7 @@ export default function ProgressPage() {
           <div className="flex items-center justify-between gap-2">
             {/* タイトル & プレイヤー情報 */}
             <div className="flex items-center gap-3 min-w-0">
-              <StudiscoLogo size="sm" />
+              <DopabenLogo size="sm" />
               <div className="min-w-0 border-l-2 border-slate-700 pl-3 hidden sm:block">
                 <div className="flex items-center gap-2">
                   <h1 className="text-sm font-black sm:text-base text-white tracking-wide truncate font-mono">
@@ -827,7 +827,7 @@ export default function ProgressPage() {
                   <VersionBadge />
                 </div>
                 <p className="text-[10px] text-slate-400 font-mono">
-                  BATTLE RECORD & LEAGUE PROGRESS // STUDISCO VAULT
+                  BATTLE RECORD & LEAGUE PROGRESS // DOPABEN VAULT
                 </p>
               </div>
             </div>

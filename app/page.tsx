@@ -30,7 +30,7 @@ import {
   fetchMaterials,
 } from '@/lib/materials';
 import { TOTAL_SECTIONS } from '@/lib/grammar-data';
-import { StudiscoLogo, VersionBadge } from '@/components/nav';
+import { DopabenLogo, VersionBadge } from '@/components/nav';
 
 export default function GameMenuHomePage() {
   const [pinnedItems, setPinnedItems] = useState<MaterialItem[]>([]);
@@ -81,7 +81,7 @@ export default function GameMenuHomePage() {
       {/* Top Header */}
       <header className="relative z-10 border-b-2 border-slate-800 bg-slate-900/95 backdrop-blur-md bl-comic-border">
         <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
-          <StudiscoLogo subtitle="STUDY × DISCO VAULT STATION" />
+          <DopabenLogo subtitle="DOPAMINE × STUDY // 脳汁全開ステーション" />
 
           <div className="flex items-center gap-2">
             <VersionBadge />

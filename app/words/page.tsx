@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { Nav, MobileNavTabs, VersionBadge, StudiscoLogo } from '@/components/nav';
+import { Nav, MobileNavTabs, VersionBadge, DopabenLogo } from '@/components/nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -1761,7 +1761,7 @@ export default function WordsQuizPage() {
           <div className="mx-auto max-w-5xl px-3 py-2.5 sm:px-6">
             <div className="flex items-center justify-between gap-2">
               <Link href="/" className="min-w-0">
-                <StudiscoLogo subtitle="WORDS SPEEDRUN // 単語バトル" />
+                <DopabenLogo subtitle="WORDS SPEEDRUN // 単語バトル" />
               </Link>
 
               <div className="flex items-center gap-2">
@@ -1825,7 +1825,7 @@ export default function WordsQuizPage() {
                     ⚡
                   </span>
                   <h2 className="text-sm sm:text-base font-black text-white tracking-tight truncate font-mono uppercase">
-                    STUDISCO [{selectedCourseObj.name.toUpperCase()}]
+                    ドパベン [{selectedCourseObj.name.toUpperCase()}]
                   </h2>
                   <span className="rounded-full bg-amber-500/20 border border-amber-400/50 px-2 py-0.5 text-[10px] font-mono font-black text-amber-300 shrink-0">
                     ONLINE
@@ -2839,7 +2839,7 @@ export default function WordsQuizPage() {
       {/* Footer (バトル中・カウントダウン中・リザルト中は非表示) */}
       {phase !== 'battle' && phase !== 'countdown' && phase !== 'result' && (
         <footer className="relative z-10 border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500 font-mono">
-          <p>Studisco · 4択英単語スピードバトル // VAULT HUNTER EDITION</p>
+          <p>ドパベン · 4択英単語スピードバトル // DOPAMINE HUNTER EDITION</p>
         </footer>
       )}
     </div>

@@ -283,32 +283,42 @@ export function VersionBadge() {
   );
 }
 
-export function StudiscoLogo({
-  subtitle = 'STUDY × DISCO STATION',
+export function DopabenLogo({
+  subtitle = 'DOPAMINE × STUDY // 脳汁全開ステーション',
   size = 'md',
 }: {
   subtitle?: string;
   size?: 'sm' | 'md' | 'lg';
 }) {
-  const iconSize = size === 'sm' ? 'h-7 w-7 text-sm' : size === 'lg' ? 'h-11 w-11 text-xl' : 'h-9 w-9 text-lg';
-  const titleSize = size === 'sm' ? 'text-sm sm:text-base' : size === 'lg' ? 'text-lg sm:text-2xl' : 'text-base sm:text-lg';
+  const iconSize = size === 'sm' ? 'h-7 w-7 text-xs' : size === 'lg' ? 'h-11 w-11 text-base' : 'h-9 w-9 text-sm';
+  const titleSize = size === 'sm' ? 'text-base sm:text-lg' : size === 'lg' ? 'text-2xl sm:text-3xl' : 'text-lg sm:text-xl';
 
   return (
     <Link href="/" className="flex items-center gap-2 group select-none">
-      <div className={`flex ${iconSize} items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 text-slate-950 font-black shadow-md shadow-amber-500/20 bl-comic-border group-hover:scale-105 transition-transform shrink-0`}>
-        <span className="leading-none font-black tracking-tighter">⚡</span>
+      {/* ドパベン・エナジーエンブレム (ドカベン×ドーパミン) */}
+      <div
+        className={`flex ${iconSize} items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 text-slate-950 font-black shadow-md shadow-amber-500/25 border-2 border-black group-hover:scale-105 active:scale-95 transition-transform shrink-0 relative overflow-hidden`}
+      >
+        <span className="leading-none font-black italic tracking-tighter select-none drop-shadow-xs">
+          ド⚡
+        </span>
       </div>
+
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className={`font-black ${titleSize} tracking-wider text-white font-mono uppercase truncate`}>
-            STUDI<span className="text-amber-400 bl-text-gold">SCO</span>
+          {/* ドカベン風 極太カタカナ タイポグラフィ */}
+          <span className={`font-black ${titleSize} tracking-tight font-sans italic drop-shadow-[2px_2px_0px_#000] truncate`}>
+            <span className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">ドパ</span>
+            <span className="text-amber-400 bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-orange-400 to-amber-400 drop-shadow-[0_0_14px_rgba(251,191,36,0.85)]">
+              ベン
+            </span>
           </span>
-          <span className="hidden sm:inline-block rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] px-1 font-mono font-black">
-            VAULT
+          <span className="hidden sm:inline-block rounded bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-400/50 text-[9px] px-1.5 py-0.5 font-mono font-black tracking-wider shadow-xs">
+            DOPABEN
           </span>
         </div>
         {subtitle && (
-          <p className="text-[9px] font-mono tracking-widest text-slate-400 uppercase hidden sm:block">
+          <p className="text-[9px] font-mono tracking-wider text-slate-400 uppercase hidden sm:block truncate">
             {subtitle}
           </p>
         )}
@@ -317,3 +327,5 @@ export function StudiscoLogo({
   );
 }
 
+// 既存コード後方互換性エイリアス
+export const StudiscoLogo = DopabenLogo;

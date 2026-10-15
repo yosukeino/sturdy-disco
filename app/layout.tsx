@@ -1,8 +1,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
 export const metadata: Metadata = {
-  title: 'Studisco | 英単語＆英語学習ステーション',
-  description: 'Studisco（ステューディスコ）- 4択英単語スピードバトル・英文法予習・瞬間英作文・クエスト進捗統合ポータル',
+  title: 'ドパベン | ドーパミン全開！英単語＆学習バトルステーション',
+  description: 'ドパベン - ドーパミン×勉強！4択英単語スピードバトル・英文法予習・瞬間英作文・クエスト進捗統合ポータル',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
