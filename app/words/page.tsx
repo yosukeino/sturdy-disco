@@ -589,7 +589,8 @@ function playSynthesizedSound(
     | 'fanfare_normal'
     | 'click'
     | 'stat_slam'
-    | 'rank_stamp',
+    | 'rank_stamp'
+    | 'transition',
   comboCount: number = 1
 ) {
   if (typeof window === 'undefined') return;
@@ -788,6 +789,21 @@ function playSynthesizedSound(
         osc.start(start);
         osc.stop(start + 0.35);
       });
+    } else if (type === 'transition') {
+      // 任天堂風：軽快で小気味よいスウッシュ＆スナップ音（問題がシュパッと滑り込む）
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(360, now);
+      osc.frequency.exponentialRampToValueAtTime(740, now + 0.035);
+      osc.frequency.exponentialRampToValueAtTime(480, now + 0.075);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.035, now + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.075);
     }
   } catch {
     // ignore
@@ -1010,6 +1026,7 @@ export default function WordsQuizPage() {
   const [selectedChoiceIdx, setSelectedChoiceIdx] = useState<number | null>(null);
   const [answerState, setAnswerState] = useState<'correct' | 'wrong' | null>(null);
   const [isAdvancing, setIsAdvancing] = useState<boolean>(false);
+  const [questionAnim, setQuestionAnim] = useState<'idle' | 'exit' | 'enter'>('idle');
   const [screenFlash, setScreenFlash] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [combo, setCombo] = useState<number>(0);
@@ -1067,7 +1084,8 @@ export default function WordsQuizPage() {
         | 'fanfare_normal'
         | 'click'
         | 'stat_slam'
-        | 'rank_stamp',
+        | 'rank_stamp'
+        | 'transition',
       comboCount: number = 1
     ) => {
       if (!soundEnabled) return;
@@ -1164,6 +1182,7 @@ export default function WordsQuizPage() {
     setSelectedChoiceIdx(null);
     setAnswerState(null);
     setIsAdvancing(false);
+    setQuestionAnim('idle');
     setActiveLasers(null);
     isAnsweringRef.current = false;
     lastAdvanceTimeRef.current = 0;
@@ -1388,20 +1407,29 @@ export default function WordsQuizPage() {
       ]);
     }
 
-    // 400ms後に次の問題へ進むか終了
+    // 任天堂スタイル：判定演出（0〜200ms）➔ 左へシュッとスライド退場（200ms〜340ms）➔ 右から新問題がバネ着地（340ms〜）
+    setTimeout(() => {
+      if (currentIdx + 1 < questions.length) {
+        setQuestionAnim('exit');
+      }
+    }, 200);
+
     setTimeout(() => {
       if (currentIdx + 1 < questions.length) {
         // 先に選択状態を完全クリアしてから問題インデックスを進める
         setSelectedChoiceIdx(null);
         setAnswerState(null);
         setCurrentIdx((prev) => prev + 1);
+        setQuestionAnim('enter');
+        playSound('transition');
         lastAdvanceTimeRef.current = performance.now();
 
-        // 新問題表示後200ms間はタップロックを継続（iPadの指残留・ゴーストクリック・連打による誤回答を100%防止）
+        // バネ着地完了後、通常状態へ戻しタップロック解除
         setTimeout(() => {
+          setQuestionAnim('idle');
           setIsAdvancing(false);
           isAnsweringRef.current = false;
-        }, 200);
+        }, 260);
       } else {
         // 全10問完了！
         const finalTime = performance.now() - startTime;
@@ -1411,7 +1439,7 @@ export default function WordsQuizPage() {
         isAnsweringRef.current = false;
         handleFinishGame(newScore, newMaxCombo, finalTime);
       }
-    }, 400);
+    }, 340);
   };
 
   // ---------------------------------------------------------------------------
@@ -2034,11 +2062,22 @@ export default function WordsQuizPage() {
               </div>
             </div>
 
-            {/* Main Word Card (視線ブレゼロ・100%クリア視認性・コンボ数に応じたオーラ発光進化) */}
+            {/* Main Word Card (視線ブレゼロ・100%クリア視認性・任天堂風スライド＆スプリングバネ着地) */}
             <div
+              key={`word-card-${currentIdx}`}
               className={`relative h-[128px] sm:h-[148px] shrink-0 overflow-hidden flex flex-col items-center justify-center rounded-2xl bl-scanlines transition-all duration-300 px-4 py-3 sm:p-6 text-center select-none ${
                 comboTheme.cardGlowClass
-              } ${answerState === 'wrong' ? 'animate-shake' : ''}`}
+              } ${
+                questionAnim === 'exit'
+                  ? 'animate-q-exit'
+                  : questionAnim === 'enter'
+                  ? 'animate-q-enter'
+                  : answerState === 'correct'
+                  ? 'animate-card-correct'
+                  : answerState === 'wrong'
+                  ? 'animate-shake'
+                  : ''
+              }`}
             >
               {/* 背景のディスコ・ビートサークルパルス (正解時にパルス拡大) */}
               <div
@@ -2076,17 +2115,33 @@ export default function WordsQuizPage() {
               </div>
             </div>
 
-            {/* 4 Choices Grid (keyで問題切り替え時に完全再マウントし選択残りを根絶・インベントリスロット風) */}
+            {/* 4 Choices Grid (任天堂風スタッガーポップ＆スライドイン) */}
             <div
               key={`choices-grid-q-${currentIdx}`}
               className={`grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-1 ${
                 selectedChoiceIdx !== null || isAdvancing ? 'pointer-events-none' : ''
+              } ${
+                questionAnim === 'exit'
+                  ? 'animate-q-exit'
+                  : questionAnim === 'enter'
+                  ? 'animate-q-enter'
+                  : ''
               }`}
             >
               {currentQ.choices.map((choice, idx) => {
                 const isSelected = selectedChoiceIdx === idx;
                 const isCorrect = idx === currentQ.correctIndex;
                 const isAnswered = selectedChoiceIdx !== null;
+                const staggerClass =
+                  questionAnim === 'enter'
+                    ? idx === 0
+                      ? 'animate-choice-in-0'
+                      : idx === 1
+                      ? 'animate-choice-in-1'
+                      : idx === 2
+                      ? 'animate-choice-in-2'
+                      : 'animate-choice-in-3'
+                    : '';
 
                 let btnStyle =
                   'border-2 border-black bg-slate-900/90 text-slate-100 hover:border-amber-400 hover:bg-slate-800 shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5';
@@ -2115,7 +2170,7 @@ export default function WordsQuizPage() {
                       (e.currentTarget as HTMLElement)?.blur();
                       handleSelectChoice(idx);
                     }}
-                    className={`group h-[56px] sm:h-[62px] shrink-0 rounded-xl px-4 text-left font-black text-base sm:text-lg transition-all duration-150 flex items-center justify-between outline-none focus:outline-none select-none overflow-hidden touch-manipulation [-webkit-tap-highlight-color:transparent] ${btnStyle}`}
+                    className={`group h-[56px] sm:h-[62px] shrink-0 rounded-xl px-4 text-left font-black text-base sm:text-lg transition-all duration-150 flex items-center justify-between outline-none focus:outline-none select-none overflow-hidden touch-manipulation [-webkit-tap-highlight-color:transparent] ${btnStyle} ${staggerClass}`}
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span
