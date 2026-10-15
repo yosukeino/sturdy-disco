@@ -1388,11 +1388,15 @@ export default function WordsQuizPage() {
       // コンボ数に応じてレーザー本数を増やして発射（2本 ➔ 10コンボ達成で最大60本全弾メガバースト）
       const laserCount = getLaserCountForCombo(newCombo);
       setActiveLasers({ count: laserCount, combo: newCombo, key: performance.now() });
-      setTimeout(() => setActiveLasers(null), newCombo >= 10 ? 700 : 550);
+
+      // レーザー＆フラッシュ表示時間（通常: 550ms, 9コンボ: 1.5倍の820ms, 10コンボ: 2倍超の1200ms）
+      const laserDuration = newCombo >= 10 ? 1200 : newCombo === 9 ? 820 : 550;
+      const flashDuration = newCombo >= 10 ? 700 : newCombo === 9 ? 520 : 380;
+      setTimeout(() => setActiveLasers(null), laserDuration);
 
       // 正解画面フラッシュ発動（快感・達成感演出）
       setScreenFlash(true);
-      setTimeout(() => setScreenFlash(false), 380);
+      setTimeout(() => setScreenFlash(false), flashDuration);
 
       // コンボ数に応じてピッチが上昇するトランス・サイン波サウンド
       playSound('correct', newCombo);
@@ -1407,12 +1411,21 @@ export default function WordsQuizPage() {
       ]);
     }
 
-    // 任天堂スタイル：判定演出（0〜200ms）➔ 左へシュッとスライド退場（200ms〜340ms）➔ 右から新問題がバネ着地（340ms〜）
+    // コンボ数に応じたトランジション＆演出時間
+    // 通常: 200ms退場 ➔ 340ms次問題
+    // 9コンボ: 1.5倍の長さ（300ms退場 ➔ 510msでラスト10問目が滑り込む）
+    // 10コンボ達成時: 通常の倍以上の長さ（850ms間じっくりメガストームを堪能してからリザルトへ）
+    const isNineCombo = newCombo === 9;
+    const isTenCombo = newCombo >= 10;
+
+    const exitDelay = isNineCombo ? 300 : 200;
+    const nextQuestionDelay = isTenCombo ? 850 : isNineCombo ? 510 : 340;
+
     setTimeout(() => {
       if (currentIdx + 1 < questions.length) {
         setQuestionAnim('exit');
       }
-    }, 200);
+    }, exitDelay);
 
     setTimeout(() => {
       if (currentIdx + 1 < questions.length) {
@@ -1431,7 +1444,7 @@ export default function WordsQuizPage() {
           isAnsweringRef.current = false;
         }, 260);
       } else {
-        // 全10問完了！
+        // 全10問完了！（10コンボ達成時は850msたっぷりエフェクトを堪能した後にリザルト画面へ）
         const finalTime = performance.now() - startTime;
         setFinalElapsedMs(finalTime);
         setElapsedMs(finalTime);
@@ -1439,7 +1452,7 @@ export default function WordsQuizPage() {
         isAnsweringRef.current = false;
         handleFinishGame(newScore, newMaxCombo, finalTime);
       }
-    }, 340);
+    }, nextQuestionDelay);
   };
 
   // ---------------------------------------------------------------------------
@@ -1678,38 +1691,54 @@ export default function WordsQuizPage() {
           {/* 正解時：コンボ数連動 ネオンレーザーストーム ＆ 衝撃波バースト */}
           {activeLasers && (
             <div key={`lasers-${activeLasers.key}`} className="absolute inset-0 pointer-events-none">
-              {/* 1. ★ 10コンボ達成時（パーフェクトMAX）のみ解禁：全画面ネオンストロボ閃光 ★ */}
+              {/* 1. ★ 10コンボ達成時（パーフェクトMAX）のみ解禁：全画面ネオンストロボ閃光（倍の時間でじっくり余韻） ★ */}
               {activeLasers.combo >= 10 && (
                 <div
-                  className="absolute inset-0 pointer-events-none animate-laser-strobe bg-gradient-to-b from-cyan-400/30 via-fuchsia-500/25 to-amber-400/25"
+                  className="absolute inset-0 pointer-events-none animate-laser-strobe bg-gradient-to-b from-cyan-400/35 via-fuchsia-500/30 to-amber-400/30"
+                  style={{ animationDuration: '0.85s' }}
                 />
               )}
 
-              {/* 2. ネオン衝撃波リング: 10コンボ達成時のみ超巨大二重リング、7〜9コンボでシングルリング、6以下は非表示 */}
+              {/* 2. ネオン衝撃波リング: 10コンボ達成時のみ超巨大二重リング（倍の長さで壮大に拡散）、7〜9コンボでシングルリング（9コンボは1.5倍）、6以下は非表示 */}
               {activeLasers.combo >= 10 ? (
                 <>
                   <div
-                    className="absolute top-1/2 left-1/2 w-[650px] h-[650px] rounded-full border-4 border-cyan-300 pointer-events-none animate-laser-shockwave shadow-[0_0_80px_#22d3ee,inset_0_0_80px_#22d3ee]"
+                    className="absolute top-1/2 left-1/2 w-[680px] h-[680px] rounded-full border-4 border-cyan-300 pointer-events-none animate-laser-shockwave shadow-[0_0_90px_#22d3ee,inset_0_0_90px_#22d3ee]"
+                    style={{ animationDuration: '0.9s' }}
                   />
                   <div
-                    className="absolute top-1/2 left-1/2 w-[520px] h-[520px] rounded-full border-2 border-fuchsia-400 pointer-events-none animate-laser-shockwave shadow-[0_0_70px_#e879f9]"
-                    style={{ animationDelay: '35ms' }}
+                    className="absolute top-1/2 left-1/2 w-[540px] h-[540px] rounded-full border-2 border-fuchsia-400 pointer-events-none animate-laser-shockwave shadow-[0_0_75px_#e879f9]"
+                    style={{ animationDelay: '40ms', animationDuration: '0.9s' }}
                   />
                 </>
               ) : activeLasers.combo >= 7 ? (
                 <div
-                  className="absolute top-1/2 left-1/2 w-[400px] h-[400px] rounded-full border-2 border-cyan-400/60 pointer-events-none animate-laser-shockwave shadow-[0_0_35px_#22d3ee]"
+                  className="absolute top-1/2 left-1/2 w-[420px] h-[420px] rounded-full border-2 border-cyan-400/60 pointer-events-none animate-laser-shockwave shadow-[0_0_40px_#22d3ee]"
+                  style={activeLasers.combo === 9 ? { animationDuration: '0.7s' } : undefined}
                 />
               ) : null}
 
-              {/* 3. コンボ数連動 ネオンレーザー群 (1問目2本 ➔ 10コンボで最大60本全弾発射) */}
-              {LASER_BEAMS.slice(0, activeLasers.count).map((laser) => (
-                <div
-                  key={laser.id}
-                  className={`absolute pointer-events-none opacity-0 ${laser.animClass} ${laser.colorClass}`}
-                  style={laser.style}
-                />
-              ))}
+              {/* 3. コンボ数連動 ネオンレーザー群 (9コンボは1.5倍、10コンボは2倍の時間で光の軌跡を壮大に描く) */}
+              {LASER_BEAMS.slice(0, activeLasers.count).map((laser) => {
+                const customDuration =
+                  activeLasers.combo >= 10
+                    ? '0.85s'
+                    : activeLasers.combo === 9
+                    ? '0.68s'
+                    : undefined;
+
+                return (
+                  <div
+                    key={laser.id}
+                    className={`absolute pointer-events-none opacity-0 ${laser.animClass} ${laser.colorClass}`}
+                    style={
+                      customDuration
+                        ? { ...laser.style, animationDuration: customDuration }
+                        : laser.style
+                    }
+                  />
+                );
+              })}
             </div>
           )}
         </div>
