@@ -82,114 +82,435 @@ interface LaserBeamConfig {
 }
 
 const LASER_BEAMS: LaserBeamConfig[] = [
-  // 1: シアン（左上→右下）
+  // 1: l2r
   {
     id: 1,
     animClass: 'animate-laser-l2r',
-    style: { top: '-10%', left: '5%', width: '4px', height: '1000px' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-cyan-400 to-transparent blur-sm shadow-[0_0_12px_rgba(34,211,238,0.9)]',
+    style: { top: '-15%', left: '5%', width: '12px', height: '1200px', animationDelay: '0ms', ['--laser-deg' as string]: '-28deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
   },
-  // 2: マゼンタ（右上→左下、クロス）
+  // 2: r2l
   {
     id: 2,
     animClass: 'animate-laser-r2l',
-    style: { top: '-5%', right: '8%', width: '3.5px', height: '1000px', animationDelay: '20ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-fuchsia-400 to-transparent blur-sm shadow-[0_0_12px_rgba(232,121,249,0.9)]',
+    style: { top: '-10%', right: '5%', width: '12px', height: '1200px', animationDelay: '20ms', ['--laser-deg' as string]: '28deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
   },
-  // 3: ゴールド（左下寄り、左→右）
+  // 3: fan
   {
     id: 3,
-    animClass: 'animate-laser-l2r',
-    style: { top: '10%', left: '18%', width: '3px', height: '950px', animationDelay: '40ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-amber-300 to-transparent blur-sm shadow-[0_0_12px_rgba(251,191,36,0.9)]',
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '16px', height: '115vh', animationDelay: '10ms', ['--fan-angle' as string]: '-35deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-yellow-200 to-transparent blur-[1px] shadow-[0_0_20px_#fde047,0_0_50px_rgba(253,224,71,0.95),0_0_90px_rgba(234,179,8,0.85)]',
   },
-  // 4: エメラルド（右寄り、右→左）
+  // 4: fan
   {
     id: 4,
-    animClass: 'animate-laser-r2l',
-    style: { top: '0%', right: '22%', width: '3.5px', height: '950px', animationDelay: '50ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-emerald-400 to-transparent blur-sm shadow-[0_0_12px_rgba(52,211,153,0.9)]',
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '16px', height: '115vh', animationDelay: '10ms', ['--fan-angle' as string]: '35deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
   },
-  // 5: パープル（垂直センター突き抜け）
+  // 5: vert
   {
     id: 5,
     animClass: 'animate-laser-vert',
-    style: { top: '0%', left: '50%', width: '3px', height: '100vh', animationDelay: '60ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-purple-400 to-transparent blur-sm shadow-[0_0_12px_rgba(192,132,252,0.9)]',
+    style: { top: '0%', left: '50%', width: '28px', height: '100vh', animationDelay: '30ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_30px_#ffffff,0_0_70px_#38bdf8,0_0_120px_#818cf8]',
   },
-  // 6: アイスシアン（左寄り、高速）
+  // 6: l2r
   {
     id: 6,
     animClass: 'animate-laser-l2r',
-    style: { top: '-15%', left: '32%', width: '4px', height: '1000px', animationDelay: '80ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-sm shadow-[0_0_14px_rgba(103,232,249,0.9)]',
+    style: { top: '5%', left: '20%', width: '10px', height: '1100px', animationDelay: '40ms', ['--laser-deg' as string]: '-20deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-emerald-300 to-transparent blur-[1px] shadow-[0_0_20px_#34d399,0_0_50px_rgba(52,211,153,0.95),0_0_90px_rgba(16,185,129,0.8)]',
   },
-  // 7: ホットローズ（右端）
+  // 7: r2l
   {
     id: 7,
     animClass: 'animate-laser-r2l',
-    style: { top: '8%', right: '4%', width: '3.5px', height: '900px', animationDelay: '90ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-rose-400 to-transparent blur-sm shadow-[0_0_14px_rgba(251,113,133,0.9)]',
+    style: { top: '8%', right: '18%', width: '10px', height: '1100px', animationDelay: '45ms', ['--laser-deg' as string]: '22deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-rose-300 to-transparent blur-[1px] shadow-[0_0_20px_#fb7185,0_0_50px_rgba(251,113,133,0.95),0_0_90px_rgba(244,63,94,0.8)]',
   },
-  // 8: ソーラーゴールド（垂直左寄り）
+  // 8: horiz
   {
     id: 8,
-    animClass: 'animate-laser-vert',
-    style: { top: '0%', left: '22%', width: '3.5px', height: '100vh', animationDelay: '100ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-yellow-300 to-transparent blur-sm shadow-[0_0_15px_rgba(253,224,71,0.95)]',
+    animClass: 'animate-laser-horiz',
+    style: { top: '25%', left: '0%', width: '100vw', height: '10px', animationDelay: '50ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-sky-300 to-transparent blur-[1px] shadow-[0_0_20px_#38bdf8,0_0_50px_rgba(56,189,248,0.95),0_0_90px_rgba(14,165,233,0.8)]',
   },
-  // 9: エレクトリックブルー（垂直右寄り）
+  // 9: horiz
   {
     id: 9,
-    animClass: 'animate-laser-vert',
-    style: { top: '0%', right: '22%', width: '3.5px', height: '100vh', animationDelay: '110ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-blue-400 to-transparent blur-sm shadow-[0_0_15px_rgba(96,165,250,0.95)]',
+    animClass: 'animate-laser-horiz',
+    style: { top: '75%', left: '0%', width: '100vw', height: '12px', animationDelay: '60ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-yellow-200 to-transparent blur-[1px] shadow-[0_0_20px_#fde047,0_0_50px_rgba(253,224,71,0.95),0_0_90px_rgba(234,179,8,0.85)]',
   },
-  // 10: ホワイトネオン（超強力クロス主砲）
+  // 10: fan
   {
     id: 10,
-    animClass: 'animate-laser-l2r',
-    style: { top: '-5%', left: '12%', width: '5px', height: '1050px', animationDelay: '120ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_20px_rgba(255,255,255,1)]',
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '14px', height: '110vh', animationDelay: '35ms', ['--fan-angle' as string]: '-15deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
   },
-  // 11: ホワイトネオン反転（超強力クロス主砲）
+  // 11: fan
   {
     id: 11,
-    animClass: 'animate-laser-r2l',
-    style: { top: '-5%', right: '12%', width: '5px', height: '1050px', animationDelay: '130ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_20px_rgba(255,255,255,1)]',
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '14px', height: '110vh', animationDelay: '35ms', ['--fan-angle' as string]: '15deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-sky-300 to-transparent blur-[1px] shadow-[0_0_20px_#38bdf8,0_0_50px_rgba(56,189,248,0.95),0_0_90px_rgba(14,165,233,0.8)]',
   },
-  // 12: 黄金神速主砲（中央全方位バースト）
+  // 12: vert
   {
     id: 12,
     animClass: 'animate-laser-vert',
-    style: { top: '0%', left: '50%', width: '6px', height: '100vh', animationDelay: '140ms' },
-    colorClass:
-      'bg-gradient-to-b from-transparent via-amber-200 to-transparent blur-[3px] shadow-[0_0_25px_rgba(251,191,36,1)]',
+    style: { top: '0%', left: '15%', width: '18px', height: '100vh', animationDelay: '70ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
+  },
+  // 13: vert
+  {
+    id: 13,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', right: '15%', width: '18px', height: '100vh', animationDelay: '75ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
+  },
+  // 14: l2r
+  {
+    id: 14,
+    animClass: 'animate-laser-l2r',
+    style: { top: '-5%', left: '35%', width: '14px', height: '1200px', animationDelay: '80ms', ['--laser-deg' as string]: '-35deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-yellow-200 to-transparent blur-[1px] shadow-[0_0_20px_#fde047,0_0_50px_rgba(253,224,71,0.95),0_0_90px_rgba(234,179,8,0.85)]',
+  },
+  // 15: r2l
+  {
+    id: 15,
+    animClass: 'animate-laser-r2l',
+    style: { top: '-8%', right: '35%', width: '14px', height: '1200px', animationDelay: '85ms', ['--laser-deg' as string]: '35deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-emerald-300 to-transparent blur-[1px] shadow-[0_0_20px_#34d399,0_0_50px_rgba(52,211,153,0.95),0_0_90px_rgba(16,185,129,0.8)]',
+  },
+  // 16: ambient
+  {
+    id: 16,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '30%', width: '140px', height: '100vh', animationDelay: '20ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent blur-[35px] shadow-[0_0_100px_rgba(34,211,238,0.8)]',
+  },
+  // 17: l2r
+  {
+    id: 17,
+    animClass: 'animate-laser-l2r',
+    style: { top: '-20%', left: '10%', width: '14px', height: '1300px', animationDelay: '90ms', ['--laser-deg' as string]: '-40deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-rose-300 to-transparent blur-[1px] shadow-[0_0_20px_#fb7185,0_0_50px_rgba(251,113,133,0.95),0_0_90px_rgba(244,63,94,0.8)]',
+  },
+  // 18: r2l
+  {
+    id: 18,
+    animClass: 'animate-laser-r2l',
+    style: { top: '-20%', right: '10%', width: '14px', height: '1300px', animationDelay: '95ms', ['--laser-deg' as string]: '40deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-sky-300 to-transparent blur-[1px] shadow-[0_0_20px_#38bdf8,0_0_50px_rgba(56,189,248,0.95),0_0_90px_rgba(14,165,233,0.8)]',
+  },
+  // 19: fan
+  {
+    id: 19,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '18px', height: '120vh', animationDelay: '60ms', ['--fan-angle' as string]: '-50deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
+  },
+  // 20: fan
+  {
+    id: 20,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '18px', height: '120vh', animationDelay: '60ms', ['--fan-angle' as string]: '50deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
+  },
+  // 21: horiz
+  {
+    id: 21,
+    animClass: 'animate-laser-horiz',
+    style: { top: '48%', left: '0%', width: '100vw', height: '14px', animationDelay: '100ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_30px_#ffffff,0_0_70px_#38bdf8,0_0_120px_#818cf8]',
+  },
+  // 22: vert
+  {
+    id: 22,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '35%', width: '22px', height: '100vh', animationDelay: '110ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-yellow-200 to-transparent blur-[1px] shadow-[0_0_20px_#fde047,0_0_50px_rgba(253,224,71,0.95),0_0_90px_rgba(234,179,8,0.85)]',
+  },
+  // 23: vert
+  {
+    id: 23,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', right: '35%', width: '22px', height: '100vh', animationDelay: '115ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-emerald-300 to-transparent blur-[1px] shadow-[0_0_20px_#34d399,0_0_50px_rgba(52,211,153,0.95),0_0_90px_rgba(16,185,129,0.8)]',
+  },
+  // 24: l2r
+  {
+    id: 24,
+    animClass: 'animate-laser-l2r',
+    style: { top: '15%', left: '0%', width: '12px', height: '1100px', animationDelay: '120ms', ['--laser-deg' as string]: '-15deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
+  },
+  // 25: r2l
+  {
+    id: 25,
+    animClass: 'animate-laser-r2l',
+    style: { top: '15%', right: '0%', width: '12px', height: '1100px', animationDelay: '125ms', ['--laser-deg' as string]: '15deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
+  },
+  // 26: ambient
+  {
+    id: 26,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', right: '25%', width: '160px', height: '100vh', animationDelay: '50ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-400/40 to-transparent blur-[35px] shadow-[0_0_100px_rgba(232,121,249,0.8)]',
+  },
+  // 27: l2r
+  {
+    id: 27,
+    animClass: 'animate-laser-l2r',
+    style: { top: '-10%', left: '12%', width: '24px', height: '1300px', animationDelay: '130ms', ['--laser-deg' as string]: '-30deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_30px_#ffffff,0_0_70px_#38bdf8,0_0_120px_#818cf8]',
+  },
+  // 28: r2l
+  {
+    id: 28,
+    animClass: 'animate-laser-r2l',
+    style: { top: '-10%', right: '12%', width: '24px', height: '1300px', animationDelay: '135ms', ['--laser-deg' as string]: '30deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_30px_#ffffff,0_0_70px_#38bdf8,0_0_120px_#818cf8]',
+  },
+  // 29: fan
+  {
+    id: 29,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '20px', height: '125vh', animationDelay: '80ms', ['--fan-angle' as string]: '-60deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-yellow-200 to-transparent blur-[1px] shadow-[0_0_20px_#fde047,0_0_50px_rgba(253,224,71,0.95),0_0_90px_rgba(234,179,8,0.85)]',
+  },
+  // 30: fan
+  {
+    id: 30,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '20px', height: '125vh', animationDelay: '80ms', ['--fan-angle' as string]: '60deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-rose-300 to-transparent blur-[1px] shadow-[0_0_20px_#fb7185,0_0_50px_rgba(251,113,133,0.95),0_0_90px_rgba(244,63,94,0.8)]',
+  },
+  // 31: fan
+  {
+    id: 31,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '16px', height: '120vh', animationDelay: '85ms', ['--fan-angle' as string]: '-25deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-emerald-300 to-transparent blur-[1px] shadow-[0_0_20px_#34d399,0_0_50px_rgba(52,211,153,0.95),0_0_90px_rgba(16,185,129,0.8)]',
+  },
+  // 32: fan
+  {
+    id: 32,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '16px', height: '120vh', animationDelay: '85ms', ['--fan-angle' as string]: '25deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
+  },
+  // 33: vert
+  {
+    id: 33,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '8%', width: '24px', height: '100vh', animationDelay: '140ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
+  },
+  // 34: vert
+  {
+    id: 34,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', right: '8%', width: '24px', height: '100vh', animationDelay: '145ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-sky-300 to-transparent blur-[1px] shadow-[0_0_20px_#38bdf8,0_0_50px_rgba(56,189,248,0.95),0_0_90px_rgba(14,165,233,0.8)]',
+  },
+  // 35: horiz
+  {
+    id: 35,
+    animClass: 'animate-laser-horiz',
+    style: { top: '15%', left: '0%', width: '100vw', height: '14px', animationDelay: '150ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
+  },
+  // 36: horiz
+  {
+    id: 36,
+    animClass: 'animate-laser-horiz',
+    style: { top: '85%', left: '0%', width: '100vw', height: '16px', animationDelay: '155ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
+  },
+  // 37: l2r
+  {
+    id: 37,
+    animClass: 'animate-laser-l2r',
+    style: { top: '-5%', left: '45%', width: '14px', height: '1200px', animationDelay: '160ms', ['--laser-deg' as string]: '-25deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-sky-300 to-transparent blur-[1px] shadow-[0_0_20px_#38bdf8,0_0_50px_rgba(56,189,248,0.95),0_0_90px_rgba(14,165,233,0.8)]',
+  },
+  // 38: r2l
+  {
+    id: 38,
+    animClass: 'animate-laser-r2l',
+    style: { top: '-5%', right: '45%', width: '14px', height: '1200px', animationDelay: '165ms', ['--laser-deg' as string]: '25deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-yellow-200 to-transparent blur-[1px] shadow-[0_0_20px_#fde047,0_0_50px_rgba(253,224,71,0.95),0_0_90px_rgba(234,179,8,0.85)]',
+  },
+  // 39: vert
+  {
+    id: 39,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '50%', width: '40px', height: '100vh', animationDelay: '100ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-amber-200 to-transparent blur-[3px] shadow-[0_0_40px_#ffffff,0_0_90px_#f59e0b,0_0_150px_#d97706]',
+  },
+  // 40: fan
+  {
+    id: 40,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '22px', height: '130vh', animationDelay: '110ms', ['--fan-angle' as string]: '-42deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_30px_#ffffff,0_0_70px_#38bdf8,0_0_120px_#818cf8]',
+  },
+  // 41: fan
+  {
+    id: 41,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '22px', height: '130vh', animationDelay: '110ms', ['--fan-angle' as string]: '42deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_30px_#ffffff,0_0_70px_#38bdf8,0_0_120px_#818cf8]',
+  },
+  // 42: l2r
+  {
+    id: 42,
+    animClass: 'animate-laser-l2r',
+    style: { top: '-15%', left: '25%', width: '16px', height: '1300px', animationDelay: '170ms', ['--laser-deg' as string]: '-35deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
+  },
+  // 43: r2l
+  {
+    id: 43,
+    animClass: 'animate-laser-r2l',
+    style: { top: '-15%', right: '25%', width: '16px', height: '1300px', animationDelay: '175ms', ['--laser-deg' as string]: '35deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
+  },
+  // 44: horiz
+  {
+    id: 44,
+    animClass: 'animate-laser-horiz',
+    style: { top: '35%', left: '0%', width: '100vw', height: '18px', animationDelay: '180ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-yellow-200 to-transparent blur-[1px] shadow-[0_0_20px_#fde047,0_0_50px_rgba(253,224,71,0.95),0_0_90px_rgba(234,179,8,0.85)]',
+  },
+  // 45: horiz
+  {
+    id: 45,
+    animClass: 'animate-laser-horiz',
+    style: { top: '65%', left: '0%', width: '100vw', height: '18px', animationDelay: '185ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-emerald-300 to-transparent blur-[1px] shadow-[0_0_20px_#34d399,0_0_50px_rgba(52,211,153,0.95),0_0_90px_rgba(16,185,129,0.8)]',
+  },
+  // 46: ambient
+  {
+    id: 46,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '10%', width: '200px', height: '100vh', animationDelay: '60ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent blur-[35px] shadow-[0_0_100px_rgba(34,211,238,0.8)]',
+  },
+  // 47: ambient
+  {
+    id: 47,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', right: '10%', width: '200px', height: '100vh', animationDelay: '70ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-400/40 to-transparent blur-[35px] shadow-[0_0_100px_rgba(232,121,249,0.8)]',
+  },
+  // 48: vert
+  {
+    id: 48,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '25%', width: '30px', height: '100vh', animationDelay: '190ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_30px_#ffffff,0_0_70px_#38bdf8,0_0_120px_#818cf8]',
+  },
+  // 49: vert
+  {
+    id: 49,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '50%', width: '55px', height: '100vh', animationDelay: '80ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-amber-200 to-transparent blur-[3px] shadow-[0_0_40px_#ffffff,0_0_90px_#f59e0b,0_0_150px_#d97706]',
+  },
+  // 50: l2r
+  {
+    id: 50,
+    animClass: 'animate-laser-l2r',
+    style: { top: '-10%', left: '0%', width: '32px', height: '1400px', animationDelay: '120ms', ['--laser-deg' as string]: '-32deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_30px_#ffffff,0_0_70px_#38bdf8,0_0_120px_#818cf8]',
+  },
+  // 51: r2l
+  {
+    id: 51,
+    animClass: 'animate-laser-r2l',
+    style: { top: '-10%', right: '0%', width: '32px', height: '1400px', animationDelay: '125ms', ['--laser-deg' as string]: '32deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_30px_#ffffff,0_0_70px_#38bdf8,0_0_120px_#818cf8]',
+  },
+  // 52: fan
+  {
+    id: 52,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '24px', height: '135vh', animationDelay: '90ms', ['--fan-angle' as string]: '-70deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
+  },
+  // 53: fan
+  {
+    id: 53,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '24px', height: '135vh', animationDelay: '90ms', ['--fan-angle' as string]: '70deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
+  },
+  // 54: fan
+  {
+    id: 54,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '24px', height: '135vh', animationDelay: '95ms', ['--fan-angle' as string]: '-5deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-amber-200 to-transparent blur-[3px] shadow-[0_0_40px_#ffffff,0_0_90px_#f59e0b,0_0_150px_#d97706]',
+  },
+  // 55: fan
+  {
+    id: 55,
+    animClass: 'animate-laser-fan',
+    style: { top: '-10%', left: '50%', width: '24px', height: '135vh', animationDelay: '95ms', ['--fan-angle' as string]: '5deg' },
+    colorClass: 'bg-gradient-to-b from-transparent via-amber-200 to-transparent blur-[3px] shadow-[0_0_40px_#ffffff,0_0_90px_#f59e0b,0_0_150px_#d97706]',
+  },
+  // 56: horiz
+  {
+    id: 56,
+    animClass: 'animate-laser-horiz',
+    style: { top: '50%', left: '0%', width: '100vw', height: '24px', animationDelay: '140ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-amber-200 to-transparent blur-[3px] shadow-[0_0_40px_#ffffff,0_0_90px_#f59e0b,0_0_150px_#d97706]',
+  },
+  // 57: ambient
+  {
+    id: 57,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '50%', width: '280px', height: '100vh', animationDelay: '40ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent blur-[35px] shadow-[0_0_100px_rgba(34,211,238,0.8)]',
+  },
+  // 58: ambient
+  {
+    id: 58,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '50%', width: '280px', height: '100vh', animationDelay: '50ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-400/40 to-transparent blur-[35px] shadow-[0_0_100px_rgba(232,121,249,0.8)]',
+  },
+  // 59: vert
+  {
+    id: 59,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '40%', width: '30px', height: '100vh', animationDelay: '150ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-[1px] shadow-[0_0_20px_#22d3ee,0_0_50px_rgba(34,211,238,0.95),0_0_90px_rgba(6,182,212,0.8)]',
+  },
+  // 60: vert
+  {
+    id: 60,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', right: '40%', width: '30px', height: '100vh', animationDelay: '155ms' },
+    colorClass: 'bg-gradient-to-b from-transparent via-fuchsia-300 to-transparent blur-[1px] shadow-[0_0_20px_#e879f9,0_0_50px_rgba(232,121,249,0.95),0_0_90px_rgba(217,70,239,0.8)]',
   },
 ];
 
 function getLaserCountForCombo(comboCount: number): number {
-  if (comboCount <= 1) return 1;
-  if (comboCount === 2) return 2;
-  if (comboCount === 3) return 3;
-  if (comboCount === 4) return 4;
-  if (comboCount === 5) return 5;
-  if (comboCount === 6) return 7;
-  if (comboCount === 7) return 9;
-  if (comboCount === 8) return 10;
-  return 12; // 9〜10コンボ: 12本全弾一斉発射！
+  if (comboCount <= 1) return 16; // 初回正解から16本の一斉射出！
+  if (comboCount === 2) return 26; // 2コンボ: 26本
+  if (comboCount === 3) return 34; // 3コンボ: 34本
+  if (comboCount === 4) return 42; // 4コンボ: 42本
+  if (comboCount === 5) return 50; // 5コンボ: 50本
+  return 60; // 6〜10コンボ: 60本全弾メガバースト！
 }
 
 // -----------------------------------------------------------------------------
@@ -1285,13 +1606,13 @@ export default function WordsQuizPage() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden">
-      {/* 正解時の画面フラッシュエフェクト（快感・達成感を高める演出） */}
+      {/* 正解時の画面フラッシュエフェクト（快感・達成感を高める10倍発光ネオンフラッシュ） */}
       {screenFlash && (
         <div
-          className="pointer-events-none fixed inset-0 z-50 animate-screen-flash"
+          className="pointer-events-none fixed inset-0 z-50 animate-screen-flash mix-blend-screen"
           style={{
             background:
-              'radial-gradient(ellipse at center, rgba(52, 211, 153, 0.35) 0%, rgba(16, 185, 129, 0.18) 45%, rgba(245, 158, 11, 0.08) 75%, transparent 100%)',
+              'radial-gradient(ellipse at center, rgba(34, 211, 238, 0.65) 0%, rgba(232, 121, 249, 0.45) 40%, rgba(251, 191, 36, 0.25) 75%, transparent 100%)',
           }}
         />
       )}
@@ -1312,15 +1633,30 @@ export default function WordsQuizPage() {
         />
       )}
 
-      {/* Disco Lasers & Floor Glow (コンボ数連動レーザーストーム) */}
+      {/* Disco Lasers & Floor Glow (コンボ数連動レーザーストーム・光量10倍化) */}
       {phase === 'battle' && (
-        <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
-          {/* ディスコフロア・ビジュアライザーグラデーション */}
-          <div className="absolute bottom-0 inset-x-0 h-72 bg-gradient-to-t from-cyan-950/40 via-purple-950/20 to-transparent opacity-70" />
+        <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden mix-blend-screen">
+          {/* ディスコフロア・ビジュアライザーグラデーション（底面からのアンビエントネオン光） */}
+          <div className="absolute bottom-0 inset-x-0 h-96 bg-gradient-to-t from-cyan-950/60 via-purple-950/30 to-transparent opacity-80" />
 
-          {/* コンボ数に応じて本数が増えるネオンレーザー群 (1本 ➔ 最大12本) */}
+          {/* 正解時：コンボ数連動 ネオンレーザーストーム ＆ 衝撃波バースト */}
           {activeLasers && (
             <div key={`lasers-${activeLasers.key}`} className="absolute inset-0 pointer-events-none">
+              {/* 1. 画面中央からの巨大ネオン衝撃波リング (Shockwave Rings) */}
+              <div
+                className="absolute top-1/2 left-1/2 w-[650px] h-[650px] rounded-full border-4 border-cyan-300 pointer-events-none animate-laser-shockwave shadow-[0_0_80px_#22d3ee,inset_0_0_80px_#22d3ee]"
+              />
+              <div
+                className="absolute top-1/2 left-1/2 w-[520px] h-[520px] rounded-full border-2 border-fuchsia-400 pointer-events-none animate-laser-shockwave shadow-[0_0_70px_#e879f9]"
+                style={{ animationDelay: '35ms' }}
+              />
+
+              {/* 2. 画面全体を包む瞬間的ネオンストロボフラッシュ (Strobe Burst) */}
+              <div
+                className="absolute inset-0 pointer-events-none animate-laser-strobe bg-gradient-to-b from-cyan-400/25 via-fuchsia-500/20 to-amber-400/20"
+              />
+
+              {/* 3. コンボ数連動 ネオンレーザー群 (16本〜最大60本全弾発射) */}
               {LASER_BEAMS.slice(0, activeLasers.count).map((laser) => (
                 <div
                   key={laser.id}

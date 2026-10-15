@@ -629,63 +629,163 @@
   }
 }
 
+/* ==========================================================================
+   Disco Laser Storm (10x Blinding Neon Rays, Beams & Burst FX)
+   ========================================================================== */
+
 @keyframes laserSweepL2R {
   0% {
     opacity: 0;
-    transform: translateX(-120%) rotate(-28deg);
+    transform: translateX(-150%) rotate(var(--laser-deg, -28deg)) scaleY(0.8);
+    filter: brightness(1.3);
   }
-  40% {
-    opacity: 0.95;
+  35% {
+    opacity: 1;
+    filter: brightness(2.2) contrast(1.3);
   }
   100% {
     opacity: 0;
-    transform: translateX(250%) rotate(-28deg);
+    transform: translateX(280%) rotate(var(--laser-deg, -28deg)) scaleY(1.1);
+    filter: brightness(1);
   }
 }
 
 @keyframes laserSweepR2L {
   0% {
     opacity: 0;
-    transform: translateX(120%) rotate(28deg);
+    transform: translateX(150%) rotate(var(--laser-deg, 28deg)) scaleY(0.8);
+    filter: brightness(1.3);
   }
-  40% {
-    opacity: 0.95;
+  35% {
+    opacity: 1;
+    filter: brightness(2.2) contrast(1.3);
   }
   100% {
     opacity: 0;
-    transform: translateX(-250%) rotate(28deg);
+    transform: translateX(-280%) rotate(var(--laser-deg, 28deg)) scaleY(1.1);
+    filter: brightness(1);
   }
 }
 
 @keyframes laserSweepVert {
   0% {
     opacity: 0;
-    transform: translateY(-80%) scaleY(0.5);
+    transform: translateY(-90%) scaleX(0.7);
+    filter: brightness(1.3);
   }
-  40% {
-    opacity: 0.9;
-    transform: translateY(10%) scaleY(1.3);
+  35% {
+    opacity: 1;
+    transform: translateY(0%) scaleX(1.3);
+    filter: brightness(2.5);
   }
   100% {
     opacity: 0;
-    transform: translateY(150%) scaleY(0.6);
+    transform: translateY(160%) scaleX(0.8);
+    filter: brightness(1);
+  }
+}
+
+@keyframes laserSweepHoriz {
+  0% {
+    opacity: 0;
+    transform: translateX(-130%) scaleY(0.8);
+    filter: brightness(1.3);
+  }
+  35% {
+    opacity: 1;
+    transform: translateX(10%) scaleY(1.4);
+    filter: brightness(2.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(170%) scaleY(0.8);
+    filter: brightness(1);
+  }
+}
+
+/* 天頂ファン・扇状放射レーザー */
+@keyframes laserFanBurst {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(var(--fan-angle, 0deg));
+    filter: brightness(1.5);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.15) rotate(var(--fan-angle, 0deg));
+    filter: brightness(2.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4) rotate(var(--fan-angle, 0deg));
+    filter: brightness(1);
+  }
+}
+
+/* 画面中央からの巨大ネオン衝撃波リング */
+@keyframes laserShockwavePulse {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.2);
+    filter: brightness(2.5);
+  }
+  45% {
+    opacity: 0.95;
+    filter: brightness(2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.8);
+    filter: brightness(1);
+  }
+}
+
+/* 画面全体ネオンストロボフラッシュ */
+@keyframes laserStrobeBurst {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.98);
+  }
+  35% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
   }
 }
 
 .animate-laser {
-  animation: laserSweepL2R 0.45s ease-out forwards;
+  animation: laserSweepL2R 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-laser-l2r {
-  animation: laserSweepL2R 0.45s ease-out forwards;
+  animation: laserSweepL2R 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-laser-r2l {
-  animation: laserSweepR2L 0.45s ease-out forwards;
+  animation: laserSweepR2L 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-laser-vert {
-  animation: laserSweepVert 0.45s ease-out forwards;
+  animation: laserSweepVert 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-laser-horiz {
+  animation: laserSweepHoriz 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-laser-fan {
+  transform-origin: top center;
+  animation: laserFanBurst 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-laser-shockwave {
+  animation: laserShockwavePulse 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-laser-strobe {
+  animation: laserStrobeBurst 0.42s ease-out forwards;
 }
 
 /* ==========================================================================
