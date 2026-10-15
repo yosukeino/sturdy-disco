@@ -1371,7 +1371,7 @@ export default function WordsQuizPage() {
                     ⚡
                   </span>
                   <h2 className="text-sm sm:text-base font-black text-white tracking-tight truncate font-mono uppercase">
-                    STUDISCO [LADDER S1]
+                    STUDISCO [{selectedCourseObj.name.toUpperCase()}]
                   </h2>
                   <span className="rounded-full bg-amber-500/20 border border-amber-400/50 px-2 py-0.5 text-[10px] font-mono font-black text-amber-300 shrink-0">
                     ONLINE
@@ -1410,13 +1410,13 @@ export default function WordsQuizPage() {
                     value={playerName}
                     onChange={(e) => handleSelectPlayerName(e.target.value)}
                     placeholder="名前を入力 (例: まひる)"
-                    className="w-full rounded-xl bg-slate-900 border-2 border-slate-700 px-3.5 py-2 text-sm sm:text-base font-black text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-mono"
+                    className="w-full rounded-xl bg-slate-900 border-2 border-slate-750 px-3.5 py-2 text-sm sm:text-base font-black text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-mono"
                   />
                 </div>
               </div>
             </div>
 
-            {/* MIDDLE BLOCK: モード選択（Borderlands Loot Tier Cards） */}
+            {/* MIDDLE BLOCK: モード選択（Borderlands Loot Tier Cards: 3コース展開） */}
             <div className="flex-1 flex flex-col justify-center space-y-1.5 min-h-0 py-1 sm:py-2 relative z-10">
               <div className="flex items-center justify-between px-0.5 shrink-0 font-mono text-[10px]">
                 <h3 className="text-xs sm:text-sm font-black text-slate-200 flex items-center gap-1.5 font-mono uppercase">
@@ -1426,10 +1426,34 @@ export default function WordsQuizPage() {
                 <span className="text-amber-400/90 font-bold">[週間ラダー: 毎週木曜更新]</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 sm:gap-3 flex-1 min-h-[140px] max-h-[250px] sm:max-h-[280px]">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 flex-1 min-h-[135px] max-h-[250px] sm:max-h-[280px]">
                 {COURSES.map((course) => {
                   const isSelected = selectedCourse === course.id;
-                  const isSeason = course.id === 'season1';
+                  const isSeason1 = course.id === 'season1';
+                  const isSeason2 = course.id === 'season2';
+
+                  let cardStyle = '';
+                  if (isSelected) {
+                    if (isSeason1) {
+                      cardStyle =
+                        'border-amber-400 bg-gradient-to-br from-amber-950/80 via-slate-900 to-orange-950/80 bl-legendary animate-bl-pulse-gold ring-1 ring-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)]';
+                    } else if (isSeason2) {
+                      cardStyle =
+                        'border-cyan-400 bg-gradient-to-br from-cyan-950/80 via-slate-900 to-indigo-950/80 bl-legendary animate-bl-pulse-cyan ring-1 ring-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.3)]';
+                    } else {
+                      cardStyle =
+                        'border-blue-400 bg-gradient-to-br from-blue-950/80 via-slate-900 to-slate-900 bl-rare ring-1 ring-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]';
+                    }
+                  } else {
+                    if (isSeason1) {
+                      cardStyle = 'border-slate-800 bg-slate-950/70 hover:border-amber-400/60';
+                    } else if (isSeason2) {
+                      cardStyle = 'border-slate-800 bg-slate-950/70 hover:border-cyan-400/60';
+                    } else {
+                      cardStyle = 'border-slate-800 bg-slate-950/70 hover:border-blue-400/60';
+                    }
+                  }
+
                   return (
                     <button
                       key={course.id}
@@ -1438,41 +1462,33 @@ export default function WordsQuizPage() {
                         setSelectedCourse(course.id);
                         playSound('click');
                       }}
-                      className={`text-left rounded-2xl p-3 sm:p-4 border-3 transition-all relative flex flex-col justify-between h-full bl-comic-border ${
-                        isSeason
-                          ? isSelected
-                            ? 'border-amber-400 bg-gradient-to-br from-amber-950/80 via-slate-900 to-orange-950/80 bl-legendary animate-bl-pulse-gold ring-1 ring-amber-400'
-                            : 'border-slate-800 bg-slate-950/70 hover:border-amber-400/60'
-                          : isSelected
-                          ? 'border-cyan-400 bg-gradient-to-br from-blue-950/80 via-slate-900 to-cyan-950/80 bl-rare animate-bl-pulse-cyan ring-1 ring-cyan-400'
-                          : 'border-slate-800 bg-slate-950/70 hover:border-cyan-400/60'
-                      }`}
+                      className={`text-left rounded-2xl p-2 sm:p-3.5 border-3 transition-all relative flex flex-col justify-between h-full bl-comic-border ${cardStyle}`}
                     >
                       <div className="space-y-1">
                         <div className="flex items-start justify-between gap-1">
-                          <span className="text-2xl sm:text-3xl shrink-0">{course.icon}</span>
+                          <span className="text-xl sm:text-2xl shrink-0">{course.icon}</span>
                           {isSelected && (
-                            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-400 text-slate-950 shadow-sm bl-comic-border">
-                              <Check className="h-3.5 w-3.5 stroke-[3]" />
+                            <div className="flex h-4 w-4 sm:h-5 sm:w-5 shrink-0 items-center justify-center rounded-full bg-amber-400 text-slate-950 shadow-sm bl-comic-border">
+                              <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[3]" />
                             </div>
                           )}
                         </div>
                         <div>
-                          <span className="font-black text-sm sm:text-base text-white block leading-tight font-mono uppercase">
+                          <span className="font-black text-xs sm:text-sm text-white block leading-tight font-mono uppercase">
                             {course.name}
                           </span>
-                          <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium line-clamp-2 mt-0.5 leading-snug">
+                          <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium line-clamp-2 mt-0.5 leading-tight sm:leading-snug">
                             {course.description}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between gap-1 pt-2 border-t border-slate-800/80 font-mono text-[10px]">
-                        <span className={`px-2 py-0.5 rounded-full font-black bl-comic-border ${course.badgeStyle}`}>
-                          {isSeason ? '★ LEGENDARY' : '◆ RARE'}
+                      <div className="flex items-center justify-between gap-1 pt-1.5 sm:pt-2 border-t border-slate-800/80 font-mono text-[9px] sm:text-[10px]">
+                        <span className={`px-1.5 sm:px-2 py-0.5 rounded-full font-black bl-comic-border truncate ${course.badgeStyle}`}>
+                          {isSeason1 ? '★ S1' : isSeason2 ? '⚡ S2' : '◆ 練習'}
                         </span>
                         <span className="text-slate-400 font-bold shrink-0">
-                          [10 Q]
+                          [10Q]
                         </span>
                       </div>
                     </button>
@@ -2132,6 +2148,20 @@ export default function WordsQuizPage() {
                   }`}
                 >
                   <span>🏆 Season 1</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLeaderboardFilterCourse('season2');
+                    playSound('click');
+                  }}
+                  className={`rounded-lg px-3 py-1.5 transition-all ${
+                    leaderboardFilterCourse === 'season2'
+                      ? 'bg-amber-400 text-slate-950 font-black border border-black shadow-[2px_2px_0px_#000]'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <span>⚡ Season 2</span>
                 </button>
                 <button
                   type="button"

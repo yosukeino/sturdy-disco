@@ -406,6 +406,71 @@ export const SEASON_1_WORDS: WordItem[] = [
   { id: 's1-o6', en: 'every day', jp: '毎日', level: 'j1', partOfSpeech: 'other' },
 ];
 
+// =============================================================================
+// シーズン2: S7〜S12 例文学習 頻出重要単語（全50語）
+// 抽象的な代名詞・冠詞・be動詞・助動詞等を除外し、
+// 実質的な意味を持つ動詞・名詞・形容詞・副詞・連語のみで厳選
+// =============================================================================
+export const SEASON_2_WORDS: WordItem[] = [
+  // --- 動詞 (Verbs: 20語) ---
+  { id: 's2-v1', en: 'swim', jp: '泳ぐ', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v2', en: 'hear', jp: '聞こえる・聞く', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v3', en: 'drive', jp: '運転する', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v4', en: 'cook', jp: '料理する', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v5', en: 'see', jp: '見える・見る', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v6', en: 'read', jp: '読む', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v7', en: 'wash', jp: '洗う', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v8', en: 'wake up', jp: '起きる', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v9', en: 'use', jp: '使う', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v10', en: 'open', jp: '開ける・開く', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v11', en: 'turn', jp: '曲がる', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v12', en: 'help', jp: '手伝う・助ける', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v13', en: 'worry', jp: '心配する', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v14', en: 'walk', jp: '歩く', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v15', en: 'touch', jp: '触る・触れる', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v16', en: 'ask', jp: 'たずねる・聞く', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v17', en: 'sit', jp: '座る', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v18', en: 'ski', jp: 'スキーをする', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v19', en: 'call', jp: '電話する・呼ぶ', level: 'j1', partOfSpeech: 'verb' },
+  { id: 's2-v20', en: 'eat out', jp: '外食する', level: 'j1', partOfSpeech: 'verb' },
+
+  // --- 名詞 (Nouns: 20語) ---
+  { id: 's2-n1', en: 'tennis', jp: 'テニス', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n2', en: 'soccer', jp: 'サッカー', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n3', en: 'sports', jp: 'スポーツ', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n4', en: 'violin', jp: 'バイオリン', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n5', en: 'Chinese', jp: '中国語', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n6', en: 'bird', jp: '鳥', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n7', en: 'hand', jp: '手', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n8', en: 'pencil', jp: 'えんぴつ', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n9', en: 'corner', jp: '角・曲がり角', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n10', en: 'box', jp: '箱', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n11', en: 'picture', jp: '写真・絵', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n12', en: 'bus', jp: 'バス', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n13', en: 'shopping', jp: '買い物', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n14', en: 'brother', jp: '兄・弟', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n15', en: 'parent', jp: '親・両親', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n16', en: 'station', jp: '駅', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n17', en: 'window', jp: '窓', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n18', en: 'tree', jp: '木', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n19', en: 'home', jp: '家・家庭', level: 'j1', partOfSpeech: 'noun' },
+  { id: 's2-n20', en: 'guitar', jp: 'ギター', level: 'j1', partOfSpeech: 'noun' },
+
+  // --- 形容詞 (Adjectives: 4語) ---
+  { id: 's2-a1', en: 'careful', jp: '気をつけて', level: 'j1', partOfSpeech: 'adjective' },
+  { id: 's2-a2', en: 'fast', jp: '速い', level: 'j1', partOfSpeech: 'adjective' },
+  { id: 's2-a3', en: 'late', jp: '遅い・遅れて', level: 'j1', partOfSpeech: 'adjective' },
+  { id: 's2-a4', en: 'first', jp: '最初の・1つめの', level: 'j1', partOfSpeech: 'adjective' },
+
+  // --- 副詞・前置詞・連語 (Other: 6語) ---
+  { id: 's2-o1', en: 'anytime', jp: 'いつでも', level: 'j1', partOfSpeech: 'other' },
+  { id: 's2-o2', en: 'well', jp: '上手に・よく', level: 'j1', partOfSpeech: 'other' },
+  { id: 's2-o3', en: 'very', jp: 'とても', level: 'j1', partOfSpeech: 'other' },
+  { id: 's2-o4', en: 'right', jp: '右に・右へ', level: 'j1', partOfSpeech: 'other' },
+  { id: 's2-o5', en: 'after school', jp: '放課後に', level: 'j1', partOfSpeech: 'other' },
+  { id: 's2-o6', en: 'over there', jp: 'あそこに', level: 'j1', partOfSpeech: 'other' },
+];
+
 export const COURSES: CourseOption[] = [
   {
     id: 'season1',
@@ -414,6 +479,15 @@ export const COURSES: CourseOption[] = [
     badgeStyle: 'bg-gradient-to-r from-amber-500 via-rose-500 to-amber-500 text-white font-black animate-pulse',
     description: 'S1〜S6の例文に登場する厳選50単語から10問バトル！木曜更新ラダー',
     icon: '🏆',
+    isLadder: true,
+  },
+  {
+    id: 'season2',
+    name: 'Season 2',
+    badge: '⚡ S7-S12 課題',
+    badgeStyle: 'bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white font-black animate-pulse',
+    description: 'S7〜S12の例文に登場する厳選50単語から10問バトル！木曜更新ラダー',
+    icon: '⚡',
     isLadder: true,
   },
   {
@@ -433,6 +507,9 @@ export const COURSES: CourseOption[] = [
 export function getWordsByCourse(courseId: string): WordItem[] {
   if (courseId === 'season1') {
     return SEASON_1_WORDS;
+  }
+  if (courseId === 'season2') {
+    return SEASON_2_WORDS;
   }
   return WORD_DATABASE;
 }
