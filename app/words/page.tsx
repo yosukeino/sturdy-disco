@@ -192,6 +192,36 @@ function getLaserCountForCombo(comboCount: number): number {
   return 12; // 9〜10コンボ: 12本全弾一斉発射！
 }
 
+// -----------------------------------------------------------------------------
+// Let's Dance ボタン周辺のトゥインクル・スパークル定義（ネオン光粒子がパラパラ舞う）
+// -----------------------------------------------------------------------------
+interface TwinkleParticle {
+  id: number;
+  top?: string;
+  bottom?: string;
+  left?: string;
+  right?: string;
+  color: string;
+  size: string;
+  delay: string;
+  dur: string;
+  tx: string;
+  ty: string;
+}
+
+const TWINKLE_PARTICLES: TwinkleParticle[] = [
+  { id: 1, top: '-14px', left: '10%', color: 'text-pink-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.95)]', size: 'text-sm sm:text-base', delay: '0s', dur: '2.1s', tx: '-8px', ty: '-10px' },
+  { id: 2, top: '-18px', left: '38%', color: 'text-cyan-300 drop-shadow-[0_0_9px_rgba(34,211,238,1)]', size: 'text-base sm:text-lg', delay: '0.4s', dur: '1.9s', tx: '6px', ty: '-14px' },
+  { id: 3, top: '-12px', right: '12%', color: 'text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.95)]', size: 'text-sm sm:text-base', delay: '0.8s', dur: '2.3s', tx: '10px', ty: '-8px' },
+  { id: 4, top: '35%', left: '-12px', color: 'text-fuchsia-400 drop-shadow-[0_0_7px_rgba(232,121,249,0.9)]', size: 'text-xs sm:text-sm', delay: '1.1s', dur: '2.0s', tx: '-12px', ty: '0px' },
+  { id: 5, top: '40%', right: '-14px', color: 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.95)]', size: 'text-sm sm:text-base', delay: '0.6s', dur: '2.4s', tx: '12px', ty: '4px' },
+  { id: 6, bottom: '-12px', left: '16%', color: 'text-pink-300 drop-shadow-[0_0_7px_rgba(244,63,94,0.9)]', size: 'text-xs sm:text-sm', delay: '1.3s', dur: '2.2s', tx: '-6px', ty: '10px' },
+  { id: 7, bottom: '-16px', left: '52%', color: 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,1)]', size: 'text-base sm:text-lg', delay: '0.2s', dur: '2.5s', tx: '4px', ty: '12px' },
+  { id: 8, bottom: '-14px', right: '18%', color: 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.95)]', size: 'text-sm sm:text-base', delay: '1.5s', dur: '2.0s', tx: '8px', ty: '10px' },
+  { id: 9, top: '-8px', left: '25%', color: 'text-white drop-shadow-[0_0_7px_rgba(255,255,255,0.95)]', size: 'text-xs', delay: '1.7s', dur: '1.8s', tx: '-4px', ty: '-8px' },
+  { id: 10, top: '-10px', right: '32%', color: 'text-cyan-200 drop-shadow-[0_0_8px_rgba(103,232,249,0.95)]', size: 'text-xs sm:text-sm', delay: '0.9s', dur: '2.1s', tx: '6px', ty: '-10px' },
+];
+
 function playSynthesizedSound(
   type:
     | 'countdown'
@@ -1383,34 +1413,6 @@ export default function WordsQuizPage() {
                     className="w-full rounded-xl bg-slate-900 border-2 border-slate-700 px-3.5 py-2 text-sm sm:text-base font-black text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-mono"
                   />
                 </div>
-
-                {/* 登録済み生徒のワンタップ選択 */}
-                {registeredStudents.length > 0 && (
-                  <div className="pt-1.5 border-t border-slate-800/80 space-y-1">
-                    <div className="text-[10px] text-slate-400 font-mono font-bold flex items-center justify-between">
-                      <span>▼ 登録生徒からワンタップで選択:</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
-                      {registeredStudents.map((s) => {
-                        const isSelected = playerName === s.name;
-                        return (
-                          <button
-                            key={s.id}
-                            type="button"
-                            onClick={() => handleSelectPlayerName(s.name)}
-                            className={`rounded-lg border px-2 py-0.5 text-[11px] font-bold transition-colors ${
-                              isSelected
-                                ? 'bg-amber-400 text-slate-950 border-amber-400 font-black shadow-sm'
-                                : 'bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800 hover:text-white'
-                            }`}
-                          >
-                            {s.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -1479,30 +1481,77 @@ export default function WordsQuizPage() {
               </div>
             </div>
 
-            {/* BOTTOM BLOCK: バトルスタートボタン ＆ ガイド */}
-            <div className="space-y-2 shrink-0 pt-1 relative z-10">
-              <button
-                type="button"
-                onClick={handleStartGame}
-                className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 bg-[length:200%_auto] hover:bg-right py-3.5 sm:py-4 px-5 text-center font-black text-slate-950 text-base sm:text-lg bl-comic-border-lg bl-legendary animate-bl-pulse-gold shadow-2xl transition-all hover:scale-[1.01] active:scale-[0.99]"
-              >
-                <div className="flex items-center justify-center gap-2 font-mono uppercase tracking-wider">
-                  <Flame className="h-5 w-5 text-slate-950 fill-slate-950 animate-bounce" />
-                  <span>DEPLOY: バトルスタート [10問勝負]</span>
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </button>
+              {/* BOTTOM BLOCK: バトルスタートボタン ＆ ガイド */}
+              <div className="space-y-3 shrink-0 pt-2 relative z-10">
+                {/* スタートボタンの周囲を舞うトゥインクル・ネオンパーティクルコンテナ（ネオンフレーム画像と完全に同幅・同比率） */}
+                <div className="relative w-full max-w-[480px] mx-auto flex items-center justify-center">
+                  {/* 1. ボタン背後のディスコ・ネオン呼吸オーラ (Breathing Aura Glow: ボタン枠と完全同型) */}
+                  <div
+                    className="pointer-events-none absolute -inset-1 rounded-full bg-gradient-to-r from-pink-500/40 via-cyan-400/45 to-amber-400/40 animate-disco-aura"
+                    style={{ filter: 'blur(16px)' }}
+                  />
 
-              {/* ランキング閲覧ボタン (アプリメニューからの導線) */}
+                  {/* 2. パラパラと舞うトゥインクル・ネオン粒子 (Twinkle Sparkles) */}
+                  <div className="pointer-events-none absolute inset-0 overflow-visible z-20">
+                    {TWINKLE_PARTICLES.map((p) => (
+                      <span
+                        key={p.id}
+                        className={`absolute animate-twinkle font-black select-none pointer-events-none ${p.color} ${p.size}`}
+                        style={{
+                          top: p.top,
+                          bottom: p.bottom,
+                          left: p.left,
+                          right: p.right,
+                          animationDelay: p.delay,
+                          ['--tw-dur' as string]: p.dur,
+                          ['--tw-x' as string]: p.tx,
+                          ['--tw-y' as string]: p.ty,
+                        }}
+                      >
+                        ✦
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* 3. ディスコ・ネオン画像ボタン: Let's Dance (画像のアスペクト比 805/179 に完全一致) */}
+                  <button
+                    type="button"
+                    onClick={handleStartGame}
+                    className="w-full group relative flex items-center justify-center rounded-full transition-all duration-200 hover:scale-[1.025] hover:brightness-110 active:scale-[0.98] active:translate-y-0.5 select-none touch-manipulation [-webkit-tap-highlight-color:transparent]"
+                    style={{
+                      aspectRatio: '805 / 179',
+                    }}
+                  >
+                    {/* 透過処理済みディスコネオンフレーム (ボタン領域に100%フィット) */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/disco_btn_dance.png"
+                      alt="Let's Dance"
+                      className="absolute inset-0 h-full w-full object-fill pointer-events-none drop-shadow-[0_4px_20px_rgba(34,211,238,0.5)]"
+                    />
+
+                    {/* ボタン表面をキラーンと定期的に走る光線スイープ */}
+                    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
+                      <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-glint-sweep" />
+                    </div>
+
+                    {/* ネオン調和グラデーション Let's Dance タイポグラフィ */}
+                    <span className="relative z-10 text-2xl sm:text-3xl font-black tracking-widest font-sans uppercase italic drop-shadow-[0_0_15px_rgba(34,211,238,1)] text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-white to-amber-200 group-hover:scale-105 transition-transform">
+                      Let’s Dance
+                    </span>
+                  </button>
+                </div>
+
+              {/* ランキング閲覧ボタン (セカンダリーボタンとして品よく配置) */}
               <button
                 type="button"
                 onClick={() => {
                   setPhase('leaderboard');
                   playSound('click');
                 }}
-                className="w-full flex items-center justify-center gap-2.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border-2 border-amber-400/90 py-2.5 sm:py-3 px-4 text-xs sm:text-sm font-black text-amber-400 hover:text-amber-300 bl-comic-border transition-all active:scale-[0.99] shadow-lg"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-750 hover:border-amber-400/60 py-2 sm:py-2.5 px-3 text-[11px] sm:text-xs font-bold text-slate-300 hover:text-amber-300 transition-all active:scale-[0.99] shadow-sm"
               >
-                <Trophy className="h-4 w-4 text-amber-400 shrink-0" />
+                <Trophy className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                 <span>🏆 単語バトル ランキングを見る [LEADERBOARD]</span>
               </button>
 

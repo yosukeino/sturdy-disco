@@ -1,7 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 export const metadata: Metadata = {
-  title: 'Studisco | 勉強でトリップする英単語＆英語学習ステーション',
+  title: 'Studisco | 英単語＆英語学習ステーション',
   description: 'Studisco（ステューディスコ）- 4択英単語スピードバトル・英文法予習・瞬間英作文・クエスト進捗統合ポータル',
   icons: {
     icon: [
