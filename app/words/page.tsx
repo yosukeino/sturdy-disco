@@ -505,12 +505,16 @@ const LASER_BEAMS: LaserBeamConfig[] = [
 ];
 
 function getLaserCountForCombo(comboCount: number): number {
-  if (comboCount <= 1) return 16; // 初回正解から16本の一斉射出！
-  if (comboCount === 2) return 26; // 2コンボ: 26本
-  if (comboCount === 3) return 34; // 3コンボ: 34本
-  if (comboCount === 4) return 42; // 4コンボ: 42本
-  if (comboCount === 5) return 50; // 5コンボ: 50本
-  return 60; // 6〜10コンボ: 60本全弾メガバースト！
+  if (comboCount <= 1) return 2;   // 1問目: 2本（スマートにクロスする2条のネオン光線）
+  if (comboCount === 2) return 4;   // 2コンボ: 4本
+  if (comboCount === 3) return 8;   // 3コンボ: 8本（クロス＋垂直ビーム）
+  if (comboCount === 4) return 12;  // 4コンボ: 12本
+  if (comboCount === 5) return 16;  // 5コンボ: 16本（扇状ファンビーム解禁）
+  if (comboCount === 6) return 22;  // 6コンボ: 22本
+  if (comboCount === 7) return 30;  // 7コンボ: 30本（本格レーザーストーム突入）
+  if (comboCount === 8) return 40;  // 8コンボ: 40本
+  if (comboCount === 9) return 50;  // 9コンボ: 50本（フィーバー直前）
+  return 60;                        // 10コンボ達成時: 60本全弾メガバースト・スーパーノヴァ解禁！！
 }
 
 // -----------------------------------------------------------------------------
@@ -1015,7 +1019,7 @@ export default function WordsQuizPage() {
   >([]);
 
   // コンボ数連動ディスコ・レーザーストーム演出ステート
-  const [activeLasers, setActiveLasers] = useState<{ count: number; key: number } | null>(null);
+  const [activeLasers, setActiveLasers] = useState<{ count: number; combo: number; key: number } | null>(null);
 
   // ストップウォッチ
   const [startTime, setStartTime] = useState<number>(0);
@@ -1362,10 +1366,10 @@ export default function WordsQuizPage() {
       setMaxCombo(newMaxCombo);
       setAnswerState('correct');
 
-      // コンボ数に応じてレーザー本数を増やして発射（1本 ➔ 最大12本全弾バースト）
+      // コンボ数に応じてレーザー本数を増やして発射（2本 ➔ 10コンボ達成で最大60本全弾メガバースト）
       const laserCount = getLaserCountForCombo(newCombo);
-      setActiveLasers({ count: laserCount, key: performance.now() });
-      setTimeout(() => setActiveLasers(null), 550);
+      setActiveLasers({ count: laserCount, combo: newCombo, key: performance.now() });
+      setTimeout(() => setActiveLasers(null), newCombo >= 10 ? 700 : 550);
 
       // 正解画面フラッシュ発動（快感・達成感演出）
       setScreenFlash(true);
@@ -1606,13 +1610,17 @@ export default function WordsQuizPage() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden">
-      {/* 正解時の画面フラッシュエフェクト（快感・達成感を高める10倍発光ネオンフラッシュ） */}
+      {/* 正解時の画面フラッシュエフェクト（コンボ数に応じて進化：10コンボで最大フラッシュ、序盤はクリーンで目に優しい光） */}
       {screenFlash && (
         <div
           className="pointer-events-none fixed inset-0 z-50 animate-screen-flash mix-blend-screen"
           style={{
             background:
-              'radial-gradient(ellipse at center, rgba(34, 211, 238, 0.65) 0%, rgba(232, 121, 249, 0.45) 40%, rgba(251, 191, 36, 0.25) 75%, transparent 100%)',
+              combo >= 10
+                ? 'radial-gradient(ellipse at center, rgba(34, 211, 238, 0.75) 0%, rgba(232, 121, 249, 0.55) 40%, rgba(251, 191, 36, 0.35) 75%, transparent 100%)'
+                : combo >= 6
+                ? 'radial-gradient(ellipse at center, rgba(34, 211, 238, 0.45) 0%, rgba(16, 185, 129, 0.25) 45%, transparent 100%)'
+                : 'radial-gradient(ellipse at center, rgba(52, 211, 153, 0.25) 0%, rgba(16, 185, 129, 0.1) 45%, transparent 100%)',
           }}
         />
       )}
@@ -1633,30 +1641,40 @@ export default function WordsQuizPage() {
         />
       )}
 
-      {/* Disco Lasers & Floor Glow (コンボ数連動レーザーストーム・光量10倍化) */}
+      {/* Disco Lasers & Floor Glow (コンボ数連動レーザーストーム・10コンボで最大演出) */}
       {phase === 'battle' && (
         <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden mix-blend-screen">
-          {/* ディスコフロア・ビジュアライザーグラデーション（底面からのアンビエントネオン光） */}
-          <div className="absolute bottom-0 inset-x-0 h-96 bg-gradient-to-t from-cyan-950/60 via-purple-950/30 to-transparent opacity-80" />
+          {/* ディスコフロア・ビジュアライザーグラデーション */}
+          <div className="absolute bottom-0 inset-x-0 h-80 bg-gradient-to-t from-cyan-950/50 via-purple-950/25 to-transparent opacity-75" />
 
           {/* 正解時：コンボ数連動 ネオンレーザーストーム ＆ 衝撃波バースト */}
           {activeLasers && (
             <div key={`lasers-${activeLasers.key}`} className="absolute inset-0 pointer-events-none">
-              {/* 1. 画面中央からの巨大ネオン衝撃波リング (Shockwave Rings) */}
-              <div
-                className="absolute top-1/2 left-1/2 w-[650px] h-[650px] rounded-full border-4 border-cyan-300 pointer-events-none animate-laser-shockwave shadow-[0_0_80px_#22d3ee,inset_0_0_80px_#22d3ee]"
-              />
-              <div
-                className="absolute top-1/2 left-1/2 w-[520px] h-[520px] rounded-full border-2 border-fuchsia-400 pointer-events-none animate-laser-shockwave shadow-[0_0_70px_#e879f9]"
-                style={{ animationDelay: '35ms' }}
-              />
+              {/* 1. ★ 10コンボ達成時（パーフェクトMAX）のみ解禁：全画面ネオンストロボ閃光 ★ */}
+              {activeLasers.combo >= 10 && (
+                <div
+                  className="absolute inset-0 pointer-events-none animate-laser-strobe bg-gradient-to-b from-cyan-400/30 via-fuchsia-500/25 to-amber-400/25"
+                />
+              )}
 
-              {/* 2. 画面全体を包む瞬間的ネオンストロボフラッシュ (Strobe Burst) */}
-              <div
-                className="absolute inset-0 pointer-events-none animate-laser-strobe bg-gradient-to-b from-cyan-400/25 via-fuchsia-500/20 to-amber-400/20"
-              />
+              {/* 2. ネオン衝撃波リング: 10コンボ達成時のみ超巨大二重リング、7〜9コンボでシングルリング、6以下は非表示 */}
+              {activeLasers.combo >= 10 ? (
+                <>
+                  <div
+                    className="absolute top-1/2 left-1/2 w-[650px] h-[650px] rounded-full border-4 border-cyan-300 pointer-events-none animate-laser-shockwave shadow-[0_0_80px_#22d3ee,inset_0_0_80px_#22d3ee]"
+                  />
+                  <div
+                    className="absolute top-1/2 left-1/2 w-[520px] h-[520px] rounded-full border-2 border-fuchsia-400 pointer-events-none animate-laser-shockwave shadow-[0_0_70px_#e879f9]"
+                    style={{ animationDelay: '35ms' }}
+                  />
+                </>
+              ) : activeLasers.combo >= 7 ? (
+                <div
+                  className="absolute top-1/2 left-1/2 w-[400px] h-[400px] rounded-full border-2 border-cyan-400/60 pointer-events-none animate-laser-shockwave shadow-[0_0_35px_#22d3ee]"
+                />
+              ) : null}
 
-              {/* 3. コンボ数連動 ネオンレーザー群 (16本〜最大60本全弾発射) */}
+              {/* 3. コンボ数連動 ネオンレーザー群 (1問目2本 ➔ 10コンボで最大60本全弾発射) */}
               {LASER_BEAMS.slice(0, activeLasers.count).map((laser) => (
                 <div
                   key={laser.id}
