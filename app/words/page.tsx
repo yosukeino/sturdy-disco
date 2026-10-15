@@ -222,6 +222,37 @@ const TWINKLE_PARTICLES: TwinkleParticle[] = [
   { id: 10, top: '-10px', right: '32%', color: 'text-cyan-200 drop-shadow-[0_0_8px_rgba(103,232,249,0.95)]', size: 'text-xs sm:text-sm', delay: '0.9s', dur: '2.1s', tx: '6px', ty: '-10px' },
 ];
 
+// -----------------------------------------------------------------------------
+// スタートボタン用 ランダムネオンフレーズ（最新ネットスラング・エナジー系・ディスコ）
+// -----------------------------------------------------------------------------
+const START_BUTTON_PHRASES: string[] = [
+  // ネットスラング・Z世代
+  'LOCK IN!',
+  'LET HIM COOK!',
+  'NO CAP!',
+  'FULL SEND!',
+  'BIG BRAIN TIME!',
+  'SLAY IT!',
+  'GG EZ!',
+  // 直球・エナジー系
+  'DO IT NOW!',
+  "LET'S DO IT!",
+  "LET'S GOOO!",
+  'BRING IT ON!',
+  'HERE WE GO!',
+  // ゲーミング・ストリート
+  'SPEEDRUN!',
+  'SHOWTIME!',
+  "DON'T BLINK!",
+  'GAME ON!',
+  'LEVEL UP!',
+  'ALL IN!',
+  // ディスコ・グルーヴ（原点含む）
+  'LET’S DANCE',
+  'DROP THE BEAT!',
+  'FEEL THE GROOVE!',
+];
+
 function playSynthesizedSound(
   type:
     | 'countdown'
@@ -646,6 +677,7 @@ export default function WordsQuizPage() {
   const [registeredStudents, setRegisteredStudents] = useState<{ id: string; name: string }[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string>('season1');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [startPhrase, setStartPhrase] = useState<string>('LET’S DANCE');
 
   // クイズ状態
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -747,6 +779,17 @@ export default function WordsQuizPage() {
     // 端末内の未同期スコアがあれば Supabase DB へ同期
     syncLocalScoresToSupabase().catch(() => {});
   }, []);
+
+  // ロビー画面に入るたびにスタートボタンのネオン文言をランダム選出（直前と被らないように切り替え）
+  useEffect(() => {
+    if (phase === 'lobby') {
+      setStartPhrase((prev) => {
+        const pool = START_BUTTON_PHRASES.filter((p) => p !== prev);
+        const candidates = pool.length > 0 ? pool : START_BUTTON_PHRASES;
+        return candidates[Math.floor(Math.random() * candidates.length)];
+      });
+    }
+  }, [phase]);
 
   // プレイヤー名の選択・変更
   const handleSelectPlayerName = (nameToSet: string) => {
@@ -1529,7 +1572,7 @@ export default function WordsQuizPage() {
                     ))}
                   </div>
 
-                  {/* 3. ディスコ・ネオン画像ボタン: Let's Dance (画像のアスペクト比 805/179 に完全一致) */}
+                  {/* 3. ディスコ・ネオン画像ボタン (画像のアスペクト比 805/179 に完全一致) */}
                   <button
                     type="button"
                     onClick={handleStartGame}
@@ -1542,7 +1585,7 @@ export default function WordsQuizPage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/disco_btn_dance.png"
-                      alt="Let's Dance"
+                      alt={startPhrase}
                       className="absolute inset-0 h-full w-full object-fill pointer-events-none drop-shadow-[0_4px_20px_rgba(34,211,238,0.5)]"
                     />
 
@@ -1551,9 +1594,17 @@ export default function WordsQuizPage() {
                       <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-glint-sweep" />
                     </div>
 
-                    {/* ネオン調和グラデーション Let's Dance タイポグラフィ */}
-                    <span className="relative z-10 text-2xl sm:text-3xl font-black tracking-widest font-sans uppercase italic drop-shadow-[0_0_15px_rgba(34,211,238,1)] text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-white to-amber-200 group-hover:scale-105 transition-transform">
-                      Let’s Dance
+                    {/* ネオン調和グラデーション タイポグラフィ（文字数に応じて自動サイジング） */}
+                    <span
+                      className={`relative z-10 px-3 text-center font-black tracking-widest font-sans uppercase italic drop-shadow-[0_0_15px_rgba(34,211,238,1)] text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-white to-amber-200 group-hover:scale-105 transition-transform whitespace-nowrap ${
+                        startPhrase.length >= 14
+                          ? 'text-lg sm:text-2xl'
+                          : startPhrase.length >= 10
+                          ? 'text-xl sm:text-2xl'
+                          : 'text-2xl sm:text-3xl'
+                      }`}
+                    >
+                      {startPhrase}
                     </span>
                   </button>
                 </div>
