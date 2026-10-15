@@ -47,6 +47,7 @@ import {
   getOrCreatePlayerUuid,
   fetchRegisteredStudents,
   normalizePlayerName,
+  syncLocalScoresToSupabase,
   ScoreRecord,
   ScoreSubmission,
 } from '@/lib/word-quiz-service';
@@ -602,6 +603,9 @@ export default function WordsQuizPage() {
         setRegisteredStudents(list);
       }
     });
+
+    // 端末内の未同期スコアがあれば Supabase DB へ同期
+    syncLocalScoresToSupabase().catch(() => {});
   }, []);
 
   // プレイヤー名の選択・変更
@@ -1927,32 +1931,53 @@ export default function WordsQuizPage() {
         {/* =================================================================== */}
         {phase === 'leaderboard' && (
           <div className="space-y-5">
-            {/* Header with Back button */}
+            {/* Header with Back and Refresh buttons */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-400 border-2 border-black text-black shadow-[3px_3px_0px_#000]">
                   <Trophy className="h-6 w-6 stroke-[2.5]" />
                 </div>
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight bl-text-gold">
-                    [LEADERBOARD] 全体ランキング
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight bl-text-gold">
+                      [LEADERBOARD] 全体ランキング
+                    </h2>
+                    <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-950/80 border border-emerald-500/60 px-2 py-0.5 text-[10px] font-bold text-emerald-400 font-mono">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      DB ONLINE
+                    </span>
+                  </div>
                   <p className="text-xs text-slate-400 font-mono">
                     ACCURACY ➔ SPEED // TOP VAULT HUNTERS
                   </p>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setPhase('lobby');
-                  playSound('click');
-                }}
-                className="rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-black shadow-[2px_2px_0px_#000] px-3.5 py-2 text-xs font-black text-slate-200 transition-all active:translate-x-0.5 active:translate-y-0.5"
-              >
-                [ロビーに戻る]
-              </button>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    loadLeaderboardData();
+                    playSound('click');
+                  }}
+                  disabled={isLoadingLeaderboard}
+                  className="rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-black shadow-[2px_2px_0px_#000] p-2 text-xs font-black text-amber-400 transition-all active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
+                  title="最新データを再取得"
+                >
+                  <RotateCcw className={`h-4 w-4 ${isLoadingLeaderboard ? 'animate-spin' : ''}`} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPhase('lobby');
+                    playSound('click');
+                  }}
+                  className="rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-black shadow-[2px_2px_0px_#000] px-3.5 py-2 text-xs font-black text-slate-200 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                >
+                  [ロビーに戻る]
+                </button>
+              </div>
             </div>
 
             {/* Filter Tabs */}

@@ -149,7 +149,7 @@ export function deduplicateBestScores(records: ScoreRecord[]): ScoreRecord[] {
 }
 
 /**
- * スコアを保存（Supabase ➔ LocalStorageフォールバック）
+ * スコアを保存（Supabase DB への登録を第一に実行）
  */
 export async function submitQuizScore(
   submission: ScoreSubmission
@@ -160,10 +160,10 @@ export async function submitQuizScore(
     created_at: new Date().toISOString(),
   };
 
-  // まず端末内に確実に保存（オフライン時やDB未接続でも消えないようにする）
+  // まず端末内にバックアップ保存
   saveLocalScore(localRecord);
 
-  // Supabaseへの送信を試みる
+  // Supabase DB への保存を実行
   try {
     const basePayload: Record<string, unknown> = {
       player_name: submission.player_name,
@@ -186,10 +186,12 @@ export async function submitQuizScore(
       .single();
 
     if (!error && data) {
-      return { success: true, data: data as ScoreRecord, isRemote: true };
+      const dbRecord = data as ScoreRecord;
+      saveLocalScore(dbRecord);
+      return { success: true, data: dbRecord, isRemote: true };
     }
 
-    // player_uuid列がリモートでまだ無い場合の再試行
+    // player_uuid 列なしでの再試行
     if (error && submission.player_uuid) {
       delete basePayload.player_uuid;
       const retryRes = await supabase
@@ -198,10 +200,13 @@ export async function submitQuizScore(
         .select()
         .single();
       if (!retryRes.error && retryRes.data) {
-        return { success: true, data: retryRes.data as ScoreRecord, isRemote: true };
+        const dbRecord = retryRes.data as ScoreRecord;
+        saveLocalScore(dbRecord);
+        return { success: true, data: dbRecord, isRemote: true };
       }
     }
 
+    console.warn('Supabase insert failed:', error);
     return {
       success: true,
       data: localRecord,
@@ -220,22 +225,65 @@ export async function submitQuizScore(
 }
 
 /**
- * ランキング一覧を取得（自己ベストのみ抽出モード対応）
+ * 過去にローカルストレージにのみ保存されていたスコアを Supabase DB へ同期
+ */
+export async function syncLocalScoresToSupabase(): Promise<number> {
+  if (typeof window === 'undefined') return 0;
+  const local = getLocalScores();
+  if (local.length === 0) return 0;
+
+  let syncedCount = 0;
+  try {
+    for (const item of local) {
+      if (!item.player_name || item.id?.startsWith('mock-')) continue;
+      // 既に同一プレイヤー名・スコア・タイム・コースのデータがDBにあるか確認
+      const { data: existing } = await supabase
+        .from('word_quiz_scores')
+        .select('id')
+        .eq('player_name', item.player_name)
+        .eq('score', item.score)
+        .eq('time_ms', item.time_ms)
+        .eq('course', item.course)
+        .limit(1);
+
+      if (!existing || existing.length === 0) {
+        const payload: Record<string, unknown> = {
+          player_name: item.player_name,
+          score: item.score,
+          total_questions: item.total_questions || 10,
+          time_ms: item.time_ms,
+          game_points: item.game_points || 0,
+          max_combo: item.max_combo || 0,
+          course: item.course || 'season1',
+        };
+        if (item.player_uuid) payload.player_uuid = item.player_uuid;
+
+        const { error } = await supabase.from('word_quiz_scores').insert(payload);
+        if (!error) syncedCount++;
+      }
+    }
+  } catch (err) {
+    console.warn('Local score sync error:', err);
+  }
+  return syncedCount;
+}
+
+/**
+ * ランキング一覧を取得（Supabase DB を第一のマスターソースとして取得）
  */
 export async function fetchQuizRankings(
   courseFilter: string | null = null,
   period: 'all' | 'today' = 'all',
   onlyBest: boolean = true
 ): Promise<ScoreRecord[]> {
-  let list: ScoreRecord[] = [];
-
   try {
     let query = supabase
       .from('word_quiz_scores')
       .select('*')
       .order('score', { ascending: false })
+      .order('game_points', { ascending: false })
       .order('time_ms', { ascending: true })
-      .limit(100);
+      .limit(500);
 
     if (courseFilter && courseFilter !== 'all') {
       query = query.eq('course', courseFilter);
@@ -248,16 +296,21 @@ export async function fetchQuizRankings(
     }
 
     const { data, error } = await query;
-    if (!error && data && data.length > 0) {
-      list = data as ScoreRecord[];
+    if (!error && data) {
+      const dbRecords = data as ScoreRecord[];
+      // DB から正常に取得できた場合は DB のデータを採用
+      if (onlyBest) {
+        return deduplicateBestScores(dbRecords).slice(0, 50);
+      }
+      return dbRecords.slice(0, 50);
     }
   } catch (err) {
-    console.warn('Supabase fetch failed, using local fallback:', err);
+    console.warn('Supabase fetch failed, falling back to local scores:', err);
   }
 
-  // Supabase取得データとローカルデータを合算してオフライン/オンライン双方の自己ベストを反映
+  // 万が一のオフライン時フォールバック
   const localScores = getLocalScores();
-  let merged = [...list, ...localScores];
+  let merged = [...localScores];
 
   if (courseFilter && courseFilter !== 'all') {
     merged = merged.filter((item) => item.course === courseFilter);
@@ -269,7 +322,6 @@ export async function fetchQuizRankings(
     merged = merged.filter((item) => new Date(item.created_at) >= todayStart);
   }
 
-  // 自己ベストのみ抽出（同一プレイヤーは最高記録1件のみ厳格に判定）
   if (onlyBest) {
     merged = deduplicateBestScores(merged);
   } else {
