@@ -71,6 +71,127 @@ const PENTATONIC_FREQUENCIES = [
   2093.0, // C7 (Combo 10+ MAX)
 ];
 
+// -----------------------------------------------------------------------------
+// コンボ数連動ネオンレーザー定義（1〜12本がクロス・疾走）
+// -----------------------------------------------------------------------------
+interface LaserBeamConfig {
+  id: number;
+  animClass: string;
+  style: React.CSSProperties;
+  colorClass: string;
+}
+
+const LASER_BEAMS: LaserBeamConfig[] = [
+  // 1: シアン（左上→右下）
+  {
+    id: 1,
+    animClass: 'animate-laser-l2r',
+    style: { top: '-10%', left: '5%', width: '4px', height: '1000px' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-cyan-400 to-transparent blur-sm shadow-[0_0_12px_rgba(34,211,238,0.9)]',
+  },
+  // 2: マゼンタ（右上→左下、クロス）
+  {
+    id: 2,
+    animClass: 'animate-laser-r2l',
+    style: { top: '-5%', right: '8%', width: '3.5px', height: '1000px', animationDelay: '20ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-fuchsia-400 to-transparent blur-sm shadow-[0_0_12px_rgba(232,121,249,0.9)]',
+  },
+  // 3: ゴールド（左下寄り、左→右）
+  {
+    id: 3,
+    animClass: 'animate-laser-l2r',
+    style: { top: '10%', left: '18%', width: '3px', height: '950px', animationDelay: '40ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-amber-300 to-transparent blur-sm shadow-[0_0_12px_rgba(251,191,36,0.9)]',
+  },
+  // 4: エメラルド（右寄り、右→左）
+  {
+    id: 4,
+    animClass: 'animate-laser-r2l',
+    style: { top: '0%', right: '22%', width: '3.5px', height: '950px', animationDelay: '50ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-emerald-400 to-transparent blur-sm shadow-[0_0_12px_rgba(52,211,153,0.9)]',
+  },
+  // 5: パープル（垂直センター突き抜け）
+  {
+    id: 5,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '50%', width: '3px', height: '100vh', animationDelay: '60ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-purple-400 to-transparent blur-sm shadow-[0_0_12px_rgba(192,132,252,0.9)]',
+  },
+  // 6: アイスシアン（左寄り、高速）
+  {
+    id: 6,
+    animClass: 'animate-laser-l2r',
+    style: { top: '-15%', left: '32%', width: '4px', height: '1000px', animationDelay: '80ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-cyan-300 to-transparent blur-sm shadow-[0_0_14px_rgba(103,232,249,0.9)]',
+  },
+  // 7: ホットローズ（右端）
+  {
+    id: 7,
+    animClass: 'animate-laser-r2l',
+    style: { top: '8%', right: '4%', width: '3.5px', height: '900px', animationDelay: '90ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-rose-400 to-transparent blur-sm shadow-[0_0_14px_rgba(251,113,133,0.9)]',
+  },
+  // 8: ソーラーゴールド（垂直左寄り）
+  {
+    id: 8,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '22%', width: '3.5px', height: '100vh', animationDelay: '100ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-yellow-300 to-transparent blur-sm shadow-[0_0_15px_rgba(253,224,71,0.95)]',
+  },
+  // 9: エレクトリックブルー（垂直右寄り）
+  {
+    id: 9,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', right: '22%', width: '3.5px', height: '100vh', animationDelay: '110ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-blue-400 to-transparent blur-sm shadow-[0_0_15px_rgba(96,165,250,0.95)]',
+  },
+  // 10: ホワイトネオン（超強力クロス主砲）
+  {
+    id: 10,
+    animClass: 'animate-laser-l2r',
+    style: { top: '-5%', left: '12%', width: '5px', height: '1050px', animationDelay: '120ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_20px_rgba(255,255,255,1)]',
+  },
+  // 11: ホワイトネオン反転（超強力クロス主砲）
+  {
+    id: 11,
+    animClass: 'animate-laser-r2l',
+    style: { top: '-5%', right: '12%', width: '5px', height: '1050px', animationDelay: '130ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-white to-transparent blur-[2px] shadow-[0_0_20px_rgba(255,255,255,1)]',
+  },
+  // 12: 黄金神速主砲（中央全方位バースト）
+  {
+    id: 12,
+    animClass: 'animate-laser-vert',
+    style: { top: '0%', left: '50%', width: '6px', height: '100vh', animationDelay: '140ms' },
+    colorClass:
+      'bg-gradient-to-b from-transparent via-amber-200 to-transparent blur-[3px] shadow-[0_0_25px_rgba(251,191,36,1)]',
+  },
+];
+
+function getLaserCountForCombo(comboCount: number): number {
+  if (comboCount <= 1) return 1;
+  if (comboCount === 2) return 2;
+  if (comboCount === 3) return 3;
+  if (comboCount === 4) return 4;
+  if (comboCount === 5) return 5;
+  if (comboCount === 6) return 7;
+  if (comboCount === 7) return 9;
+  if (comboCount === 8) return 10;
+  return 12; // 9〜10コンボ: 12本全弾一斉発射！
+}
+
 function playSynthesizedSound(
   type:
     | 'countdown'
@@ -407,14 +528,14 @@ function getComboTheme(combo: number): ComboThemeInfo {
         'bg-gradient-to-r from-amber-300 via-rose-500 to-cyan-300 text-slate-950 font-black shadow-[0_0_20px_rgba(251,191,36,0.8)] ring-2 ring-white animate-pulse',
       flameColor: 'text-amber-300 fill-amber-300',
       bgAtmosphereClass:
-        'from-amber-500/25 via-rose-950/25 to-indigo-950/30',
+        'from-amber-600/30 via-rose-950/30 to-indigo-950/30',
       screenEdgeClass:
-        'shadow-[inset_0_0_70px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/40',
+        'shadow-[inset_0_0_90px_rgba(251,191,36,0.38)] ring-2 ring-amber-400/50',
       cardGlowClass:
-        'border-amber-300 bg-gradient-to-b from-amber-950/50 via-slate-900 to-slate-950 shadow-[0_0_50px_rgba(251,191,36,0.45)] ring-2 ring-amber-300/80',
+        'border-2 border-amber-300 bg-gradient-to-b from-amber-950/50 via-slate-900 to-slate-950 shadow-[0_0_50px_rgba(251,191,36,0.85),inset_0_0_25px_rgba(251,191,36,0.25)] ring-2 ring-white animate-pulse',
     };
   }
-  if (combo >= 7) {
+  if (combo >= 6) {
     return {
       tier: 4,
       label: `${combo} HYPER!`,
@@ -422,41 +543,26 @@ function getComboTheme(combo: number): ComboThemeInfo {
         'bg-gradient-to-r from-rose-500 via-purple-500 to-indigo-500 text-white font-black shadow-[0_0_18px_rgba(244,63,94,0.6)] ring-1 ring-rose-300 animate-pulse',
       flameColor: 'text-rose-400 fill-rose-400',
       bgAtmosphereClass:
-        'from-rose-600/20 via-purple-950/20 to-slate-950',
+        'from-fuchsia-900/30 via-purple-950/25 to-slate-950',
       screenEdgeClass:
-        'shadow-[inset_0_0_55px_rgba(244,63,94,0.25)]',
+        'shadow-[inset_0_0_70px_rgba(232,121,249,0.3)] ring-1 ring-fuchsia-400/30',
       cardGlowClass:
-        'border-rose-500 bg-gradient-to-b from-rose-950/40 via-slate-900 to-slate-950 shadow-[0_0_35px_rgba(244,63,94,0.35)] ring-2 ring-rose-400/60',
-    };
-  }
-  if (combo >= 5) {
-    return {
-      tier: 3,
-      label: `${combo} SUPER!`,
-      badgeStyle:
-        'bg-gradient-to-r from-orange-500 via-rose-500 to-amber-400 text-white font-black shadow-[0_0_15px_rgba(249,115,22,0.5)] animate-bounce',
-      flameColor: 'text-orange-400 fill-orange-400',
-      bgAtmosphereClass:
-        'from-orange-600/18 via-slate-950 to-amber-950/20',
-      screenEdgeClass:
-        'shadow-[inset_0_0_40px_rgba(249,115,22,0.2)]',
-      cardGlowClass:
-        'border-orange-500 bg-gradient-to-b from-orange-950/30 via-slate-900 to-slate-950 shadow-[0_0_30px_rgba(249,115,22,0.25)] ring-1 ring-orange-400/50',
+        'border-2 border-fuchsia-400 bg-gradient-to-b from-fuchsia-950/40 via-slate-900 to-slate-950 shadow-[0_0_40px_rgba(232,121,249,0.7),inset_0_0_20px_rgba(232,121,249,0.2)] ring-2 ring-fuchsia-400/70',
     };
   }
   if (combo >= 3) {
     return {
-      tier: 2,
-      label: `${combo} COMBO!`,
+      tier: 3,
+      label: `${combo} SUPER!`,
       badgeStyle:
-        'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black shadow-[0_0_12px_rgba(245,158,11,0.4)] animate-pulse',
-      flameColor: 'text-amber-400 fill-amber-400',
+        'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-black shadow-[0_0_15px_rgba(34,211,238,0.5)]',
+      flameColor: 'text-cyan-400 fill-cyan-400',
       bgAtmosphereClass:
-        'from-amber-600/15 via-slate-950 to-slate-950',
+        'from-cyan-900/25 via-purple-950/15 to-slate-950',
       screenEdgeClass:
-        'shadow-[inset_0_0_30px_rgba(245,158,11,0.15)]',
+        'shadow-[inset_0_0_55px_rgba(34,211,238,0.22)]',
       cardGlowClass:
-        'border-amber-500/80 bg-gradient-to-b from-amber-950/20 via-slate-900 to-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.18)]',
+        'border-2 border-cyan-400 bg-gradient-to-b from-cyan-950/35 via-slate-900 to-slate-950 shadow-[0_0_30px_rgba(34,211,238,0.55),inset_0_0_15px_rgba(34,211,238,0.15)] ring-1 ring-cyan-300/60',
     };
   }
   if (combo >= 1) {
@@ -464,13 +570,14 @@ function getComboTheme(combo: number): ComboThemeInfo {
       tier: 1,
       label: `${combo} COMBO`,
       badgeStyle:
-        'bg-amber-500/20 border border-amber-400/40 text-amber-300 font-bold',
-      flameColor: 'text-amber-400 fill-amber-400',
+        'bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-bold',
+      flameColor: 'text-cyan-400 fill-cyan-400',
       bgAtmosphereClass:
-        'from-blue-600/10 via-slate-950 to-slate-950',
-      screenEdgeClass: '',
+        'from-cyan-950/20 via-slate-950 to-slate-950',
+      screenEdgeClass:
+        'shadow-[inset_0_0_35px_rgba(6,182,212,0.12)]',
       cardGlowClass:
-        'border-slate-700 bg-gradient-to-b from-slate-900 to-slate-950',
+        'border-2 border-cyan-500/60 bg-gradient-to-b from-cyan-950/20 via-slate-900 to-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.35)] ring-1 ring-cyan-500/30',
     };
   }
   return {
@@ -478,11 +585,11 @@ function getComboTheme(combo: number): ComboThemeInfo {
     label: '0 COMBO',
     badgeStyle:
       'bg-slate-950/80 border border-slate-800 text-slate-400 font-bold',
-    flameColor: 'text-slate-600 fill-slate-700',
+    flameColor: 'text-slate-600 fill-slate-600',
     bgAtmosphereClass: 'from-slate-900/10 via-slate-950 to-slate-950',
     screenEdgeClass: '',
     cardGlowClass:
-      'border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950',
+      'border-2 border-slate-800 bg-slate-950/90 shadow-[3px_3px_0px_#000]',
   };
 }
 
@@ -523,6 +630,9 @@ export default function WordsQuizPage() {
   const [missedQuestions, setMissedQuestions] = useState<
     { question: QuizQuestion; chosenAnswer: string }[]
   >([]);
+
+  // コンボ数連動ディスコ・レーザーストーム演出ステート
+  const [activeLasers, setActiveLasers] = useState<{ count: number; key: number } | null>(null);
 
   // ストップウォッチ
   const [startTime, setStartTime] = useState<number>(0);
@@ -656,6 +766,7 @@ export default function WordsQuizPage() {
     setSelectedChoiceIdx(null);
     setAnswerState(null);
     setIsAdvancing(false);
+    setActiveLasers(null);
     isAnsweringRef.current = false;
     lastAdvanceTimeRef.current = 0;
     setScreenFlash(false);
@@ -857,6 +968,11 @@ export default function WordsQuizPage() {
       setMaxCombo(newMaxCombo);
       setAnswerState('correct');
 
+      // コンボ数に応じてレーザー本数を増やして発射（1本 ➔ 最大12本全弾バースト）
+      const laserCount = getLaserCountForCombo(newCombo);
+      setActiveLasers({ count: laserCount, key: performance.now() });
+      setTimeout(() => setActiveLasers(null), 550);
+
       // 正解画面フラッシュ発動（快感・達成感演出）
       setScreenFlash(true);
       setTimeout(() => setScreenFlash(false), 380);
@@ -864,6 +980,7 @@ export default function WordsQuizPage() {
       // コンボ数に応じてピッチが上昇するトランス・サイン波サウンド
       playSound('correct', newCombo);
     } else {
+      setActiveLasers(null);
       setAnswerState('wrong');
       setCombo(0);
       playSound('wrong');
@@ -1120,6 +1237,27 @@ export default function WordsQuizPage() {
         <div
           className={`pointer-events-none fixed inset-0 z-10 transition-all duration-500 ease-out ${comboTheme.screenEdgeClass}`}
         />
+      )}
+
+      {/* Disco Lasers & Floor Glow (コンボ数連動レーザーストーム) */}
+      {phase === 'battle' && (
+        <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
+          {/* ディスコフロア・ビジュアライザーグラデーション */}
+          <div className="absolute bottom-0 inset-x-0 h-72 bg-gradient-to-t from-cyan-950/40 via-purple-950/20 to-transparent opacity-70" />
+
+          {/* コンボ数に応じて本数が増えるネオンレーザー群 (1本 ➔ 最大12本) */}
+          {activeLasers && (
+            <div key={`lasers-${activeLasers.key}`} className="absolute inset-0 pointer-events-none">
+              {LASER_BEAMS.slice(0, activeLasers.count).map((laser) => (
+                <div
+                  key={laser.id}
+                  className={`absolute pointer-events-none opacity-0 ${laser.animClass} ${laser.colorClass}`}
+                  style={laser.style}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Background Decor */}
@@ -1409,114 +1547,62 @@ export default function WordsQuizPage() {
         {/* =================================================================== */}
         {phase === 'battle' && currentQ && (
           <div className="space-y-3.5 sm:space-y-4">
-            {/* Top Bar: Progress, Live Combo (Always Visible), Live Stopwatch */}
-            <div className="h-12 sm:h-14 shrink-0 flex items-center justify-between gap-2 bg-slate-950/95 border-2 border-black rounded-2xl px-3 sm:px-4 shadow-[3px_3px_0px_#000]">
+            {/* Top Bar: Progress & Live Stopwatch (スッキリ配置) */}
+            <div className="h-12 sm:h-14 shrink-0 flex items-center justify-between gap-2 bg-slate-950/95 border-2 border-black rounded-2xl px-4 shadow-[3px_3px_0px_#000]">
               {/* Question Count */}
-              <div className="w-24 sm:w-28 shrink-0 flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5">
                 <span className="text-[10px] sm:text-xs font-black text-slate-400 font-mono">[Q]</span>
-                <span className="font-mono text-sm sm:text-base font-black text-white">
+                <span className="font-mono text-base sm:text-lg font-black text-white">
                   <span className="text-amber-400">{currentIdx + 1}</span> / 10
                 </span>
               </div>
 
-              {/* Combo Streak (常時表示 & コンボ数に応じて豪華に進化) */}
-              <div className="flex-1 flex justify-center items-center">
-                <div
-                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl text-xs sm:text-sm font-black border border-black shadow-[2px_2px_0px_#000] transition-all duration-300 select-none ${comboTheme.badgeStyle}`}
-                >
-                  <Flame
-                    className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform ${
-                      combo >= 3 ? 'animate-bounce' : ''
-                    } ${comboTheme.flameColor}`}
-                  />
-                  <span>{comboTheme.label}</span>
-                </div>
-              </div>
-
               {/* Stopwatch */}
-              <div className="w-24 sm:w-28 shrink-0 flex justify-end items-center">
-                <div className="flex items-center gap-1.5 bg-black border border-amber-400/60 rounded-xl px-2.5 sm:px-3 py-1 text-amber-400 font-mono font-black text-xs sm:text-base shadow-inner">
-                  <Timer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 animate-spin" />
-                  <span>{formatTime(elapsedMs)}</span>
-                </div>
+              <div className="flex items-center gap-1.5 bg-black border border-amber-400/60 rounded-xl px-3 py-1 text-amber-400 font-mono font-black text-xs sm:text-base shadow-inner">
+                <Timer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 animate-spin" />
+                <span>{formatTime(elapsedMs)}</span>
               </div>
             </div>
 
-            {/* Combo 10-Pip Gauge & Max Combo Indicator */}
-            <div className="h-9 shrink-0 flex flex-col justify-between px-1">
-              <div className="flex items-center justify-between text-[10px] font-black font-mono text-slate-400">
-                <span className="flex items-center gap-1">
-                  <Zap
-                    className={`h-3 w-3 ${
-                      combo >= 3 ? 'text-amber-400 animate-pulse' : 'text-slate-600'
-                    }`}
-                  />
-                  <span>[COMBO GAUGE]</span>
-                </span>
-                <span className="font-mono text-slate-400">
-                  [MAX: <span className="text-amber-400 font-bold">{maxCombo}</span>]
-                </span>
-              </div>
-              <div className="flex items-center gap-1 h-2 w-full">
-                {Array.from({ length: 10 }).map((_, i) => {
-                  const isFilled = i < combo;
-                  let pipBg = 'bg-slate-900 border border-black';
-                  if (isFilled) {
-                    if (i >= 8) pipBg = 'bg-cyan-400 border border-black shadow-[0_0_8px_rgba(34,211,238,0.9)]';
-                    else if (i >= 6) pipBg = 'bg-rose-500 border border-black shadow-[0_0_7px_rgba(244,63,94,0.9)]';
-                    else if (i >= 4) pipBg = 'bg-orange-500 border border-black shadow-[0_0_6px_rgba(249,115,22,0.8)]';
-                    else if (i >= 2) pipBg = 'bg-amber-400 border border-black shadow-[0_0_5px_rgba(251,191,36,0.7)]';
-                    else pipBg = 'bg-amber-300 border border-black';
-                  }
-                  return (
-                    <div
-                      key={i}
-                      className={`h-full flex-1 rounded-sm transition-all duration-300 ${pipBg}`}
-                    />
-                  );
-                })}
-              </div>
-              {/* Overall 10-Question Progress Bar */}
-              <div className="h-1 w-full bg-black rounded-full overflow-hidden border border-slate-800">
-                <div
-                  className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300"
-                  style={{ width: `${((currentIdx + 1) / 10) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Main Word Card (高さ完全固定・視線ブレゼロ・テキスト排除・Borderlands兵器カード) */}
+            {/* Main Word Card (視線ブレゼロ・100%クリア視認性・コンボ数に応じたオーラ発光進化) */}
             <div
-              className={`relative h-[128px] sm:h-[148px] shrink-0 overflow-hidden flex flex-col items-center justify-center rounded-2xl bl-comic-border-lg bl-card bl-scanlines transition-all duration-300 px-4 py-3 sm:p-6 text-center select-none ${
+              className={`relative h-[128px] sm:h-[148px] shrink-0 overflow-hidden flex flex-col items-center justify-center rounded-2xl bl-scanlines transition-all duration-300 px-4 py-3 sm:p-6 text-center select-none ${
                 comboTheme.cardGlowClass
               } ${answerState === 'wrong' ? 'animate-shake' : ''}`}
-              style={{
-                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.98) 100%)',
-              }}
             >
-              <div className="h-6 flex items-center justify-center gap-2 mb-1 shrink-0 font-mono">
-                <span className="text-[10px] font-black tracking-widest text-amber-400">
-                  [ITEM #{String(currentIdx + 1).padStart(2, '0')}]
-                </span>
-                {getPosBadge(currentQ.word.partOfSpeech)}
-                <span className="rounded bg-black border border-amber-400/60 text-amber-300 text-[10px] px-1.5 py-0.5 font-black uppercase tracking-wider">
-                  REQ: {currentQ.word.level.toUpperCase()}
-                </span>
-              </div>
+              {/* 背景のディスコ・ビートサークルパルス (正解時にパルス拡大) */}
+              <div
+                className={`absolute w-44 h-44 rounded-full border border-cyan-400/25 pointer-events-none transition-all duration-300 ${
+                  screenFlash ? 'scale-125 opacity-70' : 'scale-75 opacity-0'
+                }`}
+              />
 
-              {/* Target Word */}
-              <div className="h-14 sm:h-16 flex items-center justify-center gap-2.5 sm:gap-3 max-w-full px-2 shrink-0">
-                <h2 className="text-3xl sm:text-5xl font-black text-white tracking-wide font-sans truncate drop-shadow-[0_2px_12px_rgba(255,170,0,0.35)]">
-                  {currentQ.word.en}
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => speakEnglish(currentQ.word.en)}
-                  className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all"
-                  title="ネイティブ発音を聞く"
-                >
-                  <Volume2 className="h-5 w-5 sm:h-6 sm:w-6" />
-                </button>
+              {/* Target Word 表示（問題を絶対に隠さず、常時100%クリアに表示） */}
+              <div className="relative z-10 w-full flex flex-col items-center justify-center">
+                <div className="h-6 flex items-center justify-center gap-2 mb-1 shrink-0 font-mono">
+                  <span className="text-[10px] font-black tracking-widest text-amber-400">
+                    [ITEM #{String(currentIdx + 1).padStart(2, '0')}]
+                  </span>
+                  {getPosBadge(currentQ.word.partOfSpeech)}
+                  <span className="rounded bg-black border border-amber-400/60 text-amber-300 text-[10px] px-1.5 py-0.5 font-black uppercase tracking-wider">
+                    REQ: {currentQ.word.level.toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Target Word */}
+                <div className="h-14 sm:h-16 flex items-center justify-center gap-2.5 sm:gap-3 max-w-full px-2 shrink-0">
+                  <h2 className="text-3xl sm:text-5xl font-black text-white tracking-wide font-sans truncate drop-shadow-[0_2px_12px_rgba(255,170,0,0.35)]">
+                    {currentQ.word.en}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => speakEnglish(currentQ.word.en)}
+                    className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                    title="ネイティブ発音を聞く"
+                  >
+                    <Volume2 className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </button>
+                </div>
               </div>
             </div>
 

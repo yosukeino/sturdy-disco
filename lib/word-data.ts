@@ -348,9 +348,8 @@ export interface CourseOption {
 // 実質的な意味を持つ動詞・名詞・形容詞・副詞・前置詞のみで厳選
 // =============================================================================
 export const SEASON_1_WORDS: WordItem[] = [
-  // --- 動詞 (Verbs: 7語) ---
+  // --- 動詞 (Verbs: 6語) ---
   { id: 's1-v1', en: 'speak', jp: '話す', level: 'j1', partOfSpeech: 'verb' },
-  { id: 's1-v2', en: 'play', jp: '（スポーツや楽器を）する・弾く', level: 'j1', partOfSpeech: 'verb' },
   { id: 's1-v3', en: 'watch', jp: '（テレビなどを）見る', level: 'j1', partOfSpeech: 'verb' },
   { id: 's1-v4', en: 'teach', jp: '教える', level: 'j1', partOfSpeech: 'verb' },
   { id: 's1-v5', en: 'live', jp: '住む・生きる', level: 'j1', partOfSpeech: 'verb' },
